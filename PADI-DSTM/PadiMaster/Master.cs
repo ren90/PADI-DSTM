@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PadiMaster
 {
-    class Program
+    class MasterRunner
     {
         static void Main(string[] args)
         {

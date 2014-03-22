@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 
 namespace PadiServer
 {
-    class Program
+    class ServerRunner
     {
         static void Main(string[] args)
         {
+
+            
+
         }
     }
 }
