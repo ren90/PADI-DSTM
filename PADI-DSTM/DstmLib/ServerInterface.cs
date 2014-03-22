@@ -5,11 +5,11 @@ using System.Text;
 
 namespace DstmLib
 {
-    class ServerInterface
+    public interface ServerInterface
     {
 
         int Read();
-        void Write();
+        void Write(int value);
 
     }
 }
