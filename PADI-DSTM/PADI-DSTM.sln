@@ -1,15 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PadiClient", "PadiClient\PadiClient.csproj", "{A1D247CC-A9E0-49E3-963C-850780BEDCA6}"
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PADIClient", "PadiClient\PADIClient.csproj", "{A1D247CC-A9E0-49E3-963C-850780BEDCA6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C62B18BE-B166-43AC-B34F-E61D1028B12B} = {C62B18BE-B166-43AC-B34F-E61D1028B12B}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PadiServer", "PadiServer\PadiServer.csproj", "{D873B26D-AC33-47FC-9E26-BD2B25814EF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PADIServer", "PadiServer\PADIServer.csproj", "{D873B26D-AC33-47FC-9E26-BD2B25814EF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C62B18BE-B166-43AC-B34F-E61D1028B12B} = {C62B18BE-B166-43AC-B34F-E61D1028B12B}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PadiMaster", "PadiMaster\PadiMaster.csproj", "{F2610138-1615-40C9-96BD-2B60251FC4B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PADIMaster", "PadiMaster\PADIMaster.csproj", "{F2610138-1615-40C9-96BD-2B60251FC4B4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C62B18BE-B166-43AC-B34F-E61D1028B12B} = {C62B18BE-B166-43AC-B34F-E61D1028B12B}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DstmLib", "DstmLib\DstmLib.csproj", "{C62B18BE-B166-43AC-B34F-E61D1028B12B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSTMLib", "DstmLib\DSTMLib.csproj", "{C62B18BE-B166-43AC-B34F-E61D1028B12B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

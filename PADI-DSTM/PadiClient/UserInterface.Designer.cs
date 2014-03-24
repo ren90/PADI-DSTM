@@ -1,4 +1,4 @@
-﻿namespace PadiClient
+﻿namespace PADIClient
 {
     partial class UserInterface
     {

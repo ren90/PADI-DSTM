@@ -1,22 +1,23 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace DstmLib{
-        
-    public class PadInt {
+namespace DSTMLib {
+    public class PADInt {
 
-            int _value { get; set; }
-            List<ServerInterface> _servers;
+		int _value { get; set; }
+		List<ServerInterface> _servers;
 
-            public PadInt(int initial_value, List<ServerInterface> servers)
-            {
-                _value = initial_value;
-                _servers = servers;
-            }
+		public PADInt(int initial_value, List<ServerInterface> servers)
+		{
+			_value = initial_value;
+			_servers = servers;
+		}
 
-            //dummy, almost non-funcitonal methods
-            public int Read() { return _value; }
+		public int Read() {
+			return _value;
+		}
 
-            public void Write(int value) { _value = value;}
-        }
+		public void Write(int value) {
+			_value = value;
+		}
+    }
 }

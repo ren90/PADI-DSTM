@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PadiMaster
+namespace PADIMaster
 {
     class MasterRunner
     {
         static void Main(string[] args)
         {
+
         }
     }
 }
