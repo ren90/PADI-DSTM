@@ -13,4 +13,9 @@ namespace PADIMaster
 
         }
     }
+
+	class MasterServer
+	{
+		private Dictionary<string, string> _transactionalServers { get; set; }
+	}
 }
