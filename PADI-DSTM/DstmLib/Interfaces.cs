@@ -1,9 +1,13 @@
-﻿namespace DSTMLib
+﻿using System.Collections.Generic;
+namespace DSTMLib
 {
     public interface MasterInterface
     {
         PADInt CreatePADInt(int uid);
         PADInt AccessPADInt(int uid);
+        
+        KeyValuePair<string, int> registerTransactionalServer();
+
     }
 
 	public interface ServerInterface

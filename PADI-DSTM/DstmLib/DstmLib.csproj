@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DSTMLib.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="PADInt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
