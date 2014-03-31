@@ -65,7 +65,10 @@ namespace PADIMaster
 
         public PADInt CreatePADInt(int uid)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Received PADInt create request!");
+            Console.WriteLine("UID: " + uid);
+
+            return new PADInt(1, new List<ServerInterface>());
         }
 
         public PADInt AccessPADInt(int uid)

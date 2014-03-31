@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
 
 namespace DSTMLib {
 
+    [Serializable]
     public class PADInt {
 
 		int _value { get; set; }

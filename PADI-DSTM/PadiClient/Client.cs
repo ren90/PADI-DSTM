@@ -1,14 +1,17 @@
 ﻿using DSTMLib;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Tcp;
 using System.Windows.Forms;
 
 namespace PADIClient
 {
+    public delegate void WriteDelegate(string s);
+
+
+
     static class ClientRunner
     {
+ 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -23,40 +26,44 @@ namespace PADIClient
 
 	public class Client
 	{
-		private TcpChannel channel;
-		private MasterInterface master;
-		private ServerInterface server;
+		
 		private List<PADInt> padints = new List<PADInt>();
+        public WriteDelegate _writeDelegate {get;set;}
 
-		public void connectToMaster(string url)
-		{
-			channel = new TcpChannel();
-			ChannelServices.RegisterChannel(channel, false);
+        public Client()
+        {
 
-			master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), url);
-            
+            DSTMLib.DSTMLib.init();
+            padints = new List<PADInt>();
+
         }
 
-		public void connectToServer(string url)
-		{
-			channel = new TcpChannel();
-			ChannelServices.RegisterChannel(channel, true);
+        //public void connectToMaster(string url)
+        //{
+        //    ChannelServices.RegisterChannel(channel, false);
 
-			server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
-		}
+        //    master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), url);
+            
+        //}
+
+        //public void connectToServer(string url)
+        //{
+        //    channel = new TcpChannel();
+        //    ChannelServices.RegisterChannel(channel, true);
+
+        //    server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
+        //}
 
 		public void CreatePADInt(int uid)
 		{
-			PADInt p = master.CreatePADInt(uid);
-			if (p != null)
-				padints.Add(p);
+			PADInt p = DSTMLib.DSTMLib.CreatePADInt(uid);
+            _writeDelegate("created int with UID: " + uid);
 		}
 
 		public void AccessPADInt(int uid)
 		{
-			PADInt p = master.AccessPADInt(uid);
-			if (p != null)
-				padints.Add(p);
+            PADInt p = DSTMLib.DSTMLib.AccessPADInt(uid);
+
 		}
 
 		public void Read()
