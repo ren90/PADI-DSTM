@@ -7,13 +7,18 @@ namespace DSTMLib {
     [Serializable]
     public class PADInt {
 
-		int _value { get; set; }
+        private int _value;
+        private int _uid;
+
+        public int Value { get { return this._value; } private set { _value = value; } }
+        public int UID { get { return this._uid; } private set {_uid = value;} }
 		List<ServerInterface> _servers;
 
-		public PADInt(int initial_value, List<ServerInterface> servers)
+		public PADInt(int uid, List<ServerInterface> servers)
 		{
-			_value = initial_value;
+			_uid = uid;
 			_servers = servers;
+            _value = 0;
 		}
 
 		public int Read() {

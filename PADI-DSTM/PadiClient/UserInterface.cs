@@ -18,13 +18,14 @@ namespace PADIClient
         {
 
             InitializeComponent();
-            _client = new Client();
-            _client._writeDelegate = new WriteDelegate(LogWrite);
+            _client = new Client(new WriteDelegate(LogWrite), new WriteDelegate(ListWrite));
+            
         }
 
         private void UserInterface_Load(object sender, EventArgs e)
         {
-            //DSTMLib.DSTMLib.init();
+
+
         }
 
         private void beginTx_button_Click(object sender, EventArgs e)
@@ -54,7 +55,10 @@ namespace PADIClient
 
         private void createPADInt_button_Click(object sender, EventArgs e)
         {
-            _client.CreatePADInt(Convert.ToInt32(uidPADInt_textBox.Text));
+            int uid = Convert.ToInt32(uidPADInt_textBox.Text);    
+            uidPADInt_textBox.Clear();
+            _client.CreatePADInt(Convert.ToInt32(uid));
+            disablePADIntCommands();
         }
 
         private void uidPADInt_textBox_TextChanged(object sender, EventArgs e)
@@ -63,12 +67,35 @@ namespace PADIClient
             accessPADInt_button.Enabled = true;
         }
 
+        private void disablePADIntCommands()
+        {
+            createPADInt_button.Enabled = false;
+            accessPADInt_button.Enabled = false;
+        }
+
         public void LogWrite(string s)
         {
 
-            log_textBox.Text = s;
+            log_textBox.AppendText(s + Environment.NewLine);
             Console.WriteLine("Write: " + s);
 
         }
+
+        public void ListWrite(string s)
+        {
+
+            listPADInt_textBox.AppendText(s + Environment.NewLine);
+            Console.WriteLine("Write: " + s);
+
+        }
+
+        private void accessPADInt_button_Click(object sender, EventArgs e)
+        {
+            int uid = Convert.ToInt32(uidPADInt_textBox.Text);
+            uidPADInt_textBox.Clear();
+            _client.AccessPADInt(Convert.ToInt32(uid));
+            disablePADIntCommands();
+        }
+
     }
 }

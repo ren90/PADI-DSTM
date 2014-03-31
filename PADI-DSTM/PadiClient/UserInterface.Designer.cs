@@ -34,21 +34,21 @@
             this.commitTx_button = new System.Windows.Forms.Button();
             this.beginTx_button = new System.Windows.Forms.Button();
             this.serverControl = new System.Windows.Forms.GroupBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.serverURL_textBox = new System.Windows.Forms.TextBox();
             this.serverFreeze_button = new System.Windows.Forms.Button();
-            this.serverRecover_button = new System.Windows.Forms.Button();
             this.serverFail_button = new System.Windows.Forms.Button();
+            this.serverRecover_button = new System.Windows.Forms.Button();
             this.padintOperation = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.valuePADInt_textBox = new System.Windows.Forms.TextBox();
+            this.writePADInt_button = new System.Windows.Forms.Button();
+            this.readPADInt_button = new System.Windows.Forms.Button();
+            this.listPADInt_textBox = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.uidPADInt_textBox = new System.Windows.Forms.TextBox();
             this.accessPADInt_button = new System.Windows.Forms.Button();
             this.createPADInt_button = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.listPADInt_textBox = new System.Windows.Forms.TextBox();
-            this.readPADInt_button = new System.Windows.Forms.Button();
-            this.writePADInt_button = new System.Windows.Forms.Button();
-            this.valuePADInt_textBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.serverURL_textBox = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.log_textBox = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.transaction.SuspendLayout();
@@ -127,6 +127,23 @@
             this.serverControl.TabStop = false;
             this.serverControl.Text = "Server Control";
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 27);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(66, 13);
+            this.label3.TabIndex = 8;
+            this.label3.Text = "Server URL:";
+            // 
+            // serverURL_textBox
+            // 
+            this.serverURL_textBox.Location = new System.Drawing.Point(73, 24);
+            this.serverURL_textBox.Name = "serverURL_textBox";
+            this.serverURL_textBox.Size = new System.Drawing.Size(152, 20);
+            this.serverURL_textBox.TabIndex = 7;
+            this.serverURL_textBox.TextChanged += new System.EventHandler(this.serverURL_textBox_TextChanged);
+            // 
             // serverFreeze_button
             // 
             this.serverFreeze_button.Enabled = false;
@@ -136,18 +153,6 @@
             this.serverFreeze_button.TabIndex = 6;
             this.serverFreeze_button.Text = "Freeze";
             this.serverFreeze_button.UseVisualStyleBackColor = true;
-            // 
-            // serverRecover_button
-            // 
-            this.serverRecover_button.Enabled = false;
-            this.serverRecover_button.ForeColor = System.Drawing.Color.Green;
-            this.serverRecover_button.Location = new System.Drawing.Point(115, 50);
-            this.serverRecover_button.Name = "serverRecover_button";
-            this.serverRecover_button.Size = new System.Drawing.Size(103, 35);
-            this.serverRecover_button.TabIndex = 5;
-            this.serverRecover_button.Text = "Recover";
-            this.serverRecover_button.UseVisualStyleBackColor = true;
-            this.serverRecover_button.Click += new System.EventHandler(this.serverRecover_button_Click);
             // 
             // serverFail_button
             // 
@@ -160,6 +165,18 @@
             this.serverFail_button.Text = "Fail";
             this.serverFail_button.UseVisualStyleBackColor = true;
             this.serverFail_button.Click += new System.EventHandler(this.serverFail_button_Click);
+            // 
+            // serverRecover_button
+            // 
+            this.serverRecover_button.Enabled = false;
+            this.serverRecover_button.ForeColor = System.Drawing.Color.Green;
+            this.serverRecover_button.Location = new System.Drawing.Point(115, 50);
+            this.serverRecover_button.Name = "serverRecover_button";
+            this.serverRecover_button.Size = new System.Drawing.Size(103, 35);
+            this.serverRecover_button.TabIndex = 5;
+            this.serverRecover_button.Text = "Recover";
+            this.serverRecover_button.UseVisualStyleBackColor = true;
+            this.serverRecover_button.Click += new System.EventHandler(this.serverRecover_button_Click);
             // 
             // padintOperation
             // 
@@ -179,6 +196,57 @@
             this.padintOperation.TabStop = false;
             this.padintOperation.Text = "PADInt Operation";
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 52);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(37, 13);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "Value:";
+            // 
+            // valuePADInt_textBox
+            // 
+            this.valuePADInt_textBox.Location = new System.Drawing.Point(73, 48);
+            this.valuePADInt_textBox.Name = "valuePADInt_textBox";
+            this.valuePADInt_textBox.Size = new System.Drawing.Size(92, 20);
+            this.valuePADInt_textBox.TabIndex = 7;
+            // 
+            // writePADInt_button
+            // 
+            this.writePADInt_button.Location = new System.Drawing.Point(171, 163);
+            this.writePADInt_button.Name = "writePADInt_button";
+            this.writePADInt_button.Size = new System.Drawing.Size(56, 26);
+            this.writePADInt_button.TabIndex = 6;
+            this.writePADInt_button.Text = "Write";
+            this.writePADInt_button.UseVisualStyleBackColor = true;
+            // 
+            // readPADInt_button
+            // 
+            this.readPADInt_button.Location = new System.Drawing.Point(171, 134);
+            this.readPADInt_button.Name = "readPADInt_button";
+            this.readPADInt_button.Size = new System.Drawing.Size(56, 26);
+            this.readPADInt_button.TabIndex = 5;
+            this.readPADInt_button.Text = "Read";
+            this.readPADInt_button.UseVisualStyleBackColor = true;
+            // 
+            // listPADInt_textBox
+            // 
+            this.listPADInt_textBox.Location = new System.Drawing.Point(9, 77);
+            this.listPADInt_textBox.Multiline = true;
+            this.listPADInt_textBox.Name = "listPADInt_textBox";
+            this.listPADInt_textBox.Size = new System.Drawing.Size(156, 112);
+            this.listPADInt_textBox.TabIndex = 4;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 25);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(61, 13);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "PADInt uid:";
+            // 
             // uidPADInt_textBox
             // 
             this.uidPADInt_textBox.Location = new System.Drawing.Point(73, 22);
@@ -190,93 +258,24 @@
             // accessPADInt_button
             // 
             this.accessPADInt_button.Enabled = false;
-            this.accessPADInt_button.Location = new System.Drawing.Point(9, 48);
+            this.accessPADInt_button.Location = new System.Drawing.Point(171, 107);
             this.accessPADInt_button.Name = "accessPADInt_button";
-            this.accessPADInt_button.Size = new System.Drawing.Size(75, 23);
+            this.accessPADInt_button.Size = new System.Drawing.Size(56, 23);
             this.accessPADInt_button.TabIndex = 1;
             this.accessPADInt_button.Text = "Access";
             this.accessPADInt_button.UseVisualStyleBackColor = true;
+            this.accessPADInt_button.Click += new System.EventHandler(this.accessPADInt_button_Click);
             // 
             // createPADInt_button
             // 
             this.createPADInt_button.Enabled = false;
-            this.createPADInt_button.Location = new System.Drawing.Point(90, 48);
+            this.createPADInt_button.Location = new System.Drawing.Point(171, 77);
             this.createPADInt_button.Name = "createPADInt_button";
-            this.createPADInt_button.Size = new System.Drawing.Size(75, 23);
+            this.createPADInt_button.Size = new System.Drawing.Size(56, 26);
             this.createPADInt_button.TabIndex = 0;
             this.createPADInt_button.Text = "Create";
             this.createPADInt_button.UseVisualStyleBackColor = true;
             this.createPADInt_button.Click += new System.EventHandler(this.createPADInt_button_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 25);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(61, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "PADInt uid:";
-            // 
-            // listPADInt_textBox
-            // 
-            this.listPADInt_textBox.Location = new System.Drawing.Point(9, 77);
-            this.listPADInt_textBox.Multiline = true;
-            this.listPADInt_textBox.Name = "listPADInt_textBox";
-            this.listPADInt_textBox.Size = new System.Drawing.Size(156, 112);
-            this.listPADInt_textBox.TabIndex = 4;
-            // 
-            // readPADInt_button
-            // 
-            this.readPADInt_button.Enabled = false;
-            this.readPADInt_button.Location = new System.Drawing.Point(171, 119);
-            this.readPADInt_button.Name = "readPADInt_button";
-            this.readPADInt_button.Size = new System.Drawing.Size(56, 26);
-            this.readPADInt_button.TabIndex = 5;
-            this.readPADInt_button.Text = "Read";
-            this.readPADInt_button.UseVisualStyleBackColor = true;
-            // 
-            // writePADInt_button
-            // 
-            this.writePADInt_button.Enabled = false;
-            this.writePADInt_button.Location = new System.Drawing.Point(171, 163);
-            this.writePADInt_button.Name = "writePADInt_button";
-            this.writePADInt_button.Size = new System.Drawing.Size(56, 26);
-            this.writePADInt_button.TabIndex = 6;
-            this.writePADInt_button.Text = "Write";
-            this.writePADInt_button.UseVisualStyleBackColor = true;
-            // 
-            // valuePADInt_textBox
-            // 
-            this.valuePADInt_textBox.Location = new System.Drawing.Point(172, 93);
-            this.valuePADInt_textBox.Name = "valuePADInt_textBox";
-            this.valuePADInt_textBox.Size = new System.Drawing.Size(53, 20);
-            this.valuePADInt_textBox.TabIndex = 7;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(172, 77);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(37, 13);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Value:";
-            // 
-            // serverURL_textBox
-            // 
-            this.serverURL_textBox.Location = new System.Drawing.Point(73, 24);
-            this.serverURL_textBox.Name = "serverURL_textBox";
-            this.serverURL_textBox.Size = new System.Drawing.Size(152, 20);
-            this.serverURL_textBox.TabIndex = 7;
-            this.serverURL_textBox.TextChanged += new System.EventHandler(this.serverURL_textBox_TextChanged);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 27);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(66, 13);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Server URL:";
             // 
             // log_textBox
             // 

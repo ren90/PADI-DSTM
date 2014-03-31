@@ -46,7 +46,12 @@ namespace DSTMLib
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             return _master.CreatePADInt(uid); }
 
-        public static PADInt AccessPADInt(int uid) { throw new NotImplementedException(); }
+        public static PADInt AccessPADInt(int uid)
+        {
+
+            Console.WriteLine("DSTMLib-> calling master to access PADInt!");
+            return _master.AccessPADInt(uid);
+        }
 
         
     }

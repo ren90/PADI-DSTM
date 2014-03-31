@@ -28,7 +28,7 @@ namespace PADIServer {
             channel = new TcpChannel(idAndPort.Value);
             ChannelServices.RegisterChannel(channel, true);
             System.Console.WriteLine("Registered Channel @" + idAndPort.Value);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(ServerInterface), "Server", WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(TransactionalServer), "Server", WellKnownObjectMode.Singleton);
             System.Console.WriteLine("SERVER ON");
             System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value);
             System.Console.ReadLine();
@@ -38,16 +38,43 @@ namespace PADIServer {
     class TransactionalServer : MarshalByRefObject, ServerInterface {
 
         String mServer = System.IO.File.ReadAllText(@"C:\Users\Renato\workspace\VisualStudio\PADI-DSTM\mServerLocation.dat");
-        
+        Dictionary<int, PADInt> _padints;
+
         public TransactionalServer()
 		{
-
+            _padints = new Dictionary<int, PADInt>();
 		}
 
 		public int Read() { return 1; }
 
 		public void Write(int value) { }
 
+        public PADInt CreatePADInt(int uid, List<ServerInterface> servers)
+        {
+
+            if (_padints.ContainsKey(uid))
+                throw new TxException("PADInt with uid " + uid + " already exists!");
+
+            PADInt p = new PADInt(uid, servers);
+            Console.WriteLine("created PADInt eith uid: " + p.UID);
+            _padints.Add(uid, p);
+            Console.WriteLine("added to dictionary");
+            return p;
+
+        }
+
+        public PADInt AccessPADInt(int uid)
+        {
+
+            if (_padints.ContainsKey(uid))
+            {
+                Console.WriteLine("Contains!");
+                return _padints[uid];
+            }
+            else
+                throw new TxException("PADInt with the identifier " + uid +" is missing!");
+
+        }
 
 
         

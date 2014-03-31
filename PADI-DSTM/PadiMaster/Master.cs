@@ -34,6 +34,8 @@ namespace PADIMaster
         private int _portseed { get; set; }
         private int _idseed { get; set; }
         private Dictionary<int, int> _transactionalServers;
+        private Dictionary<int, List<int>> _padintReferences;
+
 
         public MasterServer()
         {
@@ -41,6 +43,7 @@ namespace PADIMaster
             _portseed = 9001;
             _idseed = 1;
             _transactionalServers = new Dictionary<int, int>();
+            _padintReferences = new Dictionary<int,List<int>>();
 
             
         }
@@ -64,17 +67,35 @@ namespace PADIMaster
 
 
         public PADInt CreatePADInt(int uid)
-        {
+        {   
+
             Console.WriteLine("Received PADInt create request!");
             Console.WriteLine("UID: " + uid);
+            //funcao de hash, store tha bitches
+            //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
+            int port = 9001;
+            ServerInterface chosen = (ServerInterface) Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
+            
+            PADInt p = chosen.CreatePADInt(uid, new List<ServerInterface>());
+            List<int> l = new List<int> (port);
+            _padintReferences.Add(uid, l);
 
-            return new PADInt(1, new List<ServerInterface>());
+            return p;
         }
 
         public PADInt AccessPADInt(int uid)
         {
 
-            throw new NotImplementedException();
+            Console.WriteLine("Received PADInt access request!");
+            Console.WriteLine("UID: " + uid);
+            //funcao de hash, store tha bitches
+            //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
+            int port = 9001;
+            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
+
+            PADInt p = chosen.AccessPADInt(uid);
+
+            return p;
 
         }
             

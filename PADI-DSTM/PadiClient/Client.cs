@@ -27,15 +27,17 @@ namespace PADIClient
 	public class Client
 	{
 		
-		private List<PADInt> padints = new List<PADInt>();
-        public WriteDelegate _writeDelegate {get;set;}
+		private List<PADInt> _padints = new List<PADInt>();
+        private WriteDelegate _logDelegate {get;set;}
+        private WriteDelegate _listDelegate { get; set; }
 
-        public Client()
+        public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
 
             DSTMLib.DSTMLib.init();
-            padints = new List<PADInt>();
-
+            _padints = new List<PADInt>();
+            _logDelegate = logDelegate;
+            _listDelegate = listDelegate;
         }
 
         //public void connectToMaster(string url)
@@ -57,7 +59,9 @@ namespace PADIClient
 		public void CreatePADInt(int uid)
 		{
 			PADInt p = DSTMLib.DSTMLib.CreatePADInt(uid);
-            _writeDelegate("created int with UID: " + uid);
+            _padints.Add(p);
+            _logDelegate("created int with UID: " + uid);
+            _listDelegate("UID:" + uid);
 		}
 
 		public void AccessPADInt(int uid)
