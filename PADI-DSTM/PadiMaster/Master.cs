@@ -15,15 +15,14 @@ namespace PADIMaster
         static void Main(string[] args)
         {
 
-            String id = "Server";
             int port = 8087;
 
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, true);
 
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MasterServer), id, WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MasterServer), "Server", WellKnownObjectMode.Singleton);
             System.Console.WriteLine("Registered Server");
-            System.Console.WriteLine("SERVER ON " + id.ToString());
+            System.Console.WriteLine("SERVER ON");
             System.Console.ReadLine();
 
         }
@@ -34,20 +33,22 @@ namespace PADIMaster
         private int _port { get; set; }
         private int _portseed { get; set; }
         private int _idseed { get; set; }
-        private Dictionary<string, int> _transactionalServers;
+        private Dictionary<int, int> _transactionalServers;
 
         public MasterServer()
         {
             _port = 8087;
             _portseed = 9001;
             _idseed = 1;
-            _transactionalServers = new Dictionary<string, int>();
+            _transactionalServers = new Dictionary<int, int>();
+
+            
         }
 
         //registers transactional servers and gives a port for them to bind on
-        public KeyValuePair<string, int> registerTransactionalServer(){
+        public KeyValuePair<int, int> registerTransactionalServer(){
 
-            string id = "TS" + _idseed;
+            int id = _idseed;
             int port = _portseed;
             _idseed++;
             _portseed++;
@@ -57,9 +58,10 @@ namespace PADIMaster
             Console.WriteLine("ID: " + id);
             Console.WriteLine("PORT:" + port);
 
-            return new KeyValuePair<string, int>(id, port);
+            return new KeyValuePair<int, int>(id, port);
 
             }
+
 
         public PADInt CreatePADInt(int uid)
         {

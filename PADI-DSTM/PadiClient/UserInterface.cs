@@ -16,5 +16,10 @@ namespace PADIClient
         {
             InitializeComponent();
         }
+
+        private void UserInterface_Load(object sender, EventArgs e)
+        {
+            //DSTMLib.DSTMLib.init();
+        }
     }
 }

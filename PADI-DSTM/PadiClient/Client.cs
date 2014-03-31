@@ -34,7 +34,8 @@ namespace PADIClient
 			ChannelServices.RegisterChannel(channel, false);
 
 			master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), url);
-		}
+            
+        }
 
 		public void connectToServer(string url)
 		{

@@ -12,8 +12,8 @@ namespace PADIServer {
 
         static void Main(string[] args)
         {
-            KeyValuePair<string, int> idAndPort;
-            TcpChannel channel = new TcpChannel(8086);
+            KeyValuePair<int, int> idAndPort;
+            TcpChannel channel = new TcpChannel();
             System.Console.WriteLine("Bootstrapping...");
             ChannelServices.RegisterChannel(channel, true);
             System.Console.WriteLine("Registered Channel @" + 8086);
@@ -28,7 +28,7 @@ namespace PADIServer {
             channel = new TcpChannel(idAndPort.Value);
             ChannelServices.RegisterChannel(channel, true);
             System.Console.WriteLine("Registered Channel @" + idAndPort.Value);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(ServerInterface), idAndPort.Key, WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(ServerInterface), "Server", WellKnownObjectMode.Singleton);
             System.Console.WriteLine("SERVER ON");
             System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value);
             System.Console.ReadLine();

@@ -6,7 +6,7 @@ namespace DSTMLib
         PADInt CreatePADInt(int uid);
         PADInt AccessPADInt(int uid);
         
-        KeyValuePair<string, int> registerTransactionalServer();
+        KeyValuePair<int, int> registerTransactionalServer();
 
     }
 
