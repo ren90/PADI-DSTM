@@ -207,34 +207,43 @@
             // 
             // valuePADInt_textBox
             // 
+            this.valuePADInt_textBox.Cursor = System.Windows.Forms.Cursors.Default;
+            this.valuePADInt_textBox.Enabled = false;
             this.valuePADInt_textBox.Location = new System.Drawing.Point(73, 48);
             this.valuePADInt_textBox.Name = "valuePADInt_textBox";
             this.valuePADInt_textBox.Size = new System.Drawing.Size(92, 20);
             this.valuePADInt_textBox.TabIndex = 7;
+            this.valuePADInt_textBox.TextChanged += new System.EventHandler(this.valuePADInt_textBox_TextChanged);
             // 
             // writePADInt_button
             // 
+            this.writePADInt_button.Enabled = false;
             this.writePADInt_button.Location = new System.Drawing.Point(171, 163);
             this.writePADInt_button.Name = "writePADInt_button";
             this.writePADInt_button.Size = new System.Drawing.Size(56, 26);
             this.writePADInt_button.TabIndex = 6;
             this.writePADInt_button.Text = "Write";
             this.writePADInt_button.UseVisualStyleBackColor = true;
+            this.writePADInt_button.Click += new System.EventHandler(this.writePADInt_button_Click);
             // 
             // readPADInt_button
             // 
+            this.readPADInt_button.Enabled = false;
             this.readPADInt_button.Location = new System.Drawing.Point(171, 134);
             this.readPADInt_button.Name = "readPADInt_button";
             this.readPADInt_button.Size = new System.Drawing.Size(56, 26);
             this.readPADInt_button.TabIndex = 5;
             this.readPADInt_button.Text = "Read";
             this.readPADInt_button.UseVisualStyleBackColor = true;
+            this.readPADInt_button.Click += new System.EventHandler(this.readPADInt_button_Click);
             // 
             // listPADInt_textBox
             // 
+            this.listPADInt_textBox.Cursor = System.Windows.Forms.Cursors.Default;
             this.listPADInt_textBox.Location = new System.Drawing.Point(9, 77);
             this.listPADInt_textBox.Multiline = true;
             this.listPADInt_textBox.Name = "listPADInt_textBox";
+            this.listPADInt_textBox.ReadOnly = true;
             this.listPADInt_textBox.Size = new System.Drawing.Size(156, 112);
             this.listPADInt_textBox.TabIndex = 4;
             // 
@@ -279,9 +288,11 @@
             // 
             // log_textBox
             // 
+            this.log_textBox.Cursor = System.Windows.Forms.Cursors.Default;
             this.log_textBox.Location = new System.Drawing.Point(16, 19);
             this.log_textBox.Multiline = true;
             this.log_textBox.Name = "log_textBox";
+            this.log_textBox.ReadOnly = true;
             this.log_textBox.Size = new System.Drawing.Size(286, 432);
             this.log_textBox.TabIndex = 3;
             // 

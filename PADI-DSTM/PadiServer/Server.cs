@@ -10,15 +10,14 @@ namespace PADIServer {
         static void Main(string[] args)
         {
 			KeyValuePair<int, int> idAndPort;
-            TcpChannel channel = new TcpChannel();
             System.Console.WriteLine("Bootstrapping...");
+            TcpChannel channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, true);
-            System.Console.WriteLine("Registered Channel @" + 8086);
+            System.Console.WriteLine("Registered Channel @random" );
 
             MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
             idAndPort = mServer.registerTransactionalServer();
 
-            TransactionalServer tServer = new TransactionalServer();
             System.Console.WriteLine("Registered at Master");
             ChannelServices.UnregisterChannel(channel);
             System.Console.WriteLine("Unbinding old port");

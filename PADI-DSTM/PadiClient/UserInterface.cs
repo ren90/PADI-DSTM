@@ -58,20 +58,53 @@ namespace PADIClient
             int uid = Convert.ToInt32(uidPADInt_textBox.Text);    
             uidPADInt_textBox.Clear();
             _client.CreatePADInt(Convert.ToInt32(uid));
-            disablePADIntCommands();
+            disablePADIntControl();
         }
 
         private void uidPADInt_textBox_TextChanged(object sender, EventArgs e)
         {
-            createPADInt_button.Enabled = true;
-            accessPADInt_button.Enabled = true;
+            enablePADIntControl();
+            enableValueTextBox();
+
         }
 
-        private void disablePADIntCommands()
+        private void enableValueTextBox()
         {
+            valuePADInt_textBox.Enabled=true;
+        }
+
+        private void disableValueTextBox()
+        {
+            valuePADInt_textBox.Enabled = false;
+        }
+
+        private void enablePADIntControl() {
+
+            createPADInt_button.Enabled = true;
+            accessPADInt_button.Enabled = true;
+        
+        }
+        private void disablePADIntControl() {
+
             createPADInt_button.Enabled = false;
             accessPADInt_button.Enabled = false;
+        
         }
+        private void enablePADIntManipulation() {
+
+            readPADInt_button.Enabled = true;
+            writePADInt_button.Enabled = true;
+        
+        }
+        private void disablePADIntManipulation() {
+
+            readPADInt_button.Enabled = false;
+            writePADInt_button.Enabled = false;
+        
+        }
+
+
+        //escrever nos logs
 
         public void LogWrite(string s)
         {
@@ -81,6 +114,8 @@ namespace PADIClient
 
         }
 
+        //escrever na lista de padi ints
+
         public void ListWrite(string s)
         {
 
@@ -89,13 +124,53 @@ namespace PADIClient
 
         }
 
+
         private void accessPADInt_button_Click(object sender, EventArgs e)
+        {
+
+            _client.AccessPADInt(readFromUidTextBox());
+            disablePADIntControl();
+            disablePADIntManipulation();
+        }
+
+        private void readPADInt_button_Click(object sender, EventArgs e)
+        {
+            _client.Read(readFromUidTextBox());
+            disablePADIntControl();
+            disablePADIntManipulation();
+            
+        }
+
+        private void writePADInt_button_Click(object sender, EventArgs e)
+        {
+
+            _client.Write(readFromUidTextBox(), readFromValueTextBox());
+            disablePADIntControl();
+            disablePADIntManipulation();
+        }
+
+
+        //aceder aos valores dos campos e apagar a text box
+
+        private int  readFromValueTextBox()
+        {
+            int value = Convert.ToInt32(valuePADInt_textBox.Text);
+            valuePADInt_textBox.Clear();
+            return value;
+        }
+
+        private int readFromUidTextBox()
         {
             int uid = Convert.ToInt32(uidPADInt_textBox.Text);
             uidPADInt_textBox.Clear();
-            _client.AccessPADInt(Convert.ToInt32(uid));
-            disablePADIntCommands();
+            return uid;
         }
+
+        private void valuePADInt_textBox_TextChanged(object sender, EventArgs e)
+        {
+            enablePADIntManipulation();
+        }
+
 
     }
 }

@@ -70,12 +70,12 @@ namespace PADIClient
 
 		}
 
-		public void Read()
+		public void Read(int uid)
 		{
 			//TODO
 		}
 
-		public void Write(int value)
+		public void Write(int uid, int value)
 		{
 			//TODO
 		}
