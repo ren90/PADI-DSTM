@@ -1,18 +1,15 @@
 ﻿using DSTMLib;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 
-
 namespace PADIServer {
     class ServerRunner {
-
         static void Main(string[] args)
         {
-            KeyValuePair<int, int> idAndPort;
+			KeyValuePair<int, int> idAndPort;
             TcpChannel channel = new TcpChannel();
             System.Console.WriteLine("Bootstrapping...");
             ChannelServices.RegisterChannel(channel, true);
@@ -36,8 +33,7 @@ namespace PADIServer {
     }
 
     class TransactionalServer : MarshalByRefObject, ServerInterface {
-
-        String mServer = System.IO.File.ReadAllText(@"C:\Users\Renato\workspace\VisualStudio\PADI-DSTM\mServerLocation.dat");
+		String mServer = System.IO.File.ReadAllText(@"../../../../mServerLocation.dat");
         Dictionary<int, PADInt> _padints;
 
         public TransactionalServer()
@@ -51,32 +47,25 @@ namespace PADIServer {
 
         public PADInt CreatePADInt(int uid, List<ServerInterface> servers)
         {
-
             if (_padints.ContainsKey(uid))
                 throw new TxException("PADInt with uid " + uid + " already exists!");
 
             PADInt p = new PADInt(uid, servers);
-            Console.WriteLine("created PADInt eith uid: " + p.UID);
+            Console.WriteLine("created PADInt with uid: " + p.UID);
             _padints.Add(uid, p);
             Console.WriteLine("added to dictionary");
             return p;
-
         }
 
         public PADInt AccessPADInt(int uid)
         {
-
             if (_padints.ContainsKey(uid))
             {
                 Console.WriteLine("Contains!");
                 return _padints[uid];
             }
             else
-                throw new TxException("PADInt with the identifier " + uid +" is missing!");
-
+                throw new TxException("PADInt with identifier " + uid +" doesn't exist!");
         }
-
-
-        
     }
 }

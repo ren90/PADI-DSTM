@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Remoting;
+using System.Runtime.Serialization;
 
 namespace DSTMLib
 {
-    public class TxException : System.Runtime.Remoting.RemotingException
+	[Serializable]
+    public class TxException : RemotingException, ISerializable
     {
-        public TxException(string message) : base (message) {}
-
+		public TxException() { }
+        public TxException(string message) : base(message) { }
+		public TxException(string message, Exception ex) : base(message, ex) { }
     }
 }
