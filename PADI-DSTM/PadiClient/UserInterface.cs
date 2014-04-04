@@ -64,6 +64,7 @@ namespace PADIClient
         private void uidPADInt_textBox_TextChanged(object sender, EventArgs e)
         {
             enablePADIntControl();
+            enablePADIntManipulation();
             enableValueTextBox();
 
         }
