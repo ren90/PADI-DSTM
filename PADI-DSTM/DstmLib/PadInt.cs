@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DSTMLib {
-
+namespace DSTMLib
+{
     [Serializable]
-    public class PADInt {
+    public class PADInt
+	{
         private int _value;
         private int _uid;
 
-        public int Value {
+        public int Value
+		{
 			get { return this._value; }
 			private set { _value = value; }
 		}
         
-		public int UID {
+		public int UID
+		{
 			get { return this._uid; }
 			private set { _uid = value; }
 		}
@@ -27,11 +30,15 @@ namespace DSTMLib {
             _value = 0;
 		}
 
-		public int Read() {
+		public int Read()
+		{
+			Console.WriteLine("DSTMLib-> reading from PADInt " + this.UID + " with value " + this.Value);
 			return _value;
 		}
 
-		public void Write(int value) {
+		public void Write(int value)
+		{
+			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
 			_value = value;
 		}
     }
