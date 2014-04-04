@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PADIClient
@@ -16,17 +9,11 @@ namespace PADIClient
 
         public UserInterface()
         {
-
             InitializeComponent();
             _client = new Client(new WriteDelegate(LogWrite), new WriteDelegate(ListWrite));
-            
         }
 
-        private void UserInterface_Load(object sender, EventArgs e)
-        {
-
-
-        }
+        private void UserInterface_Load(object sender, EventArgs e) { }
 
         private void beginTx_button_Click(object sender, EventArgs e)
         {
@@ -65,7 +52,6 @@ namespace PADIClient
         {
             enablePADIntControl();
             enableValueTextBox();
-
         }
 
         private void enableValueTextBox()
@@ -78,29 +64,28 @@ namespace PADIClient
             valuePADInt_textBox.Enabled = false;
         }
 
-        private void enablePADIntControl() {
-
+        private void enablePADIntControl()
+		{
             createPADInt_button.Enabled = true;
             accessPADInt_button.Enabled = true;
-        
         }
-        private void disablePADIntControl() {
 
+		private void disablePADIntControl()
+		{
             createPADInt_button.Enabled = false;
             accessPADInt_button.Enabled = false;
-        
         }
-        private void enablePADIntManipulation() {
 
+		private void enablePADIntManipulation()
+		{
             readPADInt_button.Enabled = true;
             writePADInt_button.Enabled = true;
-        
         }
-        private void disablePADIntManipulation() {
 
+		private void disablePADIntManipulation()
+		{
             readPADInt_button.Enabled = false;
             writePADInt_button.Enabled = false;
-        
         }
 
 
@@ -108,26 +93,21 @@ namespace PADIClient
 
         public void LogWrite(string s)
         {
-
             log_textBox.AppendText(s + Environment.NewLine);
             Console.WriteLine("Write: " + s);
-
         }
+
 
         //escrever na lista de padi ints
 
         public void ListWrite(string s)
         {
-
             listPADInt_textBox.AppendText(s + Environment.NewLine);
             Console.WriteLine("Write: " + s);
-
         }
-
 
         private void accessPADInt_button_Click(object sender, EventArgs e)
         {
-
             _client.AccessPADInt(readFromUidTextBox());
             disablePADIntControl();
             disablePADIntManipulation();
@@ -138,12 +118,10 @@ namespace PADIClient
             _client.Read(readFromUidTextBox());
             disablePADIntControl();
             disablePADIntManipulation();
-            
         }
 
         private void writePADInt_button_Click(object sender, EventArgs e)
         {
-
             _client.Write(readFromUidTextBox(), readFromValueTextBox());
             disablePADIntControl();
             disablePADIntManipulation();
@@ -152,7 +130,7 @@ namespace PADIClient
 
         //aceder aos valores dos campos e apagar a text box
 
-        private int  readFromValueTextBox()
+        private int readFromValueTextBox()
         {
             int value = Convert.ToInt32(valuePADInt_textBox.Text);
             valuePADInt_textBox.Clear();
@@ -170,7 +148,5 @@ namespace PADIClient
         {
             enablePADIntManipulation();
         }
-
-
     }
 }

@@ -11,8 +11,8 @@ namespace DSTMLib
 
         // methods for manipulating PADI-DSTM
 
-        public static bool init() {
-
+        public static bool init()
+		{
             _channel = new TcpChannel();
             ChannelServices.RegisterChannel(_channel, true);
 
@@ -37,10 +37,11 @@ namespace DSTMLib
 
         // methods for creating and accessing PADInts
 
-        public static PADInt CreatePADInt(int uid) {
-
+        public static PADInt CreatePADInt(int uid)
+		{
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
-            return _master.CreatePADInt(uid); }
+            return _master.CreatePADInt(uid);
+		}
 
 		public static PADInt AccessPADInt(int uid)
 		{
