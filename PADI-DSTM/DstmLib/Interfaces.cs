@@ -5,8 +5,7 @@ namespace DSTMLib
     public interface MasterInterface
     {
         PADInt CreatePADInt(int uid);
-        PADInt AccessPADInt(int uid);
-        
+        List<int> GetServers(int uid);
         KeyValuePair<int, int> registerTransactionalServer();
     }
 
