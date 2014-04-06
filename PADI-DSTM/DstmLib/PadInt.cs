@@ -8,6 +8,13 @@ namespace DSTMLib
 	{
         private int _value;
         private int _uid;
+        private int _timestamp;
+
+        public int Timestamp
+        {
+            get { return this._value; }
+            private set {_timestamp = value;}
+        }
 
         public int Value
 		{
