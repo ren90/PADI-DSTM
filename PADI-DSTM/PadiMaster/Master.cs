@@ -24,7 +24,6 @@ namespace PADIMaster
             System.Console.WriteLine("Registered Server");
             System.Console.WriteLine("SERVER ON");
             System.Console.ReadLine();
-
         }
     }
 
@@ -41,7 +40,7 @@ namespace PADIMaster
         {
             _port = 8087;
             _portseed = 9000;
-            _idseed = 1;
+            _idseed = 0;
             _transactionalServers = new Dictionary<int, int>();
             _padintReferences = new Dictionary<int, List<int>>();
 
@@ -65,11 +64,18 @@ namespace PADIMaster
 
         }
 
+        public int hashServers(int seed){
+
+            return (_padintReferences.Keys.Count + seed) % _transactionalServers.Keys.Count;
+
+        }
+
         public List<int> generateServers (int uid){
 
             List<int> servers = new List<int>();
-            int server = _padintReferences.Keys.Count % _transactionalServers.Keys.Count;
-            Console.WriteLine(server);
+            servers.Add(_transactionalServers[hashServers(0)]);
+            servers.Add(_transactionalServers[hashServers(1)]);
+            servers.Add(_transactionalServers[hashServers(2)]);
             _padintReferences.Add(uid, servers);
             return servers;
         }

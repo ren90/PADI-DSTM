@@ -23,14 +23,14 @@ namespace PADIClient
 
 	public class Client
 	{
-		private List<PADInt> _padints;
+		private Dictionary<int, PADInt> _padints;
         private WriteDelegate _logDelegate { get; set; }
         private WriteDelegate _listDelegate { get; set; }
 
         public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
             DSTMLib.DSTMLib.init();
-            _padints = new List<PADInt>();
+            _padints = new Dictionary<int, PADInt>();
             _logDelegate = logDelegate;
             _listDelegate = listDelegate;
         }
@@ -38,7 +38,7 @@ namespace PADIClient
 		public void CreatePADInt(int uid)
 		{
 			PADInt p = DSTMLib.DSTMLib.CreatePADInt(uid);
-            _padints.Add(p);
+            _padints.Add(uid, p);
             _logDelegate("created int with UID: " + uid);
             _listDelegate("UID:" + uid);
 		}
@@ -46,30 +46,26 @@ namespace PADIClient
 		public void AccessPADInt(int uid)
 		{
             PADInt p = DSTMLib.DSTMLib.AccessPADInt(uid);
-			if (!_padints.Contains(p))
-			_padints.Add(p);
+			if (!_padints.ContainsKey(uid))
+			_padints.Add(uid, p);
             _logDelegate("accessed int with UID: " + uid);
             _listDelegate("UID:" + uid);
 		}
 
 		public int Read(int uid)
 		{
-			foreach (PADInt p in _padints)
-			{
-				if (p.UID == uid)
-					return p.Read();
-			}
+            if(_padints.ContainsKey(uid))
+					return _padints[uid].Read();
 			throw new TxException("An error occurred while reading from PADInt " + uid);
 		}
 
 		public void Write(int uid, int value)
 		{
-			foreach (PADInt p in _padints)
-			{
-				if (p.UID == uid)
-					p.Write(value);
-			}
-			throw new TxException("An error occurred while writing to PADInt " + uid);
+               if (_padints.ContainsKey(uid))
+                    _padints[uid].Write(value);
+               else
+                   throw new TxException("An error occurred while writing to PADInt " + uid);
+			
 		}
 	}
 }

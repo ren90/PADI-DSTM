@@ -49,9 +49,6 @@ namespace PADIServer {
             _padints = new Dictionary<int, PADInt>();
 		}
 
-		public int Read() { return 1; }
-
-		public void Write(int value) { }
 
         public PADInt CreatePADInt(int uid, List<ServerInterface> servers)
         {
