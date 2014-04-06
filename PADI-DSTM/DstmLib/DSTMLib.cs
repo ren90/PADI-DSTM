@@ -31,13 +31,43 @@ namespace DSTMLib
 
         public static bool TxAbort() { throw new NotImplementedException(); }
 
-        public static bool Status() { throw new NotImplementedException(); }
+        public static bool Status() {
+        }
 
-        public static bool Fail(string URL) { throw new NotImplementedException(); }
+        public static bool Fail(string URL) {
+            try
+            {
+                ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
+                return server.Fail();
+            }
+            catch (Exception e) {
+                Console.WriteLine(e.StackTrace);
+            }
+        }
 
-        public static bool Freeze(string URL) { throw new NotImplementedException(); }
+        public static bool Freeze(string URL) {
+            try
+            {
+                ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
+                return server.Freze();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+            }
+        }
 
-        public static bool Recover(string URL) { throw new NotImplementedException(); }
+        public static bool Recover(string URL) {
+            try
+            {
+                ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
+                return server.Recover();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+            }
+        }
 
         // methods for creating and accessing PADInts
 
