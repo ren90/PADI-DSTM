@@ -31,7 +31,9 @@ namespace DSTMLib
 
         public static bool TxAbort() { throw new NotImplementedException(); }
 
-        public static bool Status() {
+        public static bool Status()
+        {
+            throw new NotImplementedException();
         }
 
         public static bool Fail(string URL) {
@@ -42,6 +44,7 @@ namespace DSTMLib
             }
             catch (Exception e) {
                 Console.WriteLine(e.StackTrace);
+                return false;
             }
         }
 
@@ -49,11 +52,12 @@ namespace DSTMLib
             try
             {
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
-                return server.Freze();
+                return server.Freeze();
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
+                return false;
             }
         }
 
@@ -66,6 +70,7 @@ namespace DSTMLib
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
+                return false;
             }
         }
 

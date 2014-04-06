@@ -15,5 +15,8 @@ namespace DSTMLib
 
         PADInt CreatePADInt(int uid, List<ServerInterface> servers);
         PADInt AccessPADInt(int uid);
+        bool Fail();
+        bool Recover();
+        bool Freeze();
     }
 }
