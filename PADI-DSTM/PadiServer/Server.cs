@@ -2,13 +2,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Serialization.Formatters;
 
-namespace PADIServer {
-    class ServerRunner {
+namespace PADIServer
+{
+    class ServerRunner
+	{
         static void Main(string[] args)
         {
 			KeyValuePair<int, int> idAndPort;
@@ -40,15 +43,20 @@ namespace PADIServer {
         }
     }
 
-    class TransactionalServer : MarshalByRefObject, ServerInterface {
-		String mServer = System.IO.File.ReadAllText(@"../../../../mServerLocation.dat");
-        Dictionary<int, PADInt> _padints;
+    class TransactionalServer : MarshalByRefObject, ServerInterface
+	{
+		private String mServer = System.IO.File.ReadAllText(@"../../../../mServerLocation.dat");
+        private Dictionary<int, PADInt> _padints;
+		private List<MethodBase> _pendingRequests = new List<MethodBase>();
+		private bool _status { get; set; }
+		private bool _fail { get; set; }
+		private bool _freeze { get; set; }
+		private TcpChannel channel;
 
         public TransactionalServer()
 		{
             _padints = new Dictionary<int, PADInt>();
 		}
-
 
         public PADInt CreatePADInt(int uid, List<ServerInterface> servers)
         {
@@ -72,5 +80,61 @@ namespace PADIServer {
             else
                 throw new TxException("PADInt with identifier " + uid +" doesn't exist!");
         }
+
+		public bool Status()
+		{
+			return _status;
+		}
+
+		public bool Fail()
+		{
+			_fail = true;
+			_status = false;
+
+			ChannelServices.UnregisterChannel(channel);
+
+			return _fail;
+		}
+
+		public bool Freeze()
+		{
+			_freeze = true;
+			_status = false;
+
+			return _freeze;
+		}
+
+		public bool Recover()
+		{
+			bool ok = false;
+
+			if (_fail || _freeze)
+			{
+				_fail = false;
+				_freeze = false;
+				_status = true;
+				
+				ok = dispatchPendindRequests();
+			}
+
+			return ok;
+		}
+
+		private bool dispatchPendindRequests()
+		{
+			try
+			{
+				foreach (MethodBase m in _pendingRequests)
+				{
+					m.Invoke(this, m.GetParameters());
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.StackTrace);
+				return false;
+			}
+			return true;
+		}
     }
 }
