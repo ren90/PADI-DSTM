@@ -65,39 +65,50 @@ namespace PADIMaster
 
             }
 
+        public List<int> generateServers (int uid){
 
-        public PADInt CreatePADInt(int uid)
-        {   
+            List<int> servers = new List<int>();
+            servers.Add(_transactionalServers[0]);
+            servers.Add(_transactionalServers[1]);
+            servers.Add(_transactionalServers[2]);
+            _padintReferences.Add(uid, servers);
+            return servers;
+        }
 
-            Console.WriteLine("Received PADInt create request!");
-            Console.WriteLine("UID: " + uid);
-            //funcao de hash, store tha bitches
-            //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
-            int port = 9001;
-            ServerInterface chosen = (ServerInterface) Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
+          
+
+        //public PADInt CreatePADInt(int uid)
+        //{   
+
+        //    Console.WriteLine("Received PADInt create request!");
+        //    Console.WriteLine("UID: " + uid);
+        //    //funcao de hash, store tha bitches
+        //    //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
+        //    int port = 9001;
+        //    ServerInterface chosen = (ServerInterface) Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
             
-            PADInt p = chosen.CreatePADInt(uid, new List<ServerInterface>());
-            List<int> l = new List<int> (port);
-            _padintReferences.Add(uid, l);
+        //    PADInt p = chosen.CreatePADInt(uid, new List<ServerInterface>());
+        //    List<int> l = new List<int> (port);
+        //    _padintReferences.Add(uid, l);
 
-            return p;
-        }
+        //    return p;
+        //}
 
-        public PADInt AccessPADInt(int uid)
-        {
+        //public PADInt AccessPADInt(int uid)
+        //{
 
-            Console.WriteLine("Received PADInt access request!");
-            Console.WriteLine("UID: " + uid);
-            //funcao de hash, store tha bitches
-            //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
-            int port = 9001;
-            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
+        //    Console.WriteLine("Received PADInt access request!");
+        //    Console.WriteLine("UID: " + uid);
+        //    //funcao de hash, store tha bitches
+        //    //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
+        //    int port = 9001;
+        //    ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
 
-            PADInt p = chosen.AccessPADInt(uid);
+        //    PADInt p = chosen.AccessPADInt(uid);
 
-            return p;
+        //    return p;
 
-        }
+        //}
             
 
 	    }

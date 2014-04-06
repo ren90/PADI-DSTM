@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 
@@ -8,6 +9,7 @@ namespace DSTMLib
     {
         private static TcpChannel _channel;
         private static MasterInterface _master;
+        private static Dictionary<int, ServerInterface> _servers;
 
         // methods for manipulating PADI-DSTM
 
@@ -16,6 +18,7 @@ namespace DSTMLib
             _channel = new TcpChannel();
             ChannelServices.RegisterChannel(_channel, true);
 
+            _servers = new Dictionary<int, ServerInterface>();
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
 
             return true;
@@ -39,9 +42,25 @@ namespace DSTMLib
 
         public static PADInt CreatePADInt(int uid)
 		{
+        
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
-            return _master.CreatePADInt(uid);
-		}
+            List<int> locations = _master.generateServers(uid);
+            List<ServerInterface> tServers = new List<ServerInterface>();
+            
+
+            foreach (int port in locations){
+                if (!_servers.ContainsKey(port)){
+                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:"+ port + "/Server";
+                    _servers.Add(port, newServer);
+                    tServers.Add(newServer);
+                }
+                else
+                    tServers.Add(_servers[port]);
+            }
+
+            return _servers[locations[0]].CreatePADInt(uid, tServers);
+
+        }
 
 		public static PADInt AccessPADInt(int uid)
 		{
