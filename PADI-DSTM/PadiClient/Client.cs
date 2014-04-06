@@ -48,6 +48,8 @@ namespace PADIClient
             PADInt p = DSTMLib.DSTMLib.AccessPADInt(uid);
 			if (!_padints.Contains(p))
 			_padints.Add(p);
+            _logDelegate("accessed int with UID: " + uid);
+            _listDelegate("UID:" + uid);
 		}
 
 		public int Read(int uid)

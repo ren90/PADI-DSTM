@@ -17,7 +17,7 @@ namespace DSTMLib
         public static bool init()
 		{
             _channel = new TcpChannel();
-            ChannelServices.RegisterChannel(_channel, true);
+            ChannelServices.RegisterChannel(_channel, false);
 
             _servers = new Dictionary<int, ServerInterface>();
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
@@ -45,8 +45,15 @@ namespace DSTMLib
 		{
         
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
+            
             List<int> locations = _master.generateServers(uid);
+            Console.Write("the chosen servers are: ");
+            foreach (int port in locations)
+                Console.Write(port.ToString() + ", ");
+            Console.WriteLine();
+            
             List<ServerInterface> tServers = new List<ServerInterface>();
+            PADInt p;
             
 
             foreach (int port in locations){
@@ -59,7 +66,9 @@ namespace DSTMLib
                     tServers.Add(_servers[port]);
             }
 
-            return _servers[locations[0]].CreatePADInt(uid, tServers);
+            p = _servers[locations[0]].CreatePADInt(uid, tServers);
+
+            return p;
 
         }
 

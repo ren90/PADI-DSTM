@@ -1,9 +1,11 @@
 ﻿using DSTMLib;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Runtime.Serialization.Formatters;
 
 namespace PADIServer {
     class ServerRunner {
@@ -12,7 +14,7 @@ namespace PADIServer {
 			KeyValuePair<int, int> idAndPort;
             System.Console.WriteLine("Bootstrapping...");
             TcpChannel channel = new TcpChannel();
-            ChannelServices.RegisterChannel(channel, true);
+            ChannelServices.RegisterChannel(channel, false);
             System.Console.WriteLine("Registered Channel @random" );
 
             MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
@@ -21,8 +23,15 @@ namespace PADIServer {
             System.Console.WriteLine("Registered at Master");
             ChannelServices.UnregisterChannel(channel);
             System.Console.WriteLine("Unbinding old port");
-            channel = new TcpChannel(idAndPort.Value);
-            ChannelServices.RegisterChannel(channel, true);
+
+            BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
+            provider.TypeFilterLevel = TypeFilterLevel.Full;
+            IDictionary props = new Hashtable();
+            props["port"] = idAndPort.Value;
+
+            channel = new TcpChannel(props, null, provider);
+            
+            ChannelServices.RegisterChannel(channel, false);
             System.Console.WriteLine("Registered Channel @" + idAndPort.Value);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(TransactionalServer), "Server", WellKnownObjectMode.Singleton);
             System.Console.WriteLine("SERVER ON");

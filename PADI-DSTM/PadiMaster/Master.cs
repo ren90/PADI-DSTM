@@ -18,7 +18,7 @@ namespace PADIMaster
             int port = 8087;
 
             TcpChannel channel = new TcpChannel(port);
-            ChannelServices.RegisterChannel(channel, true);
+            ChannelServices.RegisterChannel(channel, false);
 
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(MasterServer), "Server", WellKnownObjectMode.Singleton);
             System.Console.WriteLine("Registered Server");
@@ -40,16 +40,10 @@ namespace PADIMaster
         public MasterServer()
         {
             _port = 8087;
-            _portseed = 9001;
+            _portseed = 9000;
             _idseed = 1;
             _transactionalServers = new Dictionary<int, int>();
             _padintReferences = new Dictionary<int, List<int>>();
-            List<int> o = new List<int>();
-            o.Add(1);
-            o.Add(2);
-            o.Add(3);
-            _padintReferences.Add(1, o);
-
 
         }
 
@@ -74,9 +68,8 @@ namespace PADIMaster
         public List<int> generateServers (int uid){
 
             List<int> servers = new List<int>();
-            servers.Add(_transactionalServers[0]);
-            servers.Add(_transactionalServers[1]);
-            servers.Add(_transactionalServers[2]);
+            int server = _padintReferences.Keys.Count % _transactionalServers.Keys.Count;
+            Console.WriteLine(server);
             _padintReferences.Add(uid, servers);
             return servers;
         }
