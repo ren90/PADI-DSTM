@@ -17,6 +17,7 @@ namespace PADIClient
 
         private void beginTx_button_Click(object sender, EventArgs e)
         {
+            this.beginTx_button.Enabled = false;
             this.abortTx_button.Enabled = true;
             this.commitTx_button.Enabled = true;
             this.statusTx_button.Enabled = true;
@@ -28,16 +29,30 @@ namespace PADIClient
             serverFreeze_button.Enabled = true;
         }
 
+        private void statusTx_button_Click(object sender, EventArgs e)
+        {
+            _client.Status();
+        }
+
         private void serverFail_button_Click(object sender, EventArgs e)
         {
             serverRecover_button.Enabled = true;
             serverFail_button.Enabled = false;
+            _client.Fail(serverURL_textBox.Text);
         }
 
         private void serverRecover_button_Click(object sender, EventArgs e)
         {
             serverRecover_button.Enabled = false;
             serverFail_button.Enabled = true;
+            _client.Recover(serverURL_textBox.Text);
+        }
+
+        private void serverFreeze_button_Click(object sender, EventArgs e)
+        {
+            serverRecover_button.Enabled = true;
+            serverFreeze_button.Enabled = false;
+            _client.Freeze(serverURL_textBox.Text);
         }
 
         private void createPADInt_button_Click(object sender, EventArgs e)
@@ -149,5 +164,28 @@ namespace PADIClient
         {
             enablePADIntManipulation();
         }
+
+        private void transaction_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void commitTx_button_Click(object sender, EventArgs e)
+        {
+            this.beginTx_button.Enabled = true;
+            this.abortTx_button.Enabled = false;
+            this.commitTx_button.Enabled = false;
+            this.statusTx_button.Enabled = false;
+        }
+
+        private void abortTx_button_Click(object sender, EventArgs e)
+        {
+            this.beginTx_button.Enabled = true;
+            this.abortTx_button.Enabled = false;
+            this.commitTx_button.Enabled = false;
+            this.statusTx_button.Enabled = false;
+        }
+
+
     }
 }

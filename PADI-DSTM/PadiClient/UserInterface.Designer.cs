@@ -69,6 +69,7 @@
             this.transaction.TabIndex = 0;
             this.transaction.TabStop = false;
             this.transaction.Text = "Transaction";
+            this.transaction.Enter += new System.EventHandler(this.transaction_Enter);
             // 
             // abortTx_button
             // 
@@ -80,6 +81,7 @@
             this.abortTx_button.TabIndex = 3;
             this.abortTx_button.Text = "TxAbort";
             this.abortTx_button.UseVisualStyleBackColor = true;
+            this.abortTx_button.Click += new System.EventHandler(this.abortTx_button_Click);
             // 
             // statusTx_button
             // 
@@ -90,6 +92,7 @@
             this.statusTx_button.TabIndex = 2;
             this.statusTx_button.Text = "Status";
             this.statusTx_button.UseVisualStyleBackColor = true;
+            this.statusTx_button.Click += new System.EventHandler(this.statusTx_button_Click);
             // 
             // commitTx_button
             // 
@@ -102,6 +105,7 @@
             this.commitTx_button.TabIndex = 1;
             this.commitTx_button.Text = "TxCommit";
             this.commitTx_button.UseVisualStyleBackColor = false;
+            this.commitTx_button.Click += new System.EventHandler(this.commitTx_button_Click);
             // 
             // beginTx_button
             // 
@@ -153,6 +157,7 @@
             this.serverFreeze_button.TabIndex = 6;
             this.serverFreeze_button.Text = "Freeze";
             this.serverFreeze_button.UseVisualStyleBackColor = true;
+            this.serverFreeze_button.Click += new System.EventHandler(this.serverFreeze_button_Click);
             // 
             // serverFail_button
             // 
