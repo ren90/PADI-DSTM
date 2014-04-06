@@ -67,5 +67,30 @@ namespace PADIClient
                    throw new TxException("An error occurred while writing to PADInt " + uid);
 			
 		}
-	}
+
+        public void Status() { DSTMLib.DSTMLib.Status(); }
+
+        public void Fail(string URL) {
+            
+            DSTMLib.DSTMLib.Fail(URL);
+            _logDelegate("Simutated Server fail @" + URL);
+        }
+
+        public void Freeze(string URL) { 
+            DSTMLib.DSTMLib.Freeze(URL);
+            _logDelegate("Simutated Server freeze @" + URL);
+        }
+
+        public void Recover(string URL) {
+
+            DSTMLib.DSTMLib.Recover(URL);
+            _logDelegate("Server recovered @" + URL);
+        }
+
+        public void TxBegin() { DSTMLib.DSTMLib.TxBegin(); }
+
+        public void TxCommit() { DSTMLib.DSTMLib.TxCommit(); }
+
+        public void TxAbort() { DSTMLib.DSTMLib.TxAbort(); }
+    }
 }
