@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Collections.Generic;
 
 namespace DSTMLib
 {
@@ -64,8 +65,19 @@ namespace DSTMLib
 
 		public static PADInt AccessPADInt(int uid)
 		{
-			Console.WriteLine("DSTMLib-> calling master to access PADInt!");
-			return _master.AccessPADInt(uid);
+            List<int> servers;
+			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
+			servers =  _master.GetServers(uid);
+
+            if(servers == null){
+               Console.WriteLine("ERROR: The PADInt does not exits");
+               return null;
+            }
+
+            Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
+            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + servers[0] + "/Server");
+            
+            return chosen.AccessPADInt(uid);
 		}
     }
 }

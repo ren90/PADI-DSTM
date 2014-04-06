@@ -4,7 +4,10 @@ namespace DSTMLib
 {
     public interface MasterInterface
     {
+
         List<int> generateServers(int uid);
+        PADInt CreatePADInt(int uid);
+        List<int> GetServers(int uid);
         KeyValuePair<int, int> registerTransactionalServer();
     }
 

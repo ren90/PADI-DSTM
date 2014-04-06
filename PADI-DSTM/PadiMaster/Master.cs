@@ -29,7 +29,7 @@ namespace PADIMaster
     }
 
     class MasterServer : MarshalByRefObject, MasterInterface
-	{
+    {
         private int _port { get; set; }
         private int _portseed { get; set; }
         private int _idseed { get; set; }
@@ -43,13 +43,19 @@ namespace PADIMaster
             _portseed = 9001;
             _idseed = 1;
             _transactionalServers = new Dictionary<int, int>();
-            _padintReferences = new Dictionary<int,List<int>>();
+            _padintReferences = new Dictionary<int, List<int>>();
+            List<int> o = new List<int>();
+            o.Add(1);
+            o.Add(2);
+            o.Add(3);
+            _padintReferences.Add(1, o);
 
-            
+
         }
 
         //registers transactional servers and gives a port for them to bind on
-        public KeyValuePair<int, int> registerTransactionalServer(){
+        public KeyValuePair<int, int> registerTransactionalServer()
+        {
 
             int id = _idseed;
             int port = _portseed;
@@ -63,7 +69,7 @@ namespace PADIMaster
 
             return new KeyValuePair<int, int>(id, port);
 
-            }
+        }
 
         public List<int> generateServers (int uid){
 
@@ -75,41 +81,17 @@ namespace PADIMaster
             return servers;
         }
 
-          
 
-        //public PADInt CreatePADInt(int uid)
-        //{   
+        public List<int> AccessPADInt(int uid)
+        {
+            Console.WriteLine("Received PADInt access request with the UID: " + uid);
+            List<int> serversList;
+            if (_padintReferences.TryGetValue(uid, out serversList))
+                return serversList;
+            else
+                return null;
 
-        //    Console.WriteLine("Received PADInt create request!");
-        //    Console.WriteLine("UID: " + uid);
-        //    //funcao de hash, store tha bitches
-        //    //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
-        //    int port = 9001;
-        //    ServerInterface chosen = (ServerInterface) Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
-            
-        //    PADInt p = chosen.CreatePADInt(uid, new List<ServerInterface>());
-        //    List<int> l = new List<int> (port);
-        //    _padintReferences.Add(uid, l);
+        }
+    }
 
-        //    return p;
-        //}
-
-        //public PADInt AccessPADInt(int uid)
-        //{
-
-        //    Console.WriteLine("Received PADInt access request!");
-        //    Console.WriteLine("UID: " + uid);
-        //    //funcao de hash, store tha bitches
-        //    //very very dirty hack: amanda sempre para o mesmo server (the vanilla flavor) 
-        //    int port = 9001;
-        //    ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + port + "/Server");
-
-        //    PADInt p = chosen.AccessPADInt(uid);
-
-        //    return p;
-
-        //}
-            
-
-	    }
 }
