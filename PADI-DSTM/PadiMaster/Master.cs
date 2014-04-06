@@ -91,6 +91,21 @@ namespace PADIMaster
                 return null;
 
         }
+
+        public int getCoordinator(List<int> servers) {
+            Random rnd = new Random();
+            int server; 
+            if (_transactionalServers.Count == 0)
+                return -1;
+            else {
+                do
+                {
+                    server = rnd.Next(_transactionalServers.Count);
+                }
+                while (servers.Contains(server));
+                return server;
+            }
+        }
     }
 
 }

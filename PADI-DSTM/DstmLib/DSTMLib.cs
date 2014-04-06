@@ -25,7 +25,9 @@ namespace DSTMLib
             return true;
         }
 
-        public static bool TxBegin() { throw new NotImplementedException(); }
+        public static bool TxBegin() {
+            ServerInterface coodinator =(ServerInterface) Activator.GetObject(typeof(ServerInterface), "tcp://localhost:"+_master.getCoordinator()+"/Server");
+        }
 
         public static bool TxCommit() { throw new NotImplementedException(); }
 
@@ -117,9 +119,10 @@ namespace DSTMLib
                Console.WriteLine("ERROR: The PADInt does not exits");
                return null;
             }
+            Random rnd = new Random();
 
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
-            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + servers[0] + "/Server");
+            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + servers[rnd.Next(4)] + "/Server");
             
             return chosen.AccessPADInt(uid);
 		}

@@ -8,6 +8,7 @@ namespace DSTMLib
         List<int> generateServers(int uid);
         List<int> GetServers(int uid);
         KeyValuePair<int, int> registerTransactionalServer();
+        int getCoordinator(List<int> servers);
     }
 
 	public interface ServerInterface
