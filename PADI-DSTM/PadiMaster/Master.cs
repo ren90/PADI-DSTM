@@ -82,7 +82,7 @@ namespace PADIMaster
         }
 
 
-        public List<int> AccessPADInt(int uid)
+        public List<int> GetServers(int uid)
         {
             Console.WriteLine("Received PADInt access request with the UID: " + uid);
             List<int> serversList;

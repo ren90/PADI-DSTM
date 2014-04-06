@@ -51,7 +51,7 @@ namespace DSTMLib
 
             foreach (int port in locations){
                 if (!_servers.ContainsKey(port)){
-                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:"+ port + "/Server";
+                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:"+ port + "/Server");
                     _servers.Add(port, newServer);
                     tServers.Add(newServer);
                 }
