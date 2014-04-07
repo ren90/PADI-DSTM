@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using System.Collections.Generic;
 
 namespace DSTMLib
 {
@@ -10,6 +10,7 @@ namespace DSTMLib
     {
         private static TcpChannel _channel;
         private static MasterInterface _master;
+        // transactional server cache <server id, server object>
         private static Dictionary<int, ServerInterface> _servers;
 
         // methods for manipulating PADI-DSTM
@@ -81,32 +82,34 @@ namespace DSTMLib
         
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
-            List<int> locations = _master.generateServers(uid);
+            Dictionary<int, string> locations = _master.generateServers(uid);
+            List<int> ids = locations.Keys.ToList<int>();
             Console.Write("the chosen servers are: ");
-            foreach (int port in locations)
-                Console.Write(port.ToString() + ", ");
+            foreach (int id in ids)
+                Console.Write(locations[id].ToString() + ", ");
             Console.WriteLine();
             
             List<ServerInterface> tServers = new List<ServerInterface>();
             PADInt p;
             
 
-            foreach (int port in locations){
-                if (!_servers.ContainsKey(port)){
-                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:"+ port + "/Server");
-                    _servers.Add(port, newServer);
+            foreach (int id in ids){
+                if (!_servers.ContainsKey(id)){
+                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations[id]);
+                    _servers.Add(id, newServer);
                     tServers.Add(newServer);
                 }
                 else
-                    tServers.Add(_servers[port]);
+                    tServers.Add(_servers[id]);
             }
 
-            p = _servers[locations[0]].CreatePADInt(uid, tServers);
+            p = _servers[locations.First().Key].CreatePADInt(uid, tServers);
 
             return p;
 
         }
 
+        //tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
 		public static PADInt AccessPADInt(int uid)
 		{
             List<int> servers;

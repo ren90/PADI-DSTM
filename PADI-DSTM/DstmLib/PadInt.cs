@@ -7,6 +7,7 @@ namespace DSTMLib
     public class PADInt
 	{
         private int _value;
+        private int _temporaryValue;
         private int _uid;
         private int _timestamp;
 
@@ -37,16 +38,30 @@ namespace DSTMLib
             _value = 0;
 		}
 
+        public bool persistValue(){
+
+            try
+            {
+                _value = _temporaryValue;
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+                return false;
+            }
+        }
+
 		public int Read()
 		{
 			Console.WriteLine("DSTMLib-> reading from PADInt " + this.UID + " with value " + this.Value);
-			return _value;
+			return _temporaryValue;
 		}
 
 		public void Write(int value)
 		{
 			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
-			_value = value;
+			_temporaryValue = value;
 		}
     }
 }

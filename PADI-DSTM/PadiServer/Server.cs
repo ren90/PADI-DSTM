@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
@@ -21,7 +22,7 @@ namespace PADIServer
             System.Console.WriteLine("Registered Channel @random" );
 
             MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
-            idAndPort = mServer.registerTransactionalServer();
+            idAndPort = mServer.registerTransactionalServer(getIP());
 
             System.Console.WriteLine("Registered at Master");
             ChannelServices.UnregisterChannel(channel);
@@ -41,11 +42,30 @@ namespace PADIServer
             System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value);
             System.Console.ReadLine();
         }
+
+        private static string getIP()
+        {
+            IPHostEntry host;
+            string localIP = "?";
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (!(ip.ToString().Contains("192.168")) && ip.AddressFamily.ToString() == "InterNetwork")
+                {
+                    localIP = ip.ToString();
+                    Console.WriteLine(localIP);
+                }
+            }
+            return localIP;
+        }
+
     }
+
+
 
     class TransactionalServer : MarshalByRefObject, ServerInterface
 	{
-		private String mServer = System.IO.File.ReadAllText(@"../../../../mServerLocation.dat");
+		private String mServer = System.IO.File.ReadAllText(@"../../../mServerLocation.dat");
         private Dictionary<int, PADInt> _padints;
 		private List<MethodBase> _pendingRequests = new List<MethodBase>();
 		private bool _status { get; set; }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting;
+using System.Net;
 
 namespace PADIMaster
 {
@@ -21,9 +22,33 @@ namespace PADIMaster
             ChannelServices.RegisterChannel(channel, false);
 
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(MasterServer), "Server", WellKnownObjectMode.Singleton);
-            System.Console.WriteLine("Registered Server");
+            System.Console.WriteLine("Registered Master");
+            string host;
+
+            host = getIP();
+
+            System.IO.File.WriteAllText(@"../../../mServerLocation.dat", "tcp://" + host + ":" + port + "/Server");
+            
             System.Console.WriteLine("SERVER ON");
             System.Console.ReadLine();
+        }
+
+
+
+        private static string getIP()
+        {
+            IPHostEntry host;
+            string localIP = "?";
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (!(ip.ToString().Contains("192.168")) && ip.AddressFamily.ToString() == "InterNetwork")
+                {
+                    localIP = ip.ToString();
+                    Console.WriteLine(localIP);
+                }
+            }
+            return localIP;
         }
     }
 
@@ -32,7 +57,9 @@ namespace PADIMaster
         private int _port { get; set; }
         private int _portseed { get; set; }
         private int _idseed { get; set; }
-        private Dictionary<int, int> _transactionalServers;
+        // transactional server dictionary <Server id, server address> 
+        private Dictionary<int, string> _transactionalServers;
+        // PADInt references dictionary <PADInt id, server id list>
         private Dictionary<int, List<int>> _padintReferences;
 
 
@@ -41,24 +68,30 @@ namespace PADIMaster
             _port = 8087;
             _portseed = 9000;
             _idseed = 0;
-            _transactionalServers = new Dictionary<int, int>();
+            _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, List<int>>();
 
         }
 
+        private string makeAddress(string host, int port)
+        {
+            return "tcp://" + host + ":" + port + "/Server";
+        }
+
         //registers transactional servers and gives a port for them to bind on
-        public KeyValuePair<int, int> registerTransactionalServer()
+        public KeyValuePair<int, int> registerTransactionalServer(string ip)
         {
 
             int id = _idseed;
             int port = _portseed;
+            string address = makeAddress(ip, port);
             _idseed++;
             _portseed++;
-            _transactionalServers.Add(id, port);
+            _transactionalServers.Add(id,address);
 
             Console.WriteLine("Registered new server!");
             Console.WriteLine("ID: " + id);
-            Console.WriteLine("PORT:" + port);
+            Console.WriteLine("ADDRESS:" + address);
 
             return new KeyValuePair<int, int>(id, port);
 
@@ -70,13 +103,18 @@ namespace PADIMaster
 
         }
 
-        public List<int> generateServers (int uid){
+        public Dictionary<int, string> generateServers (int uid){
 
-            List<int> servers = new List<int>();
-            servers.Add(_transactionalServers[hashServers(0)]);
-            servers.Add(_transactionalServers[hashServers(1)]);
-            servers.Add(_transactionalServers[hashServers(2)]);
-            _padintReferences.Add(uid, servers);
+            Dictionary<int, string> servers = new Dictionary<int, string>();
+            
+            int server = hashServers(0);
+            servers.Add(server, _transactionalServers[server]);
+            server = hashServers(1);
+            servers.Add(server, _transactionalServers[server]);
+            server = hashServers(2);
+            servers.Add(server, _transactionalServers[server]);
+            List<int> serverIds = servers.Keys.ToList<int>();
+            _padintReferences.Add(uid, serverIds);
             return servers;
         }
 
