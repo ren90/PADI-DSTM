@@ -112,30 +112,21 @@ namespace DSTMLib
         
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
-            Dictionary<int, string> locations = _master.generateServers(uid);
-            List<int> ids = locations.Keys.ToList<int>();
+            KeyValuePair<int, string> locations = _master.generateServers(uid);
             Console.Write("the chosen servers are: ");
-            foreach (int id in ids)
-                Console.Write(locations[id].ToString() + ", ");
-            Console.WriteLine();
+                Console.Write(locations.Value);
             
-            List<ServerInterface> tServers = new List<ServerInterface>();
-            PADInt p;
+            ServerInterface tServers;
             
-
-            foreach (int id in ids){
-                if (!_servers.ContainsKey(id)){
-                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations[id]);
-                    _servers.Add(id, newServer);
-                    tServers.Add(newServer);
+            if (!_servers.ContainsKey(locations.Key)){
+                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+                    _servers.Add(locations.Key, newServer);
+                    tServers = newServer;
                 }
                 else
-                    tServers.Add(_servers[id]);
-            }
-
-            p = _servers[locations.First().Key].CreatePADInt(uid, tServers);
-
-            return p;
+                    tServers = _servers[locations.Key];
+            
+            return tServers.CreatePADInt(uid, tServers);
 
         }
 
@@ -148,19 +139,19 @@ namespace DSTMLib
         // <returns>The remote reference to the PADInt object</returns>
 		public static PADInt AccessPADInt(int uid)
 		{
-            List<String> servers;
+            string servers;
 			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
 			servers =  _master.GetServers(uid);
+            Console.WriteLine("The PADInts are at these servers: ");
+            Console.WriteLine(servers.ToString());
 
             if(servers == null){
-               Console.WriteLine("ERROR: The PADInt does not exits");
+               Console.WriteLine("ERROR: The PADInt does not exist");
                return null;
             }
 
-            Random rnd = new Random();
-
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
-            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers[rnd.Next(4)]);
+            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
             
             return chosen.AccessPADInt(uid);
 		}

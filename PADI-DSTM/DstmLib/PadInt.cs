@@ -29,12 +29,12 @@ namespace DSTMLib
 			private set { _uid = value; }
 		}
 		
-		List<ServerInterface> _servers;
+		ServerInterface _server;
 
-		public PADInt(int uid, List<ServerInterface> servers)
+		public PADInt(int uid, ServerInterface server)
 		{
 			_uid = uid;
-			_servers = servers;
+			_server = server;
             _value = 0;
 		}
 

@@ -71,14 +71,14 @@ namespace PADIServer
 		private bool _status { get; set; }
 		private bool _fail { get; set; }
 		private bool _freeze { get; set; }
-		private TcpChannel channel;
+		//private TcpChannel channel;
 
         public TransactionalServer()
 		{
             _padints = new Dictionary<int, PADInt>();
 		}
 
-        public PADInt CreatePADInt(int uid, List<ServerInterface> servers)
+        public PADInt CreatePADInt(int uid, ServerInterface servers)
         {
             if (_padints.ContainsKey(uid))
                 throw new TxException("PADInt with uid " + uid + " already exists!");
@@ -111,7 +111,7 @@ namespace PADIServer
 			_fail = true;
 			_status = false;
 
-			ChannelServices.UnregisterChannel(channel);
+			//ChannelServices.UnregisterChannel(channel);
 
 			return _fail;
 		}
