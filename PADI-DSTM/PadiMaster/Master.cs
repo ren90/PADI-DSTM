@@ -34,6 +34,7 @@ namespace PADIMaster
         private int _idseed { get; set; }
         private Dictionary<int, int> _transactionalServers;
         private Dictionary<int, List<int>> _padintReferences;
+        private int timestamps;
 
 
         public MasterServer()
@@ -43,6 +44,7 @@ namespace PADIMaster
             _idseed = 0;
             _transactionalServers = new Dictionary<int, int>();
             _padintReferences = new Dictionary<int, List<int>>();
+            timestamps = 0;
 
         }
 
@@ -105,6 +107,10 @@ namespace PADIMaster
                 while (servers.Contains(server));
                 return server;
             }
+        }
+
+        public int getTimestamp() {
+            return timestamps++;
         }
     }
 

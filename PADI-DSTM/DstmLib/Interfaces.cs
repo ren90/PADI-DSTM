@@ -9,6 +9,7 @@ namespace DSTMLib
         List<int> GetServers(int uid);
         KeyValuePair<int, int> registerTransactionalServer();
         int getCoordinator(List<int> servers);
+        int getTimestamp();
     }
 
 	public interface ServerInterface
