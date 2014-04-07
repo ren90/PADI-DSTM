@@ -9,6 +9,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace PADIMaster
 {
     class MasterRunner
@@ -68,6 +69,7 @@ namespace PADIMaster
             _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, int>();
             timestamps = 0;
+
         }
 
         private string makeAddress(string host, int port)
@@ -110,6 +112,7 @@ namespace PADIMaster
         }
 
         public string GetServers(int uid)
+
         {
             Console.WriteLine("Received PADInt access request with the UID: " + uid);
             int serverId;
@@ -120,11 +123,11 @@ namespace PADIMaster
             
             else
                 return null;
-
         }
 
         public int getCoordinator(List<int> servers)
         {
+
             Random rnd = new Random();
             int server; 
             if (_transactionalServers.Count == 0)

@@ -6,9 +6,14 @@ namespace DSTMLib
     [Serializable]
     public class PADInt
 	{
+		// the value stored in the PADInt
         private int _value;
+		// temporary value storage used in a transaction context;
+		// only when the transaction commits, the temporary value becomes persistent
         private int _temporaryValue;
+		// identifies unequivocally a PADInt
         private int _uid;
+		// used for concurrency control
         private int _timestamp;
 
         public int Timestamp
@@ -38,8 +43,10 @@ namespace DSTMLib
             _value = 0;
 		}
 
-        public bool persistValue(){
-
+		// "transform" the temporary value to persistent;
+		// basically, the function writes to the _value field (which represents "persistency")
+        public bool persistValue()
+		{
             try
             {
                 _value = _temporaryValue;
