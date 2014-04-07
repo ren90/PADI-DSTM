@@ -8,11 +8,14 @@ namespace DSTMLib
 {
     public static class DSTMLib
     {
+		// the channel used to comunicate with the client
         private static TcpChannel _channel;
+		// the master remote interface
         private static MasterInterface _master;
         // transactional server cache <server id, server object>
         private static Dictionary<int, ServerInterface> _servers;
         private static int timestamp;
+		// true if a transaction is occurring; false otherwise
         private static bool isInTransaction;
 
         // methods for manipulating PADI-DSTM
@@ -25,23 +28,28 @@ namespace DSTMLib
             _servers = new Dictionary<int, ServerInterface>();
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
             isInTransaction = false;
-            return true;
+
+			return true;
         }
         /// <summary>
         /// Starts a transaction, getting a new timestamp from the master.
-        /// If it is already in a transaction, can't start a new transaction and returns false to the client.
+        /// If it is already in a transaction, a new transaction can't be started and returns false to the client.
         /// </summary>
-        /// <returns></returns>
-        public static bool TxBegin() {
-            if (!isInTransaction){
+        public static bool TxBegin()
+		{
+            if (!isInTransaction)
+			{
                 timestamp = _master.getTimestamp();
                 isInTransaction = true;
-                return true;
+
+				return true;
             }
-            else return false;
+            else
+				return false;
         }
 
-        public static bool TxCommit() {
+        public static bool TxCommit()
+		{
             isInTransaction = false; //quando acabar a transaccao actualiza-se para falso, para a biblioteca poder receber novos TxBegin()
             return false;
         }
@@ -57,8 +65,8 @@ namespace DSTMLib
         /// Calls the fail function in a given server, this makes the server stop
         /// </summary>
         /// <param name="URL"></param>
-        /// <returns></returns>
-        public static bool Fail(string URL) {
+        public static bool Fail(string URL)
+		{
             try
             {
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
@@ -73,8 +81,8 @@ namespace DSTMLib
         /// Calls the freeze function in the given function, in order to pause the server
         /// </summary>
         /// <param name="URL"></param>
-        /// <returns></returns>
-        public static bool Freeze(string URL) {
+        public static bool Freeze(string URL)
+		{
             try
             {
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
@@ -91,8 +99,8 @@ namespace DSTMLib
         /// Calls the recover function in a given server, this makes the server start to run again
         /// </summary>
         /// <param name="URL"></param>
-        /// <returns></returns>
-        public static bool Recover(string URL) {
+        public static bool Recover(string URL)
+		{
             try
             {
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
@@ -109,22 +117,24 @@ namespace DSTMLib
 
         public static PADInt CreatePADInt(int uid)
 		{
-        
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
             Dictionary<int, string> locations = _master.generateServers(uid);
             List<int> ids = locations.Keys.ToList<int>();
             Console.Write("the chosen servers are: ");
-            foreach (int id in ids)
+            
+			foreach (int id in ids)
                 Console.Write(locations[id].ToString() + ", ");
-            Console.WriteLine();
+            
+			Console.WriteLine();
             
             List<ServerInterface> tServers = new List<ServerInterface>();
             PADInt p;
-            
 
-            foreach (int id in ids){
-                if (!_servers.ContainsKey(id)){
+            foreach (int id in ids)
+			{
+                if (!_servers.ContainsKey(id))
+				{
                     ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations[id]);
                     _servers.Add(id, newServer);
                     tServers.Add(newServer);
@@ -135,8 +145,7 @@ namespace DSTMLib
 
             p = _servers[locations.First().Key].CreatePADInt(uid, tServers);
 
-            return p;
-
+			return p;
         }
 
         //tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
@@ -152,7 +161,8 @@ namespace DSTMLib
 			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
 			servers =  _master.GetServers(uid);
 
-            if(servers == null){
+            if (servers == null)
+			{
                Console.WriteLine("ERROR: The PADInt does not exits");
                return null;
             }

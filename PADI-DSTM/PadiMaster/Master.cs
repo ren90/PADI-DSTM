@@ -1,13 +1,11 @@
-﻿using System;
-using DSTMLib;
+﻿using DSTMLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.Remoting.Channels.Tcp;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting;
 using System.Net;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
 
 namespace PADIMaster
 {
@@ -15,7 +13,6 @@ namespace PADIMaster
     {
         static void Main(string[] args)
         {
-
             int port = 8087;
 
             TcpChannel channel = new TcpChannel(port);
@@ -32,8 +29,6 @@ namespace PADIMaster
             System.Console.WriteLine("SERVER ON");
             System.Console.ReadLine();
         }
-
-
 
         private static string getIP()
         {
@@ -63,7 +58,6 @@ namespace PADIMaster
         private Dictionary<int, List<int>> _padintReferences;
         private int timestamps;
 
-
         public MasterServer()
         {
             _port = 8087;
@@ -71,8 +65,7 @@ namespace PADIMaster
             _idseed = 0;
             _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, List<int>>();
-            timestamps = 0;
-
+			timestamps = 0;
         }
 
         private string makeAddress(string host, int port)
@@ -83,7 +76,6 @@ namespace PADIMaster
         //registers transactional servers and gives a port for them to bind on
         public KeyValuePair<int, int> registerTransactionalServer(string ip)
         {
-
             int id = _idseed;
             int port = _portseed;
             string address = makeAddress(ip, port);
@@ -99,27 +91,29 @@ namespace PADIMaster
 
         }
 
-        public int hashServers(int seed){
-
+        public int hashServers(int seed)
+		{
             return (_padintReferences.Keys.Count + seed) % _transactionalServers.Keys.Count;
-
         }
 
-        public Dictionary<int, string> generateServers (int uid){
-
+        public Dictionary<int, string> generateServers (int uid)
+		{
             Dictionary<int, string> servers = new Dictionary<int, string>();
             
             int server = hashServers(0);
             servers.Add(server, _transactionalServers[server]);
-            server = hashServers(1);
+            
+			server = hashServers(1);
             servers.Add(server, _transactionalServers[server]);
-            server = hashServers(2);
+            
+			server = hashServers(2);
             servers.Add(server, _transactionalServers[server]);
-            List<int> serverIds = servers.Keys.ToList<int>();
+            
+			List<int> serverIds = servers.Keys.ToList<int>();
             _padintReferences.Add(uid, serverIds);
-            return servers;
+            
+			return servers;
         }
-
 
         public List<int> GetServers(int uid)
         {
@@ -129,10 +123,10 @@ namespace PADIMaster
                 return serversList;
             else
                 return null;
-
         }
 
-        public int getCoordinator(List<int> servers) {
+        public int getCoordinator(List<int> servers)
+		{
             Random rnd = new Random();
             int server; 
             if (_transactionalServers.Count == 0)
@@ -141,15 +135,14 @@ namespace PADIMaster
                 do
                 {
                     server = rnd.Next(_transactionalServers.Count);
-                }
-                while (servers.Contains(server));
+                } while (servers.Contains(server));
                 return server;
             }
         }
 
-        public int getTimestamp() {
+        public int getTimestamp()
+		{
             return timestamps++;
         }
     }
-
 }

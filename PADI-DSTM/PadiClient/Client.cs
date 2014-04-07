@@ -55,48 +55,59 @@ namespace PADIClient
 		public int Read(int uid)
 		{
             if(_padints.ContainsKey(uid))
-					return _padints[uid].Read();
+				return _padints[uid].Read();
 			throw new TxException("An error occurred while reading from PADInt " + uid);
 		}
 
 		public void Write(int uid, int value)
 		{
-               if (_padints.ContainsKey(uid))
-                    _padints[uid].Write(value);
-               else
-                   throw new TxException("An error occurred while writing to PADInt " + uid);
-			
+            if (_padints.ContainsKey(uid))
+                _padints[uid].Write(value);
+            else
+				throw new TxException("An error occurred while writing to PADInt " + uid);
 		}
 
-        public void Status() { DSTMLib.DSTMLib.Status(); }
+        public void Status()
+		{
+			DSTMLib.DSTMLib.Status();
+		}
 
-        public void Fail(string URL) {
-            
+        public void Fail(string URL)
+		{    
             DSTMLib.DSTMLib.Fail(URL);
-            _logDelegate("Simutated Server fail @" + URL);
+            _logDelegate("Simulated Server fail @" + URL);
         }
 
-        public void Freeze(string URL) { 
+        public void Freeze(string URL)
+		{
             DSTMLib.DSTMLib.Freeze(URL);
-            _logDelegate("Simutated Server freeze @" + URL);
+            _logDelegate("Simulated Server freeze @" + URL);
         }
 
-        public void Recover(string URL) {
-
+        public void Recover(string URL)
+		{
             DSTMLib.DSTMLib.Recover(URL);
             _logDelegate("Server recovered @" + URL);
         }
 
-        public void TxBegin() {
+        public void TxBegin()
+		{
             bool result = DSTMLib.DSTMLib.TxBegin();
 
             if (result)
-                _logDelegate("The transaction has started");
-            else _logDelegate("Can't start a transaction, because one is already in use");
+				_logDelegate("The transaction started!");
+            else
+				_logDelegate("Can't start transaction!");
         }
 
-        public void TxCommit() { DSTMLib.DSTMLib.TxCommit(); }
+        public void TxCommit()
+		{
+			DSTMLib.DSTMLib.TxCommit();
+		}
 
-        public void TxAbort() { DSTMLib.DSTMLib.TxAbort(); }
+        public void TxAbort()
+		{
+			DSTMLib.DSTMLib.TxAbort();
+		}
     }
 }

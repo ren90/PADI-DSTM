@@ -185,7 +185,5 @@ namespace PADIClient
             this.commitTx_button.Enabled = false;
             this.statusTx_button.Enabled = false;
         }
-
-
     }
 }
