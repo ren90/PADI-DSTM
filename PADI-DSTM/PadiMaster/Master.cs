@@ -61,6 +61,7 @@ namespace PADIMaster
         private Dictionary<int, string> _transactionalServers;
         // PADInt references dictionary <PADInt id, server id list>
         private Dictionary<int, List<int>> _padintReferences;
+        private int timestamps;
 
 
         public MasterServer()
@@ -70,6 +71,7 @@ namespace PADIMaster
             _idseed = 0;
             _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, List<int>>();
+            timestamps = 0;
 
         }
 
@@ -128,6 +130,25 @@ namespace PADIMaster
             else
                 return null;
 
+        }
+
+        public int getCoordinator(List<int> servers) {
+            Random rnd = new Random();
+            int server; 
+            if (_transactionalServers.Count == 0)
+                return -1;
+            else {
+                do
+                {
+                    server = rnd.Next(_transactionalServers.Count);
+                }
+                while (servers.Contains(server));
+                return server;
+            }
+        }
+
+        public int getTimestamp() {
+            return timestamps++;
         }
     }
 

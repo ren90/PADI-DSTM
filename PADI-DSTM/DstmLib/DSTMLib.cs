@@ -12,23 +12,39 @@ namespace DSTMLib
         private static MasterInterface _master;
         // transactional server cache <server id, server object>
         private static Dictionary<int, ServerInterface> _servers;
+        private static int timestamp;
+        private static bool isInTransaction;
 
         // methods for manipulating PADI-DSTM
 
-        public static bool init()
+        public static bool Init()
 		{
             _channel = new TcpChannel();
             ChannelServices.RegisterChannel(_channel, false);
 
             _servers = new Dictionary<int, ServerInterface>();
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
-
+            isInTransaction = false;
             return true;
         }
+        /// <summary>
+        /// Starts a transaction, getting a new timestamp from the master.
+        /// If it is already in a transaction, can't start a new transaction and returns false to the client.
+        /// </summary>
+        /// <returns></returns>
+        public static bool TxBegin() {
+            if (!isInTransaction){
+                timestamp = _master.getTimestamp();
+                isInTransaction = true;
+                return true;
+            }
+            else return false;
+        }
 
-        public static bool TxBegin() { throw new NotImplementedException(); }
-
-        public static bool TxCommit() { throw new NotImplementedException(); }
+        public static bool TxCommit() {
+            isInTransaction = false; //quando acabar a transaccao actualiza-se para falso, para a biblioteca poder receber novos TxBegin()
+            return false;
+        }
 
         public static bool TxAbort() { throw new NotImplementedException(); }
 
@@ -37,6 +53,11 @@ namespace DSTMLib
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Calls the fail function in a given server, this makes the server stop
+        /// </summary>
+        /// <param name="URL"></param>
+        /// <returns></returns>
         public static bool Fail(string URL) {
             try
             {
@@ -48,7 +69,11 @@ namespace DSTMLib
                 return false;
             }
         }
-
+        /// <summary>
+        /// Calls the freeze function in the given function, in order to pause the server
+        /// </summary>
+        /// <param name="URL"></param>
+        /// <returns></returns>
         public static bool Freeze(string URL) {
             try
             {
@@ -62,6 +87,11 @@ namespace DSTMLib
             }
         }
 
+        /// <summary>
+        /// Calls the recover function in a given server, this makes the server start to run again
+        /// </summary>
+        /// <param name="URL"></param>
+        /// <returns></returns>
         public static bool Recover(string URL) {
             try
             {
@@ -110,9 +140,15 @@ namespace DSTMLib
         }
 
         //tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
+        // <summary>
+        // Function to get a remote reference to a PADInt with a given uid.
+        // If the object doesn't exist, then returns null, and warns the client.
+        // </summary>
+        // <param name="uid"></param>
+        // <returns>The remote reference to the PADInt object</returns>
 		public static PADInt AccessPADInt(int uid)
 		{
-            List<int> servers;
+            List<String> servers;
 			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
 			servers =  _master.GetServers(uid);
 
@@ -121,8 +157,10 @@ namespace DSTMLib
                return null;
             }
 
+            Random rnd = new Random();
+
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
-            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), "tcp://localhost:" + servers[0] + "/Server");
+            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers[rnd.Next(4)]);
             
             return chosen.AccessPADInt(uid);
 		}

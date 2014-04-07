@@ -29,7 +29,7 @@ namespace PADIClient
 
         public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
-            DSTMLib.DSTMLib.init();
+            DSTMLib.DSTMLib.Init();
             _padints = new Dictionary<int, PADInt>();
             _logDelegate = logDelegate;
             _listDelegate = listDelegate;
@@ -87,7 +87,13 @@ namespace PADIClient
             _logDelegate("Server recovered @" + URL);
         }
 
-        public void TxBegin() { DSTMLib.DSTMLib.TxBegin(); }
+        public void TxBegin() {
+            bool result = DSTMLib.DSTMLib.TxBegin();
+
+            if (result)
+                _logDelegate("The transaction has started");
+            else _logDelegate("Can't start a transaction, because one is already in use");
+        }
 
         public void TxCommit() { DSTMLib.DSTMLib.TxCommit(); }
 
