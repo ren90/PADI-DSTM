@@ -121,19 +121,17 @@ namespace PADIMaster
                 return null;
         }
 
-        public int GetCoordinator(List<int> servers)
+        public string GetCoordinator()
         {
             Random rnd = new Random();
-            int server; 
-            if (_transactionalServers.Count == 0)
-                return -1;
-            else {
-                do
-                {
-                    server = rnd.Next(_transactionalServers.Count);
-                } while (servers.Contains(server));
-                return server;
-            }
+            string url;
+            int counter = _transactionalServers.Count;
+
+            if (counter == 0)
+                return "none";
+            _transactionalServers.TryGetValue(rnd.Next(counter), out url);
+
+            return url;
         }
 
         public int GetTimestamp()

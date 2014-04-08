@@ -15,6 +15,8 @@ namespace DSTMLib
         private int _uid;
 		// used for concurrency control
         private int _timestamp;
+        
+        ServerInterface _server;
 
         public int Timestamp
         {
@@ -34,8 +36,6 @@ namespace DSTMLib
 			private set { _uid = value; }
 		}
 		
-		ServerInterface _server;
-
 		public PADInt(int uid, ServerInterface server)
 		{
 			_uid = uid;
@@ -70,5 +70,9 @@ namespace DSTMLib
 			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
 			_temporaryValue = value;
 		}
+        //TODO change the return value to List<strings> (url of the servers)
+        public String getLocations() {
+            return _server;
+        }
     }
 }

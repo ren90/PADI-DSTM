@@ -68,7 +68,7 @@ namespace PADIServer
 		// though the PADInt knows its own uid, this improves access speed
         private Dictionary<int, PADInt> _padints;
 		// a list of all the padints involved in a given transaction
-		private List<PADInt> _padintsTx;
+		private List<int> _padintsTx;
 		// list of client requests (access, create, etc) that haven't been executed;
 		// this happens when a server is frozen
 		private List<MethodBase> _pendingRequests;
@@ -82,7 +82,7 @@ namespace PADIServer
         public TransactionalServer()
 		{
             _padints = new Dictionary<int, PADInt>();
-			_padintsTx = new List<PADInt>();
+			_padintsTx = new List<int>();
 			_pendingRequests = new List<MethodBase>();
 		}
 
@@ -97,8 +97,6 @@ namespace PADIServer
 			_padints.Add(uid, p);
 			Console.WriteLine("Added to dictionary");
 
-			_padintsTx.Add(p);
-
 			return p;
         }
 
@@ -109,8 +107,6 @@ namespace PADIServer
 
 			PADInt p = _padints[uid];
 			Console.WriteLine("SERVER: Accessing PADInt with uid " + uid + "...");
-
-			_padintsTx.Add(p);
 
 			return p;
         }
@@ -176,9 +172,11 @@ namespace PADIServer
 
 		public bool TxCommit()
 		{
-			foreach (PADInt p in _padintsTx)
+            PADInt pad;
+			foreach (int p in _padintsTx)
 			{
-				p.persistValue();
+                pad = _padints[p];
+				pad.persistValue();
 				_padintsTx.Clear();
 				return true;
 			}
@@ -189,5 +187,25 @@ namespace PADIServer
 		{
 			return true;
 		}
+
+        public void LockPaint(int uid, int timestamp) {
+            if (_padintsTx.Contains(uid))
+                throw new TxException("The Padint" + uid + " is already locked");
+            else if (_padints[uid].Timestamp > timestamp)
+                throw new TxException("The timestamp is lower than in the object");
+            else {
+                _padintsTx.Add(uid);
+            }
+        }
+
+        public void UnlockPaint(int uid)
+        {
+            if (!_padintsTx.Contains(uid))
+                throw new TxException("The Padint" + uid + "is not locked");
+            else
+            {
+                _padintsTx.Remove(uid);
+            }
+        }
     }
 }
