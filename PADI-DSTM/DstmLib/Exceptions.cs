@@ -11,5 +11,4 @@ namespace DSTMLib
         public TxException(string message) : base(message) { }
 		public TxException(string message, Exception ex) : base(message, ex) { }
     }
-
 }

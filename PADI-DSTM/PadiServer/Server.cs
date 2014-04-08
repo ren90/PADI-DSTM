@@ -22,7 +22,7 @@ namespace PADIServer
             System.Console.WriteLine("Registered Channel @random" );
 
             MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
-            idAndPort = mServer.registerTransactionalServer(getIP());
+            idAndPort = mServer.RegisterTransactionalServer(getIP());
 
             System.Console.WriteLine("Registered at Master");
             ChannelServices.UnregisterChannel(channel);
@@ -61,44 +61,58 @@ namespace PADIServer
 
     }
 
-
-
     class TransactionalServer : MarshalByRefObject, ServerInterface
 	{
-		private String mServer = System.IO.File.ReadAllText(@"../../../mServerLocation.dat");
+		// a collection of all the padints a server holds;
+		// the correspondence is PADInt uid -> PADInt;
+		// though the PADInt knows its own uid, this improves access speed
         private Dictionary<int, PADInt> _padints;
-		private List<MethodBase> _pendingRequests = new List<MethodBase>();
+		// a list of all the padints involved in a given transaction
+		private List<PADInt> _padintsTx;
+		// list of client requests (access, create, etc) that haven't been executed;
+		// this happens when a server is frozen
+		private List<MethodBase> _pendingRequests;
+		// true if the server is functioning correctly; false otherwise
 		private bool _status { get; set; }
+		// true if the server is simulating a fail situation; false otherwise
 		private bool _fail { get; set; }
+		// true if the server is simulating a freeze situation; false otherwise
 		private bool _freeze { get; set; }
-		//private TcpChannel channel;
 
         public TransactionalServer()
 		{
             _padints = new Dictionary<int, PADInt>();
+			_padintsTx = new List<PADInt>();
+			_pendingRequests = new List<MethodBase>();
 		}
 
         public PADInt CreatePADInt(int uid, ServerInterface servers)
         {
-            if (_padints.ContainsKey(uid))
-                throw new TxException("PADInt with uid " + uid + " already exists!");
+			if (_padints.ContainsKey(uid))
+				throw new TxException("SERVER: PADInt with uid " + uid + " already exists!");
 
-            PADInt p = new PADInt(uid, servers);
-            Console.WriteLine("created PADInt with uid: " + p.UID);
-            _padints.Add(uid, p);
-            Console.WriteLine("added to dictionary");
-            return p;
+			PADInt p = new PADInt(uid, servers);
+			Console.WriteLine("SERVER: Created PADInt with uid: " + p.UID);
+			
+			_padints.Add(uid, p);
+			Console.WriteLine("Added to dictionary");
+
+			_padintsTx.Add(p);
+
+			return p;
         }
 
         public PADInt AccessPADInt(int uid)
         {
-            if (_padints.ContainsKey(uid))
-            {
-                Console.WriteLine("Contains!");
-                return _padints[uid];
-            }
-            else
-                throw new TxException("PADInt with identifier " + uid +" doesn't exist!");
+            if (!_padints.ContainsKey(uid))
+				throw new TxException("SERVER: PADInt with uid " + uid +" doesn't exist!");
+
+			PADInt p = _padints[uid];
+			Console.WriteLine("SERVER: Accessing PADInt with uid " + uid + "...");
+
+			_padintsTx.Add(p);
+
+			return p;
         }
 
 		public bool Status()
@@ -110,8 +124,6 @@ namespace PADIServer
 		{
 			_fail = true;
 			_status = false;
-
-			//ChannelServices.UnregisterChannel(channel);
 
 			return _fail;
 		}
@@ -154,6 +166,27 @@ namespace PADIServer
 				Console.WriteLine(e.StackTrace);
 				return false;
 			}
+			return true;
+		}
+
+		public bool TxBegin()
+		{
+			return true;
+		}
+
+		public bool TxCommit()
+		{
+			foreach (PADInt p in _padintsTx)
+			{
+				p.persistValue();
+				_padintsTx.Clear();
+				return true;
+			}
+			return false;
+		}
+
+		public bool TxAbort()
+		{
 			return true;
 		}
     }

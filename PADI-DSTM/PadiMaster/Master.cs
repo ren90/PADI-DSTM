@@ -1,14 +1,10 @@
 ﻿using DSTMLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace PADIMaster
 {
@@ -52,13 +48,17 @@ namespace PADIMaster
 
     class MasterServer : MarshalByRefObject, MasterInterface
     {
+		// the master's port id to comunicate
         private int _port { get; set; }
+		// used for automatically generate port ids for the servers
         private int _portseed { get; set; }
+		// used for automatically generate ids for the servers
         private int _idseed { get; set; }
         // transactional server dictionary <Server id, server address> 
         private Dictionary<int, string> _transactionalServers;
         // PADInt references dictionary <PADInt id, server id>
         private Dictionary<int, int> _padintReferences;
+		// timestamp generator for the PADInts
         private int timestamps;
 
         public MasterServer()
@@ -69,7 +69,6 @@ namespace PADIMaster
             _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, int>();
             timestamps = 0;
-
         }
 
         private string makeAddress(string host, int port)
@@ -78,7 +77,7 @@ namespace PADIMaster
         }
 
         //registers transactional servers and gives a port for them to bind on
-        public KeyValuePair<int, int> registerTransactionalServer(string ip)
+        public KeyValuePair<int, int> RegisterTransactionalServer(string ip)
         {
             int id = _idseed;
             int port = _portseed;
@@ -94,16 +93,14 @@ namespace PADIMaster
             return new KeyValuePair<int, int>(id, port);
         }
 
-        public int hashServers(int seed)
+        public int HashServers(int seed)
         {
             return (_padintReferences.Keys.Count + seed) % _transactionalServers.Keys.Count;
         }
 
-        public KeyValuePair<int, string> generateServers(int uid)
+        public KeyValuePair<int, string> GenerateServers(int uid)
         {
-            
-            
-            int server = hashServers(0);
+            int server = HashServers(0);
             KeyValuePair<int, string> servers = new KeyValuePair<int, string>(server, _transactionalServers[server]);
             int serverId = servers.Key;
             _padintReferences.Add(uid, serverId);
@@ -112,7 +109,6 @@ namespace PADIMaster
         }
 
         public string GetServers(int uid)
-
         {
             Console.WriteLine("Received PADInt access request with the UID: " + uid);
             int serverId;
@@ -125,9 +121,8 @@ namespace PADIMaster
                 return null;
         }
 
-        public int getCoordinator(List<int> servers)
+        public int GetCoordinator(List<int> servers)
         {
-
             Random rnd = new Random();
             int server; 
             if (_transactionalServers.Count == 0)
@@ -141,7 +136,7 @@ namespace PADIMaster
             }
         }
 
-        public int getTimestamp()
+        public int GetTimestamp()
         {
             return timestamps++;
         }

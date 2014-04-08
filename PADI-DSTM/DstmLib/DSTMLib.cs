@@ -31,6 +31,7 @@ namespace DSTMLib
 
 			return true;
         }
+
         /// <summary>
         /// Starts a transaction, getting a new timestamp from the master.
         /// If it is already in a transaction, a new transaction can't be started and returns false to the client.
@@ -39,7 +40,7 @@ namespace DSTMLib
 		{
             if (!isInTransaction)
 			{
-                timestamp = _master.getTimestamp();
+                timestamp = _master.GetTimestamp();
                 isInTransaction = true;
 
 				return true;
@@ -77,6 +78,7 @@ namespace DSTMLib
                 return false;
             }
         }
+
         /// <summary>
         /// Calls the freeze function in the given function, in order to pause the server
         /// </summary>
@@ -119,20 +121,21 @@ namespace DSTMLib
 		{
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
-            KeyValuePair<int, string> locations = _master.generateServers(uid);
+            KeyValuePair<int, string> locations = _master.GenerateServers(uid);
             Console.Write("the chosen servers are: ");
-                Console.Write(locations.Value);
+            Console.Write(locations.Value);
             
             ServerInterface tServers;
             
-            if (!_servers.ContainsKey(locations.Key)){
-                    ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-                    _servers.Add(locations.Key, newServer);
-                    tServers = newServer;
-                }
-                else
-                    tServers = _servers[locations.Key];
-            
+            if (!_servers.ContainsKey(locations.Key))
+			{
+                ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+                _servers.Add(locations.Key, newServer);
+                tServers = newServer;
+            }
+            else
+                tServers = _servers[locations.Key];
+
             return tServers.CreatePADInt(uid, tServers);
 
         }
@@ -151,10 +154,9 @@ namespace DSTMLib
 			servers =  _master.GetServers(uid);
 
             if (servers == null)
-            {
-                Console.WriteLine("ERROR: The PADInt does not exist");
-
-                return null;
+			{
+               Console.WriteLine("ERROR: The PADInt does not exist");
+               return null;
             }
 
             Console.WriteLine("The PADInts are at these servers: ");
