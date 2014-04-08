@@ -149,15 +149,16 @@ namespace DSTMLib
             string servers;
 			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
 			servers =  _master.GetServers(uid);
-            Console.WriteLine("The PADInts are at these servers: ");
-            Console.WriteLine(servers.ToString());
 
-            if(servers == null){
-               Console.WriteLine("ERROR: The PADInt does not exist");
+            if (servers == null)
+            {
+                Console.WriteLine("ERROR: The PADInt does not exist");
 
-               return null;
+                return null;
             }
 
+            Console.WriteLine("The PADInts are at these servers: ");
+            Console.WriteLine(servers.ToString());
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
             ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
             
