@@ -7,7 +7,7 @@ namespace DSTMLib
         KeyValuePair<int, string> GenerateServers(int uid);
         string GetServers(int uid);
         KeyValuePair<int, int> RegisterTransactionalServer(string ip);
-        int GetCoordinator(List<int> servers);
+        string GetCoordinator();
         int GetTimestamp();
         void imAlive(int serverId);
     }
@@ -19,5 +19,7 @@ namespace DSTMLib
         bool Fail();
         bool Recover();
         bool Freeze();
+        void LockPadInt(int uid, int timestamp);
+        void UnlockPadInt(int uid);
     }
 }

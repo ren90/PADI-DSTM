@@ -46,8 +46,15 @@ namespace PADIClient
 		public void AccessPADInt(int uid)
 		{
             PADInt p = DSTMLib.DSTMLib.AccessPADInt(uid);
+            
+            if (p == null) {
+                _logDelegate("The PadInt with the uid " + uid + " does not exist");
+                return;
+            }
+
 			if (!_padints.ContainsKey(uid))
 				_padints.Add(uid, p);
+
             _logDelegate("accessed int with UID: " + uid);
             _listDelegate("UID:" + uid);
 		}

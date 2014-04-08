@@ -14,10 +14,12 @@ namespace DSTMLib
         private static MasterInterface _master;
         // transactional server cache <server id, server object>
         private static Dictionary<int, ServerInterface> _servers;
+        private static List<PADInt> _references;
         private static int timestamp;
 		// true if a transaction is occurring; false otherwise
         private static bool isInTransaction;
-
+        //The URL of the transactions coodinator
+        private static string transactionCoordinatorUrl;
         // methods for manipulating PADI-DSTM
 
         public static bool Init()
@@ -28,6 +30,7 @@ namespace DSTMLib
             _servers = new Dictionary<int, ServerInterface>();
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
             isInTransaction = false;
+            _references = new List<PADInt>();
 
 			return true;
         }
@@ -39,14 +42,39 @@ namespace DSTMLib
         public static bool TxBegin()
 		{
             if (!isInTransaction)
-			{
+            {
+                if (_references.Count == 0)
+                {
+                    Console.WriteLine("DSTMLib->ERROR: there is no PadInt references to make a transaction");
+                    return false;
+
+                }
+
                 timestamp = _master.GetTimestamp();
                 isInTransaction = true;
+                transactionCoordinatorUrl = _master.GetCoordinator();
 
-				return true;
+                try
+                {
+                    foreach (PADInt p in _references)
+                    {
+                        ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), p.getLocations());
+                        server.LockPadInt(p.UID, timestamp);
+                    }
+                }
+                catch (TxException e)
+                {
+                    Console.WriteLine("DSTMLib->ERROR:" + e.Message);
+                    return false;
+                }
+
+                return true;
             }
             else
-				return false;
+            {
+                Console.WriteLine("DSTMLib-> ERROR: There is already a started transaction");
+                return false;
+            }
         }
 
         public static bool TxCommit()
@@ -119,6 +147,12 @@ namespace DSTMLib
 
         public static PADInt CreatePADInt(int uid)
 		{
+            if (isInTransaction)
+            {
+                Console.WriteLine("DSTMLib-> ERROR: There is already a transaction started");
+                throw new TxException("There is already a transaction started");
+            }
+
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
             KeyValuePair<int, string> locations = _master.GenerateServers(uid);
@@ -136,7 +170,9 @@ namespace DSTMLib
             else
                 tServers = _servers[locations.Key];
 
-            return tServers.CreatePADInt(uid, tServers);
+            PADInt reference = tServers.CreatePADInt(uid, tServers);
+            _references.Add(reference);
+            return reference;
 
         }
 
@@ -152,8 +188,12 @@ namespace DSTMLib
             string servers;
 			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
 			servers =  _master.GetServers(uid);
-            Console.WriteLine("The PADInts are at these servers: ");
-            Console.WriteLine(servers.ToString());
+
+            if (isInTransaction)
+            {
+                Console.WriteLine("DSTMLib-> ERROR: There is already a transaction started");
+                throw new TxException("There is already a transaction started");
+            }
 
             if (servers == null)
 			{
@@ -161,10 +201,16 @@ namespace DSTMLib
                return null;
             }
 
+            Console.WriteLine("The PADInts are at these servers: ");
+            Console.WriteLine(servers.ToString());
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
+            
             ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
             
-            return chosen.AccessPADInt(uid);
+            PADInt reference = chosen.AccessPADInt(uid);
+            _references.Add(reference);
+
+            return reference;
 		}
     }
 }
