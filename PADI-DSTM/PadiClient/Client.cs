@@ -47,24 +47,29 @@ namespace PADIClient
 		{
             PADInt p = DSTMLib.DSTMLib.AccessPADInt(uid);
 			if (!_padints.ContainsKey(uid))
-			_padints.Add(uid, p);
+				_padints.Add(uid, p);
             _logDelegate("accessed int with UID: " + uid);
             _listDelegate("UID:" + uid);
 		}
 
 		public int Read(int uid)
 		{
-            if(_padints.ContainsKey(uid))
-				return _padints[uid].Read();
-			throw new TxException("An error occurred while reading from PADInt " + uid);
+			int read_value;
+			if (!_padints.ContainsKey(uid))
+				throw new TxException("An error occurred while reading from PADInt " + uid);
+
+			read_value = _padints[uid].Read();
+			_logDelegate("PADInt " + uid + " has value " + read_value);
+			return read_value;
 		}
 
 		public void Write(int uid, int value)
 		{
-            if (_padints.ContainsKey(uid))
-                _padints[uid].Write(value);
-            else
+			if (!_padints.ContainsKey(uid))
 				throw new TxException("An error occurred while writing to PADInt " + uid);
+
+			_padints[uid].Write(value);
+			_logDelegate("PADInt " + uid + " written with value " + value);				
 		}
 
         public void Status()
@@ -95,9 +100,9 @@ namespace PADIClient
             bool result = DSTMLib.DSTMLib.TxBegin();
 
             if (result)
-				_logDelegate("The transaction started!");
+				_logDelegate("Transaction started!");
             else
-				_logDelegate("Can't start transaction!");
+				_logDelegate("Can not start transaction!");
         }
 
         public void TxCommit()

@@ -4,16 +4,15 @@ namespace DSTMLib
 {
     public interface MasterInterface
     {
-        KeyValuePair<int, string> generateServers(int uid);
+        KeyValuePair<int, string> GenerateServers(int uid);
         string GetServers(int uid);
-        KeyValuePair<int, int> registerTransactionalServer(string ip);
-        int getCoordinator(List<int> servers);
-        int getTimestamp();
+        KeyValuePair<int, int> RegisterTransactionalServer(string ip);
+        int GetCoordinator(List<int> servers);
+        int GetTimestamp();
     }
 
 	public interface ServerInterface
 	{
-
         PADInt CreatePADInt(int uid, ServerInterface servers);
         PADInt AccessPADInt(int uid);
         bool Fail();
