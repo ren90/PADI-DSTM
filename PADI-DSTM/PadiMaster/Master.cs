@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Timers;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
@@ -58,8 +59,12 @@ namespace PADIMaster
         private Dictionary<int, string> _transactionalServers;
         // PADInt references dictionary <PADInt id, server id>
         private Dictionary<int, int> _padintReferences;
+        // Server timer dictionary <server id, timer >
+        private Dictionary<int, Timer> _timers;
 		// timestamp generator for the PADInts
         private int timestamps;
+        //Server timeout
+        const double TIMEOUT = 10000;
 
         public MasterServer()
         {
@@ -68,6 +73,7 @@ namespace PADIMaster
             _idseed = 0;
             _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, int>();
+            _timers = new Dictionary<int,Timer>();
             timestamps = 0;
         }
 
@@ -82,9 +88,14 @@ namespace PADIMaster
             int id = _idseed;
             int port = _portseed;
             string address = makeAddress(ip, port);
+            Timer t = new Timer(TIMEOUT);
             _idseed++;
             _portseed++;
             _transactionalServers.Add(id,address);
+
+            _timers.Add(id, t);
+            t.Elapsed += (sender, e) => onTimout(sender, e, id);
+            t.Enabled = true;
 
             Console.WriteLine("Registered new server!");
             Console.WriteLine("ID: " + id);
@@ -98,6 +109,20 @@ namespace PADIMaster
             return (_padintReferences.Keys.Count + seed) % _transactionalServers.Keys.Count;
         }
 
+        //TODO ------------
+        public static void onTimout(object sender, ElapsedEventArgs e, int serverId)
+        {
+
+            Console.WriteLine("O servidor " + serverId + " mooorrrrrreu!");
+
+        }
+
+        public void imAlive(int tServerId)
+        {
+            _timers[tServerId].Interval = TIMEOUT;
+            Console.WriteLine("server " + tServerId +" says: ALIVE");
+        }
+
         public KeyValuePair<int, string> GenerateServers(int uid)
         {
             int server = HashServers(0);
@@ -107,6 +132,7 @@ namespace PADIMaster
 
             return servers;
         }
+        //----------------------
 
         public string GetServers(int uid)
         {

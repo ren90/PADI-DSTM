@@ -9,6 +9,7 @@ namespace DSTMLib
         KeyValuePair<int, int> RegisterTransactionalServer(string ip);
         int GetCoordinator(List<int> servers);
         int GetTimestamp();
+        void imAlive(int serverId);
     }
 
 	public interface ServerInterface
