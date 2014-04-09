@@ -94,7 +94,7 @@ namespace PADIMaster
             _transactionalServers.Add(id,address);
 
             _timers.Add(id, t);
-            t.Elapsed += (sender, e) => onTimout(sender, e, id);
+            t.Elapsed += (sender, e) => OnTimeout(sender, e, id);
             t.Enabled = true;
 
             Console.WriteLine("Registered new server!");
@@ -110,14 +110,12 @@ namespace PADIMaster
         }
 
         //TODO ------------
-        public static void onTimout(object sender, ElapsedEventArgs e, int serverId)
+        public static void OnTimeout(object sender, ElapsedEventArgs e, int serverId)
         {
-
             Console.WriteLine("O servidor " + serverId + " mooorrrrrreu!");
-
         }
 
-        public void imAlive(int tServerId)
+        public void ImAlive(int tServerId)
         {
             _timers[tServerId].Interval = TIMEOUT;
             Console.WriteLine("server " + tServerId +" says: ALIVE");
@@ -132,7 +130,6 @@ namespace PADIMaster
 
             return servers;
         }
-        //----------------------
 
         public string GetServers(int uid)
         {
@@ -142,7 +139,6 @@ namespace PADIMaster
 
             if (_padintReferences.TryGetValue(uid, out serverId))
                 return _transactionalServers[serverId];
-            
             else
                 return null;
         }
@@ -155,7 +151,8 @@ namespace PADIMaster
 
             if (counter == 0)
                 return "none";
-            _transactionalServers.TryGetValue(rnd.Next(counter), out url);
+
+			_transactionalServers.TryGetValue(rnd.Next(counter), out url);
 
             return url;
         }

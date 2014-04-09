@@ -47,7 +47,8 @@ namespace PADIClient
 		{
             PADInt p = DSTMLib.DSTMLib.AccessPADInt(uid);
             
-            if (p == null) {
+            if (p == null)
+			{
                 _logDelegate("The PadInt with the uid " + uid + " does not exist");
                 return;
             }

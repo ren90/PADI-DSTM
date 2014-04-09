@@ -5,11 +5,11 @@ namespace DSTMLib
     public interface MasterInterface
     {
         KeyValuePair<int, string> GenerateServers(int uid);
-        string GetServers(int uid);
-        KeyValuePair<int, int> RegisterTransactionalServer(string ip);
+		KeyValuePair<int, int> RegisterTransactionalServer(string ip);
+		string GetServers(int uid);
         string GetCoordinator();
         int GetTimestamp();
-        void imAlive(int serverId);
+        void ImAlive(int serverId);
     }
 
 	public interface ServerInterface
@@ -19,7 +19,11 @@ namespace DSTMLib
         bool Fail();
         bool Recover();
         bool Freeze();
-        void LockPadInt(int uid, int timestamp);
-        void UnlockPadInt(int uid);
+		bool Status();
+        void LockPADInt(int uid, int timestamp);
+        void UnlockPADInt(int uid);
+		bool TxBegin();
+		bool TxCommit();
+		bool TxAbort();
     }
 }

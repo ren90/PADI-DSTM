@@ -45,9 +45,8 @@ namespace DSTMLib
             {
                 if (_references.Count == 0)
                 {
-                    Console.WriteLine("DSTMLib->ERROR: there is no PadInt references to make a transaction");
+                    Console.WriteLine("DSTMLib->ERROR: there are no PADInt references to make a transaction!");
                     return false;
-
                 }
 
                 timestamp = _master.GetTimestamp();
@@ -59,12 +58,12 @@ namespace DSTMLib
                     foreach (PADInt p in _references)
                     {
                         ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), p.getLocations());
-                        server.LockPadInt(p.UID, timestamp);
+                        server.LockPADInt(p.UID, timestamp);
                     }
                 }
                 catch (TxException e)
                 {
-                    Console.WriteLine("DSTMLib->ERROR:" + e.Message);
+                    Console.WriteLine("DSTMLib->ERROR: " + e.Message);
                     return false;
                 }
 
@@ -77,17 +76,59 @@ namespace DSTMLib
             }
         }
 
+		// IMPEDE QUE OCORRAM MAIS TRANSACÇOES!
+		// TEM QUE SER REFEITO
         public static bool TxCommit()
 		{
+			List<ServerInterface> _serversToCommit = new List<ServerInterface>();
+			_serversToCommit = _servers.Values.ToList<ServerInterface>();
+			
+			bool final_result = true;
+
+			while (_serversToCommit.Capacity != 0)
+			{
+				foreach (ServerInterface s in _serversToCommit)
+				{
+					bool result = s.TxCommit();
+					_serversToCommit.Remove(s);
+				}
+			}
+
             isInTransaction = false; //quando acabar a transaccao actualiza-se para falso, para a biblioteca poder receber novos TxBegin()
-            return false;
+			return final_result;
         }
 
-        public static bool TxAbort() { throw new NotImplementedException(); }
+        public static bool TxAbort()
+		{
+			List<ServerInterface> _serversToAbort = new List<ServerInterface>();
+			_serversToAbort = _servers.Values.ToList<ServerInterface>();
 
+			bool final_result = true;
+			
+			while (_serversToAbort.Capacity != 0)
+			{
+				foreach (ServerInterface s in _serversToAbort)
+				{
+					bool result = s.TxAbort();
+					_serversToAbort.Remove(s);
+				}
+			}
+
+			return final_result;
+		}
+		
         public static bool Status()
         {
-            throw new NotImplementedException();
+			foreach (KeyValuePair<int, ServerInterface> entry in _servers)
+			{
+				if (entry.Value.Status())
+					Console.WriteLine("Server " + entry.Key + " is up");
+				else
+					Console.WriteLine("Server " + entry.Key + " is down / not responding!");
+				return true;
+			}
+			Console.WriteLine("All servers are down / not responding!");
+			return false;
         }
 
         /// <summary>
@@ -108,7 +149,7 @@ namespace DSTMLib
         }
 
         /// <summary>
-        /// Calls the freeze function in the given function, in order to pause the server
+        /// Calls the freeze function in order to pause the server
         /// </summary>
         /// <param name="URL"></param>
         public static bool Freeze(string URL)
@@ -173,7 +214,6 @@ namespace DSTMLib
             PADInt reference = tServers.CreatePADInt(uid, tServers);
             _references.Add(reference);
             return reference;
-
         }
 
         //tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
@@ -197,7 +237,7 @@ namespace DSTMLib
 
             if (servers == null)
 			{
-               Console.WriteLine("ERROR: The PADInt does not exist");
+               Console.WriteLine("ERROR: The PADInt does not exist!");
                return null;
             }
 

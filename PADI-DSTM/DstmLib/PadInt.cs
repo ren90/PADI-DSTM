@@ -72,7 +72,8 @@ namespace DSTMLib
 		}
         //TODO change the return value to List<strings> (url of the servers)
         public String getLocations() {
-            return _server;
+			//return _server;
+			return "";
         }
     }
 }

@@ -81,14 +81,14 @@ namespace PADIServer
         private bool _fail { get; set; }
         // true if the server is simulating a freeze situation; false otherwise
         private bool _freeze { get; set; }
-
+		// event handler to send "I'm alive" messages
         private Timer _alive;
-
+		// time interval to send the master an "I'm Alive" message
         private const long TIMEOUT = 2000;
-
+		// the master's interface, through which the server communicates
         private MasterInterface _master;
-
-        private int _id;
+		// the server's id, given by the master
+		private int _id;
 
         public TransactionalServer(int id, MasterInterface master)
         {
@@ -97,15 +97,14 @@ namespace PADIServer
             _padintsTx = new List<int>();
             _pendingRequests = new List<MethodBase>();
             _alive = new Timer(TIMEOUT);
-            _alive.Elapsed += isAlive;
+            _alive.Elapsed += IsAlive;
             _alive.Enabled = true;
             _master = master;
-
         }
 
-        void isAlive(object sender, ElapsedEventArgs e)
+        void IsAlive(object sender, ElapsedEventArgs e)
         {
-            _master.imAlive(_id);
+            _master.ImAlive(_id);
         }
 
         public PADInt CreatePADInt(int uid, ServerInterface servers)
@@ -118,7 +117,6 @@ namespace PADIServer
 
             _padints.Add(uid, p);
             Console.WriteLine("Added to dictionary");
-
 
 			return p;
         }
@@ -167,13 +165,13 @@ namespace PADIServer
                 _freeze = false;
                 _status = true;
 
-                ok = dispatchPendindRequests();
+                ok = DispatchPendindRequests();
             }
 
             return ok;
         }
 
-        private bool dispatchPendindRequests()
+        private bool DispatchPendindRequests()
         {
             try
             {
@@ -189,9 +187,6 @@ namespace PADIServer
             }
             return true;
         }
-
-
-
 
 		public bool TxBegin()
 		{
@@ -213,27 +208,30 @@ namespace PADIServer
 
 		public bool TxAbort()
 		{
+			_padintsTx.Clear();
 			return true;
 		}
 
-        public void LockPaint(int uid, int timestamp) {
+        public void LockPADInt(int uid, int timestamp)
+		{
             if (_padintsTx.Contains(uid))
-                throw new TxException("The Padint" + uid + " is already locked");
+                throw new TxException("The PADInt" + uid + " is already locked!");
             else if (_padints[uid].Timestamp > timestamp)
-                throw new TxException("The timestamp is lower than in the object");
-            else {
+                throw new TxException("The client timestamp is lower than the object's timestamp!");
+            else
+			{
                 _padintsTx.Add(uid);
             }
         }
 
-        public void UnlockPaint(int uid)
+        public void UnlockPADInt(int uid)
         {
             if (!_padintsTx.Contains(uid))
-                throw new TxException("The Padint" + uid + "is not locked");
+                throw new TxException("The PADInt" + uid + "is not locked");
             else
             {
                 _padintsTx.Remove(uid);
             }
         }
-    }
+	}
 }
