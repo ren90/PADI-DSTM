@@ -19,7 +19,7 @@ namespace DSTMLib
     public interface CoordinatorInterface
     {
         bool TxCommit(int tId, List<string> participants);
-        bool TxAbort(List<string> participants, int tId);
+        bool TxAbort(int tId, List<string> participants);
         void receiveVote(bool reply);
     }
 
@@ -41,9 +41,8 @@ namespace DSTMLib
 		bool Status();
         void LockPADInt(int uid, int timestamp);
         void UnlockPADInt(int uid);
-		bool TxBegin();
-		bool TxCommit();
-		bool TxAbort();
+        bool TxCommit(int tId, List<string> participants);
+        bool TxAbort(List<string> participant, int tId);
         string GetServerURL();
     }
 }
