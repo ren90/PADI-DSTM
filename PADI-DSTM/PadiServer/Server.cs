@@ -232,10 +232,18 @@ namespace PADIServer
 			return true;
 		}
 
-        public bool prepare(int tID, string coordinator)
+        public void prepare(int tID, string coordinator, int timestamp)
         {
+            bool reply = true;
+            _transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(timestamp));
+            sendVote(reply, coordinator);
 
-            _transactions[tID].ForEach((int id) => _padints[id].persistValue());
+        }
+
+        private void sendVote(bool reply, string coordinator)
+        {
+            CoordinatorInterface coord = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), coordinator);
+            coord.receiveVote(reply);
         }
 
         // -------------------------------------------------------------------------------------------------------------
@@ -266,7 +274,10 @@ namespace PADIServer
         //-------------------------------------------------------------------------------------------------------------
         // Coordinator Methods ----------------------------------------------------------------------------------------
 
-
+        public void receiveVote(bool vote)
+        {
+            votes.Add(vote);
+        }
 
         public string GetServerUrl() {
             return _url;
@@ -286,7 +297,6 @@ namespace PADIServer
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
             foreach (string participant in participants){
                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
-                votes.Add(false);
             }
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)

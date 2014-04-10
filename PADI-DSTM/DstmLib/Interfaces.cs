@@ -20,8 +20,7 @@ namespace DSTMLib
     {
         bool TxCommit(int tId, List<string> participants);
         bool TxAbort(List<string> participants, int tId);
-
-
+        void receiveVote(bool reply);
     }
 
     public interface ParticipantInterface{
