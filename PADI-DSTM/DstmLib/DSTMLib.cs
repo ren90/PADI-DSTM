@@ -116,7 +116,7 @@ namespace DSTMLib
 			return final_result;
         }
 
-        public static bool TxAbort()
+        public static bool TxAbort(int tId)
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
 			coordinator.TxAbort(transactionId);

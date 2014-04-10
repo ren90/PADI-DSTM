@@ -89,6 +89,7 @@ namespace PADIServer
         private MasterInterface _master;
 		// the server's id, given by the master
 		private int _id;
+        private string url;
         // map between transaction ID and a list of PADInts
         private Dictionary<int, List<int>> _transactions;
         // map between PADInt ID and the locking status
@@ -98,9 +99,11 @@ namespace PADIServer
         // Coordinator attributes 
         // map between transaction ID and the list of servers involved
         private Dictionary<int, List<string>> _participants;
+        private  bool onTime;
+        private  bool coordinating;
+        private  List<bool> votes = new List<bool>();
 
 
-        private string url;
 
         public TransactionalServer(int id, MasterInterface master)
         {
@@ -211,7 +214,7 @@ namespace PADIServer
         // -------------------------------------------------------------------------------------------------------------------
         // Participant Methods ------------------------------------------------------------------------------------------------
 
-		public bool DoCommit()
+		public bool DoCommit(int tId)
 		{
             PADInt pad;
 			foreach (int p in _padintsTx)
@@ -224,13 +227,13 @@ namespace PADIServer
 			return false;
 		}
 
-		public bool DoAbort()
+		public bool DoAbort(int tId)
 		{
 			_padintsTx.Clear();
 			return true;
 		}
 
-        public bool prepare()
+        public bool prepare(int tID)
         {
             throw new NotImplementedException();
         }
@@ -272,29 +275,45 @@ namespace PADIServer
 
         public bool TxCommit(List<string> participants, int tId)
         {
+            bool canCommit = false;
+            Timer timeout = new Timer(10000);
+            timeout.Elapsed += timeout_Elapsed;
+            votes = new List<bool>();
+
             //acquire participant objects
+            onTime = true;
+            coordinating = true;
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
-            foreach (string participant in participants)
+            foreach (string participant in participants){
                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
-
-            //envia prepare
-
-
-
-            bool final_result = true;
-
-            while (_serversToCommit.Capacity != 0)
-            {
-                foreach (ParticipantInterface s in _serversToCommit)
-                {
-                    bool result = s.DoCommit();
-                    _serversToCommit.Remove(s);
-                }
+                votes.Add(false);
             }
+            //envia prepare
+            foreach (ParticipantInterface server in _serversToCommit)
+                server.prepare(tId);
+            timeout.Enabled = true;
 
-            return final_result;
+           while (onTime)
+           {
+               votes.ForEach((bool x) => canCommit = (x && canCommit));
+
+               if (canCommit)
+                   break;
+           }
+
+           if (onTime && canCommit)
+               _serversToCommit.ForEach((ParticipantInterface p) => p.DoCommit(tId));
+           else
+               _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId));
+
+           return canCommit;
 
 
+        }
+
+        void timeout_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            onTime = false;
         }
 
         public bool TxAbort()
