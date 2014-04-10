@@ -85,19 +85,32 @@ namespace DSTMLib
 		// TEM QUE SER REFEITO
         public static bool TxCommit()
 		{
-			List<ServerInterface> _serversToCommit = new List<ServerInterface>();
-			_serversToCommit = _servers.Values.ToList<ServerInterface>();
-			
-			bool final_result = true;
+			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
+			bool final_result = coordinator.TxCommit(transactionId, serverList);
 
-			while (_serversToCommit.Capacity != 0)
-			{
-				foreach (ServerInterface s in _serversToCommit)
-				{
-					bool result = s.TxCommit();
-					_serversToCommit.Remove(s);
-				}
-			}
+			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
+			//foreach (string url in serverList)
+			//{
+			//	ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
+			//	_serversToCommit.Add(server);
+			//}
+			//
+			//while (_serversToCommit.Capacity != 0)
+			//{
+			//	foreach (ServerInterface s in _serversToCommit)
+			//	{
+			//		bool result = s.TxCommit();
+			//		if (result)
+			//		{
+			//			foreach (PADInt p in _references)
+			//			{
+			//				if (p.getLocations().Contains(s.GetServerURL()))
+			//					s.UnlockPADInt(p.UID);
+			//			}
+			//			_serversToCommit.Remove(s);
+			//		}
+			//	}
+			//}
 
             isInTransaction = false; //quando acabar a transaccao actualiza-se para falso, para a biblioteca poder receber novos TxBegin()
 			return final_result;
@@ -105,16 +118,21 @@ namespace DSTMLib
 
         public static bool TxAbort()
 		{
-			bool final_result = true;
-            foreach (string url in serverList) {
+			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
+			coordinator.TxAbort(transactionId);
 
-            try
+            foreach (string url in serverList)
+			{
+				try
                 {
                     ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
                     foreach (PADInt p in _references)
                         server.UnlockPADInt(p.UID);
                 }
-                catch (TxException e) {}
+                catch (TxException e)
+				{
+					Console.WriteLine(e.Message);
+				}
             }
 
             isInTransaction = false;
@@ -124,20 +142,21 @@ namespace DSTMLib
             serverList.Clear();
             _references.Clear();
 
-			return final_result;
+			return true;
 		}
 		
         public static bool Status()
         {
-			/*foreach (KeyValuePair<int, ServerInterface> entry in _servers)
+			foreach (string server in serverList)
 			{
-				if (entry.Value.Status())
-					Console.WriteLine("Server " + entry.Key + " is up");
+				ServerInterface iserver = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
+				if (iserver.Status())
+					Console.WriteLine("Server " + server + " is up");
 				else
-					Console.WriteLine("Server " + entry.Key + " is down / not responding!");
+					Console.WriteLine("Server " + server + " is down / not responding!");
 				return true;
 			}
-			Console.WriteLine("All servers are down / not responding!");*/
+			Console.WriteLine("All servers are down / not responding!");
 			return false;
         }
 
