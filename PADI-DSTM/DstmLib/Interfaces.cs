@@ -28,10 +28,10 @@ namespace DSTMLib
 
     public interface ParticipantInterface{
 
-        bool DoCommit();
-		bool DoAbort();
-        bool prepare();
-
+        void DoCommit(int tId);
+		void DoAbort(int tId);
+        void prepare(int tId);
+        
     }
 
 	public interface ServerInterface

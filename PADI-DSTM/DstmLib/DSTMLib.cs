@@ -104,7 +104,7 @@ namespace DSTMLib
 			return final_result;
         }
 
-        public static bool TxAbort()
+        public static bool TxAbort(int tId)
 		{
 			List<ServerInterface> _serversToAbort = new List<ServerInterface>();
 			_serversToAbort = _servers.Values.ToList<ServerInterface>();
