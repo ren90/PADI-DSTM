@@ -64,7 +64,7 @@ namespace PADIServer
 
     }
 
-    class TransactionalServer : MarshalByRefObject, ServerInterface
+    class TransactionalServer : MarshalByRefObject, ServerInterface, ParticipantInterface, CoordinatorInterface
     {
         // a collection of all the padints a server holds;
         // the correspondence is PADInt uid -> PADInt;
@@ -188,12 +188,7 @@ namespace PADIServer
             return true;
         }
 
-		public bool TxBegin()
-		{
-			return true;
-		}
-
-		public bool TxCommit()
+		public bool DoCommit()
 		{
             PADInt pad;
 			foreach (int p in _padintsTx)
@@ -206,11 +201,16 @@ namespace PADIServer
 			return false;
 		}
 
-		public bool TxAbort()
+		public bool DoAbort()
 		{
 			_padintsTx.Clear();
 			return true;
 		}
+
+        public bool prepare()
+        {
+            throw new NotImplementedException();
+        }
 
         public void LockPADInt(int uid, int timestamp)
 		{
@@ -233,5 +233,17 @@ namespace PADIServer
                 _padintsTx.Remove(uid);
             }
         }
-	}
+
+
+
+        public bool TxCommit(List<string> participants)
+        {
+            return true;/*ana lopes :3 */
+        }
+
+        public bool TxAbort()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

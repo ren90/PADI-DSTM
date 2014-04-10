@@ -12,6 +12,25 @@ namespace DSTMLib
         void ImAlive(int serverId);
     }
 
+
+    //Transactionalm server interfaces
+
+    public interface CoordinatorInterface
+    {
+        bool TxCommit();
+        bool TxAbort();
+
+
+    }
+
+    public interface ParticipantInterface{
+
+        bool DoCommit();
+		bool DoAbort();
+        bool prepare();
+
+    }
+
 	public interface ServerInterface
 	{
         PADInt CreatePADInt(int uid, ServerInterface servers);
@@ -22,8 +41,6 @@ namespace DSTMLib
 		bool Status();
         void LockPADInt(int uid, int timestamp);
         void UnlockPADInt(int uid);
-		bool TxBegin();
-		bool TxCommit();
-		bool TxAbort();
+
     }
 }
