@@ -18,8 +18,8 @@ namespace DSTMLib
 
     public interface CoordinatorInterface
     {
-        bool TxCommit();
-        bool TxAbort();
+        bool TxCommit(int tId, List<string> participants);
+        bool TxAbort(int tId);
 
 
     }

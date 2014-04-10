@@ -89,6 +89,16 @@ namespace PADIServer
         private MasterInterface _master;
 		// the server's id, given by the master
 		private int _id;
+        // map between transaction ID and a list of PADInts
+        private Dictionary<int, List<int>> _transactions;
+        // map between PADInt ID and the locking status
+        private Dictionary<int, bool> _locks;
+        
+        
+        // Coordinator attributes 
+        // map between transaction ID and the list of servers involved
+        private Dictionary<int, List<string>> _participants;
+
 
         private string url;
 
@@ -104,10 +114,15 @@ namespace PADIServer
             _master = master;
         }
 
+        // Is Alive Method
+
         void IsAlive(object sender, ElapsedEventArgs e)
         {
             _master.ImAlive(_id);
         }
+
+        // ------------------------------------------------------------------------------------------------------------------
+        // PADInt MAnipulation Methods --------------------------------------------------------------------------------------
 
         public PADInt CreatePADInt(int uid, string server)
         {
@@ -135,6 +150,9 @@ namespace PADIServer
 
             return p;
         }
+
+        // ---------------------------------------------------------------------------------------------------------------------
+        // Status methods ------------------------------------------------------------------------------------------------------
 
         public bool Status()
         {
@@ -190,6 +208,9 @@ namespace PADIServer
             return true;
         }
 
+        // -------------------------------------------------------------------------------------------------------------------
+        // Participant Methods ------------------------------------------------------------------------------------------------
+
 		public bool DoCommit()
 		{
             PADInt pad;
@@ -214,6 +235,9 @@ namespace PADIServer
             throw new NotImplementedException();
         }
 
+        // -------------------------------------------------------------------------------------------------------------
+        // Locking Methods
+
         public void LockPADInt(int uid, int timestamp)
 		{
             if (_padintsTx.Contains(uid))
@@ -236,15 +260,41 @@ namespace PADIServer
             }
         }
 
+        //-------------------------------------------------------------------------------------------------------------
+        // Coordinator Methods ----------------------------------------------------------------------------------------
+
+
 
         public string GetServerUrl() {
             return url;
         }
 
 
-        public bool TxCommit(List<string> participants)
+        public bool TxCommit(List<string> participants, int tId)
         {
-            return true;/*ana lopes :3 */
+            //acquire participant objects
+            List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
+            foreach (string participant in participants)
+                _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
+
+            //envia prepare
+
+
+
+            bool final_result = true;
+
+            while (_serversToCommit.Capacity != 0)
+            {
+                foreach (ParticipantInterface s in _serversToCommit)
+                {
+                    bool result = s.DoCommit();
+                    _serversToCommit.Remove(s);
+                }
+            }
+
+            return final_result;
+
+
         }
 
         public bool TxAbort()
