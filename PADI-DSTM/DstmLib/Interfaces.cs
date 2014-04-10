@@ -14,7 +14,7 @@ namespace DSTMLib
 
 	public interface ServerInterface
 	{
-        PADInt CreatePADInt(int uid, ServerInterface servers);
+        PADInt CreatePADInt(int uid, string servers);
         PADInt AccessPADInt(int uid);
         bool Fail();
         bool Recover();

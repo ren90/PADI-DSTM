@@ -107,12 +107,12 @@ namespace PADIServer
             _master.ImAlive(_id);
         }
 
-        public PADInt CreatePADInt(int uid, ServerInterface servers)
+        public PADInt CreatePADInt(int uid, string server)
         {
             if (_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " already exists!");
 
-            PADInt p = new PADInt(uid, servers);
+            PADInt p = new PADInt(uid, server);
             Console.WriteLine("SERVER: Created PADInt with uid: " + p.UID);
 
             _padints.Add(uid, p);
