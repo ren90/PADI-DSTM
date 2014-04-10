@@ -66,6 +66,10 @@ namespace PADIMaster
         //Server timeout
         const double TIMEOUT = 10000;
 
+        private List<int> finishedTransactions;
+        private List<int> transactionsInCourse;
+        private int transactionsId;
+
         public MasterServer()
         {
             _port = 8087;
@@ -74,7 +78,10 @@ namespace PADIMaster
             _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, int>();
             _timers = new Dictionary<int,Timer>();
+            finishedTransactions = new List<int>();
+            transactionsInCourse = new List<int>();
             timestamps = 0;
+            transactionsId = 0;
         }
 
         private string makeAddress(string host, int port)
@@ -160,6 +167,24 @@ namespace PADIMaster
         public int GetTimestamp()
         {
             return timestamps++;
+        }
+
+        public int GetTransactionId() {
+            return transactionsId++;
+        }
+
+        public bool StartTransaction(int uid) {
+            if (transactionsInCourse.Contains(uid))
+                return false;
+            else transactionsInCourse.Add(uid);
+            return true;
+        }
+
+        public bool FinishTransaction(int uid) {
+            if (finishedTransactions.Contains(uid))
+                return false;
+            else finishedTransactions.Add(uid);
+            return true;
         }
     }
 }

@@ -9,6 +9,9 @@ namespace DSTMLib
 		string GetServers(int uid);
         string GetCoordinator();
         int GetTimestamp();
+        int GetTransactionId();
+        bool FinishTransaction(int uid);
+        bool StartTransaction(int uid);
         void ImAlive(int serverId);
     }
 
@@ -25,5 +28,6 @@ namespace DSTMLib
 		bool TxBegin();
 		bool TxCommit();
 		bool TxAbort();
+        string GetServerURL();
     }
 }

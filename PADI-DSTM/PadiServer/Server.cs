@@ -90,6 +90,8 @@ namespace PADIServer
 		// the server's id, given by the master
 		private int _id;
 
+        private string url;
+
         public TransactionalServer(int id, MasterInterface master)
         {
             _id = id;
@@ -232,6 +234,10 @@ namespace PADIServer
             {
                 _padintsTx.Remove(uid);
             }
+        }
+
+        public string GetServerUrl() {
+            return url;
         }
 	}
 }
