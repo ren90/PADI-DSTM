@@ -57,8 +57,11 @@ namespace DSTMLib
                 {
                     foreach (PADInt p in _references)
                     {
-                        ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), p.getLocations());
-                        server.LockPADInt(p.UID, timestamp);
+                        foreach (String server in p.getLocations())
+                        {
+                            ServerInterface serverLocation = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
+                            serverLocation.LockPADInt(p.UID, timestamp);
+                        }
                     }
                 }
                 catch (TxException e)
