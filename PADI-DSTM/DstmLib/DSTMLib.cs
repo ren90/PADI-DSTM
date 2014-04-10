@@ -21,6 +21,7 @@ namespace DSTMLib
         //The URL of the transactions coodinator
         private static string transactionCoordinatorUrl;
         // methods for manipulating PADI-DSTM
+        private static int transactionId;
 
         public static bool Init()
 		{
@@ -52,6 +53,8 @@ namespace DSTMLib
                 timestamp = _master.GetTimestamp();
                 isInTransaction = true;
                 transactionCoordinatorUrl = _master.GetCoordinator();
+                transactionId = _master.GetTransactionId();
+                _master.StartTransaction(transactionId);
 
                 try
                 {

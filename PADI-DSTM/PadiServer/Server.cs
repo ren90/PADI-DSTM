@@ -100,6 +100,8 @@ namespace PADIServer
         private Dictionary<int, List<string>> _participants;
 
 
+        private string url;
+
         public TransactionalServer(int id, MasterInterface master)
         {
             _id = id;
@@ -260,6 +262,13 @@ namespace PADIServer
 
         //-------------------------------------------------------------------------------------------------------------
         // Coordinator Methods ----------------------------------------------------------------------------------------
+
+
+
+        public string GetServerUrl() {
+            return url;
+        }
+
 
         public bool TxCommit(List<string> participants, int tId)
         {
