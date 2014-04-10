@@ -92,7 +92,7 @@ namespace DSTMLib
 			{
 				foreach (ServerInterface s in _serversToCommit)
 				{
-					bool result = s.TxCommit();
+					bool result = s.DoCommit();
 					_serversToCommit.Remove(s);
 				}
 			}
@@ -112,7 +112,7 @@ namespace DSTMLib
 			{
 				foreach (ServerInterface s in _serversToAbort)
 				{
-					bool result = s.TxAbort();
+					bool result = s.DoAbort();
 					_serversToAbort.Remove(s);
 				}
 			}
