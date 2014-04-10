@@ -16,7 +16,7 @@ namespace DSTMLib
 		// used for concurrency control
         private int _timestamp;
         
-        List<string> _servers;
+        List<string> _servers = new List<string>();
 
         public int Timestamp
         {

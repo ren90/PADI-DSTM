@@ -15,9 +15,28 @@ namespace DSTMLib
         void ImAlive(int serverId);
     }
 
+
+    //Transactionalm server interfaces
+
+    public interface CoordinatorInterface
+    {
+        bool TxCommit();
+        bool TxAbort();
+
+
+    }
+
+    public interface ParticipantInterface{
+
+        bool DoCommit();
+		bool DoAbort();
+        bool prepare();
+
+    }
+
 	public interface ServerInterface
 	{
-        PADInt CreatePADInt(int uid, ServerInterface servers);
+        PADInt CreatePADInt(int uid, string servers);
         PADInt AccessPADInt(int uid);
         bool Fail();
         bool Recover();

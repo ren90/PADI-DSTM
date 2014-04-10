@@ -95,7 +95,7 @@ namespace DSTMLib
 			{
 				foreach (ServerInterface s in _serversToCommit)
 				{
-					bool result = s.TxCommit();
+					bool result = s.DoCommit();
 					_serversToCommit.Remove(s);
 				}
 			}
@@ -115,7 +115,7 @@ namespace DSTMLib
 			{
 				foreach (ServerInterface s in _serversToAbort)
 				{
-					bool result = s.TxAbort();
+					bool result = s.DoAbort();
 					_serversToAbort.Remove(s);
 				}
 			}
@@ -194,11 +194,7 @@ namespace DSTMLib
 
         public static PADInt CreatePADInt(int uid)
 		{
-            if (isInTransaction)
-            {
-                Console.WriteLine("DSTMLib-> ERROR: There is already a transaction started");
-                throw new TxException("There is already a transaction started");
-            }
+			string server_location = "";
 
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
@@ -206,18 +202,22 @@ namespace DSTMLib
             Console.Write("the chosen servers are: ");
             Console.Write(locations.Value);
             
-            ServerInterface tServers;
-            
-            if (!_servers.ContainsKey(locations.Key))
-			{
-                ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-                _servers.Add(locations.Key, newServer);
-                tServers = newServer;
-            }
-            else
-                tServers = _servers[locations.Key];
+            ServerInterface tServer;
 
-            PADInt reference = tServers.CreatePADInt(uid, tServers);
+			if (!_servers.ContainsKey(locations.Key))
+			{
+				ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+				_servers.Add(locations.Key, newServer);
+				tServer = newServer;
+				server_location = locations.Value;
+			}
+			else
+			{
+				tServer = _servers[locations.Key];
+				server_location = locations.Value;
+			}
+
+            PADInt reference = tServer.CreatePADInt(uid, server_location);
             _references.Add(reference);
             return reference;
         }
