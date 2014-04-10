@@ -164,20 +164,10 @@ namespace PADIMaster
             return url;
         }
 
-        public int GetTimestamp()
-        {
-            return timestamps++;
-        }
-
-        public int GetTransactionId() {
-            return transactionsId++;
-        }
-
-        public bool StartTransaction(int uid) {
-            if (transactionsInCourse.Contains(uid))
-                return false;
-            else transactionsInCourse.Add(uid);
-            return true;
+        public KeyValuePair<int, int> GetTransactionData() {
+            KeyValuePair<int, int> data = new KeyValuePair<int, int>(transactionsId++, timestamps++);
+            transactionsInCourse.Add(data.Key);
+            return data;
         }
 
         public bool FinishTransaction(int uid) {

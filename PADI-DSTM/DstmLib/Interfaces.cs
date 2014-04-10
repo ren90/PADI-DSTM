@@ -6,12 +6,10 @@ namespace DSTMLib
     {
         KeyValuePair<int, string> GenerateServers(int uid);
 		KeyValuePair<int, int> RegisterTransactionalServer(string ip);
+        KeyValuePair<int, int> GetTransactionData();
 		string GetServers(int uid);
         string GetCoordinator();
-        int GetTimestamp();
-        int GetTransactionId();
         bool FinishTransaction(int uid);
-        bool StartTransaction(int uid);
         void ImAlive(int serverId);
     }
 
