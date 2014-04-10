@@ -12,9 +12,9 @@ namespace DSTMLib
         private static TcpChannel _channel;
 		// the master remote interface
         private static MasterInterface _master;
-        // transactional server cache <server id, server object>
-        private static Dictionary<int, ServerInterface> _servers;
+      
         private static List<PADInt> _references;
+        private static List<string> serverList;
         private static int timestamp;
 		// true if a transaction is occurring; false otherwise
         private static bool isInTransaction;
@@ -27,11 +27,10 @@ namespace DSTMLib
 		{
             _channel = new TcpChannel();
             ChannelServices.RegisterChannel(_channel, false);
-
-            _servers = new Dictionary<int, ServerInterface>();
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
             isInTransaction = false;
             _references = new List<PADInt>();
+            serverList = new List<string>();
 
 			return true;
         }
@@ -64,6 +63,7 @@ namespace DSTMLib
                         {
                             ServerInterface serverLocation = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
                             serverLocation.LockPADInt(p.UID, timestamp);
+                            serverList.Add(serverLocation.GetServerURL());
                         }
                     }
                 }
@@ -95,7 +95,7 @@ namespace DSTMLib
 			{
 				foreach (ServerInterface s in _serversToCommit)
 				{
-					bool result = s.DoCommit();
+					bool result = s.TxCommit();
 					_serversToCommit.Remove(s);
 				}
 			}
@@ -115,7 +115,7 @@ namespace DSTMLib
 			{
 				foreach (ServerInterface s in _serversToAbort)
 				{
-					bool result = s.DoAbort();
+					bool result = s.TxAbort();
 					_serversToAbort.Remove(s);
 				}
 			}
