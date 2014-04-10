@@ -48,12 +48,11 @@ namespace DSTMLib
                     Console.WriteLine("DSTMLib->ERROR: there are no PADInt references to make a transaction!");
                     return false;
                 }
-
-                timestamp = _master.GetTimestamp();
+                KeyValuePair<int, int> data = _master.GetTransactionData();
+                transactionId = data.Key;
+                timestamp = data.Value;
                 isInTransaction = true;
                 transactionCoordinatorUrl = _master.GetCoordinator();
-                transactionId = _master.GetTransactionId();
-                _master.StartTransaction(transactionId);
 
                 try
                 {
@@ -106,26 +105,31 @@ namespace DSTMLib
 
         public static bool TxAbort(int tId)
 		{
-			List<ServerInterface> _serversToAbort = new List<ServerInterface>();
-			_serversToAbort = _servers.Values.ToList<ServerInterface>();
-
 			bool final_result = true;
-			
-			while (_serversToAbort.Capacity != 0)
-			{
-				foreach (ServerInterface s in _serversToAbort)
-				{
-					bool result = s.TxAbort();
-					_serversToAbort.Remove(s);
-				}
-			}
+            foreach (string url in serverList) {
+
+            try
+                {
+                    ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
+                    foreach (PADInt p in _references)
+                        server.UnlockPADInt(p.UID);
+                }
+                catch (TxException e) {}
+            }
+
+            isInTransaction = false;
+            timestamp = -1;
+            transactionId = -1;
+            transactionCoordinatorUrl = "";
+            serverList.Clear();
+            _references.Clear();
 
 			return final_result;
 		}
 		
         public static bool Status()
         {
-			foreach (KeyValuePair<int, ServerInterface> entry in _servers)
+			/*foreach (KeyValuePair<int, ServerInterface> entry in _servers)
 			{
 				if (entry.Value.Status())
 					Console.WriteLine("Server " + entry.Key + " is up");
@@ -133,7 +137,7 @@ namespace DSTMLib
 					Console.WriteLine("Server " + entry.Key + " is down / not responding!");
 				return true;
 			}
-			Console.WriteLine("All servers are down / not responding!");
+			Console.WriteLine("All servers are down / not responding!");*/
 			return false;
         }
 
@@ -202,20 +206,7 @@ namespace DSTMLib
             Console.Write("the chosen servers are: ");
             Console.Write(locations.Value);
             
-            ServerInterface tServer;
-
-			if (!_servers.ContainsKey(locations.Key))
-			{
-				ServerInterface newServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-				_servers.Add(locations.Key, newServer);
-				tServer = newServer;
-				server_location = locations.Value;
-			}
-			else
-			{
-				tServer = _servers[locations.Key];
-				server_location = locations.Value;
-			}
+            ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
 
             PADInt reference = tServer.CreatePADInt(uid, server_location);
             _references.Add(reference);

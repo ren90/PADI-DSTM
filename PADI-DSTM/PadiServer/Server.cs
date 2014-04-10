@@ -245,7 +245,7 @@ namespace PADIServer
 		{
             if (_padintsTx.Contains(uid))
                 throw new TxException("The PADInt" + uid + " is already locked!");
-            else if (_padints[uid].Timestamp > timestamp)
+            else if (_padints[uid].Timestamp >= timestamp)
                 throw new TxException("The client timestamp is lower than the object's timestamp!");
             else
 			{
