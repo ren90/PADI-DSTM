@@ -119,7 +119,7 @@ namespace DSTMLib
         public static bool TxAbort(int tId)
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
-			coordinator.TxAbort(transactionId);
+			coordinator.TxAbort(serverList, transactionId);
 
             foreach (string url in serverList)
 			{
