@@ -38,9 +38,8 @@ namespace PADIServer
 
             ChannelServices.RegisterChannel(channel, false);
             System.Console.WriteLine("Registered Channel @" + idAndPort.Value);
-            TransactionalServer ts = new TransactionalServer(idAndPort.Key, mServer);
+            TransactionalServer ts = new TransactionalServer(idAndPort.Key, mServer, "tcp://"+getIP()+":"+idAndPort.Value+"/Server");
             RemotingServices.Marshal(ts, "TransactionalServer", typeof(TransactionalServer));
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(TransactionalServer), "Server", WellKnownObjectMode.Singleton);
             System.Console.WriteLine("SERVER ON");
             System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value);
             System.Console.ReadLine();
@@ -87,7 +86,7 @@ namespace PADIServer
         private MasterInterface _master;
 		// the server's id, given by the master
 		private int _id;
-        private string url;
+        private string _url;
         // map between transaction ID and a list of PADInts
         private Dictionary<int, List<int>> _transactions;
         // map between PADInt ID and the locking status
@@ -96,14 +95,13 @@ namespace PADIServer
         
         // Coordinator attributes 
         // map between transaction ID and the list of servers involved
-        private Dictionary<int, List<string>> _participants;
         private  bool onTime;
         private  bool coordinating;
         private  List<bool> votes = new List<bool>();
 
 
 
-        public TransactionalServer(int id, MasterInterface master)
+        public TransactionalServer(int id, MasterInterface master, string url)
         {
             _id = id;
             _padints = new Dictionary<int, PADInt>();
@@ -114,6 +112,7 @@ namespace PADIServer
             _alive.Elapsed += IsAlive;
             _alive.Enabled = true;
             _master = master;
+            _url = url;
         }
 
         // Is Alive Method
@@ -227,9 +226,18 @@ namespace PADIServer
 			return true;
 		}
 
-        public bool prepare(int tID)
+        public void prepare(int tID, string coordinator, int timestamp)
         {
-            throw new NotImplementedException();
+            bool reply = true;
+            _transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(timestamp));
+            sendVote(reply, coordinator);
+
+        }
+
+        private void sendVote(bool reply, string coordinator)
+        {
+            CoordinatorInterface coord = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), coordinator);
+            coord.receiveVote(reply);
         }
 
         // -------------------------------------------------------------------------------------------------------------
@@ -263,10 +271,13 @@ namespace PADIServer
         //-------------------------------------------------------------------------------------------------------------
         // Coordinator Methods ----------------------------------------------------------------------------------------
 
-
+        public void receiveVote(bool vote)
+        {
+            votes.Add(vote);
+        }
 
         public string GetServerUrl() {
-            return url;
+            return _url;
         }
 
 
@@ -283,11 +294,10 @@ namespace PADIServer
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
             foreach (string participant in participants){
                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
-                votes.Add(false);
             }
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
-                server.prepare(tId);
+                server.prepare(tId, _url);
             timeout.Enabled = true;
 
            while (onTime)
@@ -299,9 +309,9 @@ namespace PADIServer
            }
 
            if (onTime && canCommit)
-               _serversToCommit.ForEach((ParticipantInterface p) => p.DoCommit(tId));
+               _serversToCommit.ForEach((ParticipantInterface p) => p.DoCommit(tId, _url));
            else
-               _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId));
+               _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId, _url));
 
            return canCommit;
 
@@ -313,9 +323,16 @@ namespace PADIServer
             onTime = false;
         }
 
-        public bool TxAbort()
+        public bool TxAbort(List<string> participants, int tId)
         {
-            throw new NotImplementedException();
+            List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
+            ParticipantInterface p;
+            foreach (string participant in participants)
+            {
+                p=(ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
+                p.DoAbort(tId, _url);
+            }
+            return true;
         }
     }
 }

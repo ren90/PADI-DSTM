@@ -19,16 +19,15 @@ namespace DSTMLib
     public interface CoordinatorInterface
     {
         bool TxCommit(int tId, List<string> participants);
-        bool TxAbort(int tId);
-
-
+        bool TxAbort(List<string> participants, int tId);
+        void receiveVote(bool reply);
     }
 
     public interface ParticipantInterface{
 
-        void DoCommit(int tId);
-		void DoAbort(int tId);
-        void prepare(int tId);
+        void DoCommit(int tId, string coordinator);
+        void DoAbort(int tId, string coordinator);
+        void prepare(int tId, string coordinator);
         
     }
 
