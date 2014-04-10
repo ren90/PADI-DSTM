@@ -70,8 +70,6 @@ namespace PADIServer
         // the correspondence is PADInt uid -> PADInt;
         // though the PADInt knows its own uid, this improves access speed
         private Dictionary<int, PADInt> _padints;
-        // a list of all the padints involved in a given transaction
-        private List<int> _padintsTx;
         // list of client requests (access, create, etc) that haven't been executed;
         // this happens when a server is frozen
         private List<MethodBase> _pendingRequests;
@@ -109,7 +107,8 @@ namespace PADIServer
         {
             _id = id;
             _padints = new Dictionary<int, PADInt>();
-            _padintsTx = new List<int>();
+            _transactions = new Dictionary<int, List<int>>();
+            _locks = new Dictionary<int, bool>();
             _pendingRequests = new List<MethodBase>();
             _alive = new Timer(TIMEOUT);
             _alive.Elapsed += IsAlive;
@@ -148,8 +147,6 @@ namespace PADIServer
 
             PADInt p = _padints[uid];
             Console.WriteLine("SERVER: Accessing PADInt with uid " + uid + "...");
-
-            _padintsTx.Add(uid);
 
             return p;
         }
@@ -216,12 +213,9 @@ namespace PADIServer
 
 		public bool DoCommit(int tId)
 		{
-            PADInt pad;
-			foreach (int p in _padintsTx)
+			foreach (int p in _transactions[tId])
 			{
-                pad = _padints[p];
-				pad.persistValue();
-				_padintsTx.Clear();
+				_transactions.Remove(tId);
 				return true;
 			}
 			return false;
@@ -229,7 +223,7 @@ namespace PADIServer
 
 		public bool DoAbort(int tId)
 		{
-			_padintsTx.Clear();
+            _transactions.Remove(tId);
 			return true;
 		}
 
@@ -241,25 +235,28 @@ namespace PADIServer
         // -------------------------------------------------------------------------------------------------------------
         // Locking Methods
 
-        public void LockPADInt(int uid, int timestamp)
+        public void LockPADInt(int uid, int transactionId ,int timestamp)
 		{
-            if (_padintsTx.Contains(uid))
-                throw new TxException("The PADInt" + uid + " is already locked!");
-            else if (_padints[uid].Timestamp >= timestamp)
+            for(int j =0 ; j < _transactions.Keys.Count; j++){
+                if(_transactions[j].Contains(uid))
+                        throw new TxException("The PADInt" + uid + " is already locked!");
+            }
+
+            if (_padints[uid].Timestamp >= timestamp)
                 throw new TxException("The client timestamp is lower than the object's timestamp!");
             else
 			{
-                _padintsTx.Add(uid);
+                _transactions[transactionId].Add(uid);
             }
         }
 
-        public void UnlockPADInt(int uid)
+        public void UnlockPADInt(int transactionId ,int uid)
         {
-            if (!_padintsTx.Contains(uid))
+            if (!_transactions[transactionId].Contains(uid))
                 throw new TxException("The PADInt" + uid + "is not locked");
             else
             {
-                _padintsTx.Remove(uid);
+                _transactions[transactionId].Remove(uid);
             }
         }
 

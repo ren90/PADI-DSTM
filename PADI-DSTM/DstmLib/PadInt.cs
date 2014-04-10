@@ -45,11 +45,12 @@ namespace DSTMLib
 
 		// "transform" the temporary value to persistent;
 		// basically, the function writes to the _value field (which represents "persistency")
-        public bool persistValue()
+        public bool persistValue(int timestamp)
 		{
             try
             {
                 _value = _temporaryValue;
+                _timestamp = timestamp;
                 return true;
             }
             catch (Exception e)
