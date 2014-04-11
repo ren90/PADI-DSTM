@@ -242,6 +242,8 @@ namespace DSTMLib
             string servers;
 			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
 			servers =  _master.GetServers(uid);
+            Console.Write("the chosen servers are: ");
+            Console.WriteLine(servers);
 
             if (isInTransaction)
             {
