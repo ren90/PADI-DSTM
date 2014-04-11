@@ -271,7 +271,13 @@ namespace PADIServer
                 throw new TxException("The client timestamp is lower than the object's timestamp!");
             }
             else
-                _transactions[transactionId].Add(uid);
+            {
+                if (!_transactions.ContainsKey(transactionId)) {
+                    _transactions.Add(transactionId, new List<int>());
+                    _transactions[transactionId].Add(uid);
+                }else
+                    _transactions[transactionId].Add(uid);
+            }
         }
 
         public void UnlockPADInt(int transactionId, int uid)
@@ -279,7 +285,7 @@ namespace PADIServer
             if (!_transactions[transactionId].Contains(uid))
                 throw new TxException("The PADInt" + uid + "is not locked");
             else
-                _transactions[transactionId].Remove(uid);
+                _transactions.Remove(uid);
         }
 
         //-------------------------------------------------------------------------------------------------------------
