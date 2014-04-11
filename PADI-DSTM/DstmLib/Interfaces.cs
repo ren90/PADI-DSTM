@@ -20,14 +20,14 @@ namespace DSTMLIB
     {
         bool TxCommit(int tId, List<string> participants, int timestamp);
         bool TxAbort(int tId, List<string> participants);
-        void receiveVote(bool reply);
+        void ReceiveVote(bool reply);
     }
 
     public interface ParticipantInterface
 	{
         bool DoCommit(int tId, string coordinator);
         void DoAbort(int tId, string coordinator);
-        void prepare(int tId, string coordinator, int timestamp);   
+        void Prepare(int tId, string coordinator, int timestamp);   
     }
 
 	public interface ServerInterface

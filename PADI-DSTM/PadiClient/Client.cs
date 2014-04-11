@@ -29,7 +29,7 @@ namespace PADIClient
 
         public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
-            DSTMLIB.DSTMLib.Init();
+            DSTMLib.Init();
             _padints = new Dictionary<int, PADInt>();
             _logDelegate = logDelegate;
             _listDelegate = listDelegate;
@@ -37,7 +37,7 @@ namespace PADIClient
 
 		public void CreatePADInt(int uid)
 		{
-			PADInt p = DSTMLIB.DSTMLib.CreatePADInt(uid);
+			PADInt p = DSTMLib.CreatePADInt(uid);
             _padints.Add(uid, p);
             _logDelegate("created int with UID: " + uid);
             _listDelegate("UID:" + uid);
@@ -45,7 +45,7 @@ namespace PADIClient
 
 		public void AccessPADInt(int uid)
 		{
-            PADInt p = DSTMLIB.DSTMLib.AccessPADInt(uid);
+            PADInt p = DSTMLib.AccessPADInt(uid);
             
             if (p == null)
 			{
@@ -82,30 +82,30 @@ namespace PADIClient
 
         public void Status()
 		{
-			DSTMLIB.DSTMLib.Status();
+			DSTMLib.Status();
 		}
 
         public void Fail(string URL)
 		{    
-            DSTMLIB.DSTMLib.Fail(URL);
+            DSTMLib.Fail(URL);
             _logDelegate("Simulated Server fail @" + URL);
         }
 
         public void Freeze(string URL)
 		{
-            DSTMLIB.DSTMLib.Freeze(URL);
+            DSTMLib.Freeze(URL);
             _logDelegate("Simulated Server freeze @" + URL);
         }
 
         public void Recover(string URL)
 		{
-            DSTMLIB.DSTMLib.Recover(URL);
+            DSTMLib.Recover(URL);
             _logDelegate("Server recovered @" + URL);
         }
 
         public void TxBegin()
 		{
-            bool result = DSTMLIB.DSTMLib.TxBegin();
+            bool result = DSTMLib.TxBegin();
 
             if (result)
 				_logDelegate("Transaction started!");
@@ -115,12 +115,12 @@ namespace PADIClient
 
         public void TxCommit()
 		{
-			DSTMLIB.DSTMLib.TxCommit();
+			DSTMLib.TxCommit();
 		}
 
         public void TxAbort()
 		{
-			DSTMLIB.DSTMLib.TxAbort();
+			DSTMLib.TxAbort();
 		}
     }
 }

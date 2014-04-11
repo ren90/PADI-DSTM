@@ -237,18 +237,17 @@ namespace PADIServer
             _transactions.Remove(tId);
 		}
 
-        public void prepare(int tID, string coordinator, int timestamp)
+        public void Prepare(int tID, string coordinator, int timestamp)
         {
-            bool reply = true;
-            _transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(timestamp));
-            sendVote(reply, coordinator);
-
+			bool reply = true;
+			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(timestamp));
+			SendVote(reply, coordinator);
         }
 
-        private void sendVote(bool reply, string coordinator)
+        private void SendVote(bool reply, string coordinator)
         {
             CoordinatorInterface coord = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), coordinator);
-            coord.receiveVote(reply);
+            coord.ReceiveVote(reply);
         }
 
         // -------------------------------------------------------------------------------------------------------------
@@ -273,15 +272,13 @@ namespace PADIServer
             if (!_transactions[transactionId].Contains(uid))
                 throw new TxException("The PADInt" + uid + "is not locked");
             else
-            {
                 _transactions[transactionId].Remove(uid);
-            }
         }
 
         //-------------------------------------------------------------------------------------------------------------
         // Coordinator Methods ----------------------------------------------------------------------------------------
 
-        public void receiveVote(bool vote)
+        public void ReceiveVote(bool vote)
         {
             votes.Add(vote);
         }
@@ -307,7 +304,7 @@ namespace PADIServer
 
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
-                server.prepare(tId, _url, timestamp);
+                server.Prepare(tId, _url, timestamp);
             timeout.Enabled = true;
 
            while (onTime)

@@ -82,13 +82,12 @@ namespace DSTMLIB
             }
         }
 
-		// IMPEDE QUE OCORRAM MAIS TRANSACÇOES!
-		// TEM QUE SER REFEITO
         public static bool TxCommit()
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
 			bool final_result = coordinator.TxCommit(transactionId, serverList, timestamp);
 
+			#region Old Stuff
 			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
 			//foreach (string url in serverList)
 			//{
@@ -112,8 +111,9 @@ namespace DSTMLIB
 			//		}
 			//	}
 			//}
+			#endregion
 
-            isInTransaction = false; //quando acabar a transaccao actualiza-se para falso, para a biblioteca poder receber novos TxBegin()
+			isInTransaction = false;
 			return final_result;
         }
 
@@ -236,8 +236,7 @@ namespace DSTMLIB
 				List<Object> parameters = new List<Object>();
 				parameters.Add(parameter);
 
-				tServer.AddPendingRequest(tServer.GetType().GetMethod(""), parameters);
-
+				tServer.AddPendingRequest(tServer.GetType().GetMethod("CreatePADInt"), parameters);
 				return null;
 			}
 
@@ -279,7 +278,20 @@ namespace DSTMLIB
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
             
             ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
-            
+			if (chosen.Fail_f())
+			{
+				return null;
+			}
+			else if (chosen.Freeze_f())
+			{
+				Int32 parameter = uid;
+				List<Object> parameters = new List<Object>();
+				parameters.Add(parameter);
+
+				chosen.AddPendingRequest(chosen.GetType().GetMethod("AccessPADInt"), parameters);
+				return null;
+			}
+
             PADInt reference = chosen.AccessPADInt(uid);
             _references.Add(reference);
 
