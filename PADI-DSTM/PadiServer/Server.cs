@@ -255,19 +255,15 @@ namespace PADIServer
 
         public void LockPADInt(int transactionId, int uid ,int timestamp)
 		{
-            Console.WriteLine("PARAMETERS: " + transactionId + " " + uid + " " + timestamp);
 			foreach (KeyValuePair<int, List<int>> t in _transactions)
 			{
                 if (t.Value.Contains(uid))
                 {
-                    Console.WriteLine("VOU LANCAR EXCEPCAO");
                     throw new TxException("The PADInt" + uid + " is already locked!");
                 }
 			}
-            Console.WriteLine("Timestamp: " + _padints[uid].Timestamp);
             if (_padints[uid].Timestamp > timestamp)
             {
-                Console.WriteLine("VOU LANCAR EXCEPCAO 2");
                 throw new TxException("The client timestamp is lower than the object's timestamp!");
             }
             else
@@ -285,7 +281,7 @@ namespace PADIServer
             if (!_transactions[transactionId].Contains(uid))
                 throw new TxException("The PADInt" + uid + "is not locked");
             else
-                _transactions.Remove(uid);
+                _transactions.Remove(transactionId);
         }
 
         //-------------------------------------------------------------------------------------------------------------
@@ -303,7 +299,7 @@ namespace PADIServer
 
         public bool TxCommit(int tId, List<string> participants, int timestamp)
         {
-            bool canCommit = false;
+            bool canCommit = true;
             Timer timeout = new Timer(10000);
             timeout.Elapsed += timeout_Elapsed;
             votes = new List<bool>();

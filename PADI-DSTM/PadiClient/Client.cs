@@ -115,7 +115,11 @@ namespace PADIClient
 
         public void TxCommit()
 		{
-			DSTMLib.TxCommit();
+			bool result = DSTMLib.TxCommit();
+            if (result)
+                _logDelegate("Transaction successful");
+            else
+                _logDelegate("failed transaction");
 		}
 
         public void TxAbort()
