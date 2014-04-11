@@ -122,20 +122,6 @@ namespace DSTMLIB
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
 			coordinator.TxAbort(transactionId, serverList);
 
-            foreach (string url in serverList)
-			{
-				try
-                {
-                    ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
-                    foreach (PADInt p in _references)
-                        server.UnlockPADInt(transactionId, p.UID);
-                }
-                catch (TxException e)
-				{
-					Console.WriteLine(e.Message);
-				}
-            }
-
             isInTransaction = false;
             timestamp = -1;
             transactionId = -1;

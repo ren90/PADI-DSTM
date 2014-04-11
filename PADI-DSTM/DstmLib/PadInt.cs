@@ -60,6 +60,13 @@ namespace DSTMLIB
             }
         }
 
+        public void rollback()
+        {
+
+            _temporaryValue = _value;
+
+        }
+
 		public int Read()
 		{
 			Console.WriteLine("DSTMLib-> reading from PADInt " + this.UID + " with value " + this.Value);
