@@ -226,15 +226,23 @@ namespace PADIServer
 		{
 			foreach (int p in _transactions[tId])
 			{
-				_transactions.Remove(tId);
-				return true;
+                this.UnlockPADInt(tId, p);
+			
 			}
-			return false;
+            _transactions.Remove(tId);
+			return true;
 		}
 
 		public void DoAbort(int tId, string coordinator)
 		{
+
+            foreach (int id in _transactions[tId])
+            {
+                _padints[id].rollback();
+                UnlockPADInt(tId, id);
+            }
             _transactions.Remove(tId);
+
 		}
 
         public void Prepare(int tID, string coordinator, int timestamp)
@@ -282,10 +290,10 @@ namespace PADIServer
 
         public void UnlockPADInt(int transactionId, int uid)
         {
-            if (!_transactions[transactionId].Contains(uid))
-                throw new TxException("The PADInt" + uid + "is not locked");
+            if (_transactions[transactionId].Contains(uid))
+                _transactions.Remove(transactionId);
             else
-                _transactions.Remove(uid);
+                throw new TxException("The PADInt" + uid + "is not locked");
         }
 
         //-------------------------------------------------------------------------------------------------------------
