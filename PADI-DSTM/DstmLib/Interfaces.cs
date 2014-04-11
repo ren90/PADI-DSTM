@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 
-namespace DSTMLib
+namespace DSTMLIB
 {
     public interface MasterInterface
     {
@@ -13,22 +15,19 @@ namespace DSTMLib
         void ImAlive(int serverId);
     }
 
-
-    //Transactionalm server interfaces
-
+    //Transactional server interfaces
     public interface CoordinatorInterface
     {
         bool TxCommit(int tId, List<string> participants, int timestamp);
         bool TxAbort(int tId, List<string> participants);
-        void receiveVote(bool reply);
+        void ReceiveVote(bool reply);
     }
 
-    public interface ParticipantInterface{
-
+    public interface ParticipantInterface
+	{
         bool DoCommit(int tId, string coordinator);
         void DoAbort(int tId, string coordinator);
-        void prepare(int tId, string coordinator, int timestamp);
-        
+        void Prepare(int tId, string coordinator, int timestamp);   
     }
 
 	public interface ServerInterface
@@ -44,5 +43,8 @@ namespace DSTMLib
         bool TxCommit(int tId, List<string> participants, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         string GetServerUrl();
-    }
+		bool Fail_f();
+		bool Freeze_f();
+		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
+	}
 }

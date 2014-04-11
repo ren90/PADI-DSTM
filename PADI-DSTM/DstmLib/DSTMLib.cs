@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 
-namespace DSTMLib
+namespace DSTMLIB
 {
     public static class DSTMLib
     {
@@ -54,6 +54,7 @@ namespace DSTMLib
                 isInTransaction = true;
                 transactionCoordinatorUrl = _master.GetCoordinator();
 
+				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
                 try
                 {
                     foreach (PADInt p in _references)
@@ -81,13 +82,12 @@ namespace DSTMLib
             }
         }
 
-		// IMPEDE QUE OCORRAM MAIS TRANSACÇOES!
-		// TEM QUE SER REFEITO
         public static bool TxCommit()
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
 			bool final_result = coordinator.TxCommit(transactionId, serverList, timestamp);
 
+			#region Old Stuff
 			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
 			//foreach (string url in serverList)
 			//{
@@ -111,8 +111,9 @@ namespace DSTMLib
 			//		}
 			//	}
 			//}
+			#endregion
 
-            isInTransaction = false; //quando acabar a transaccao actualiza-se para falso, para a biblioteca poder receber novos TxBegin()
+			isInTransaction = false;
 			return final_result;
         }
 
@@ -217,38 +218,48 @@ namespace DSTMLib
 
         public static PADInt CreatePADInt(int uid)
 		{
-
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
             KeyValuePair<int, string> locations = _master.GenerateServers(uid);
+
             Console.Write("the chosen servers are: ");
-            Console.Write(locations.Value);
-            PADInt reference = null;
-            try
-            {
-                ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-                Console.WriteLine(tServer.ToString());
-                reference = tServer.CreatePADInt(uid, locations.Value);
-                _references.Add(reference);
-            }
-            catch (Exception e) {
-                Console.WriteLine(e.StackTrace);
-            }
+
+            Console.WriteLine(locations.Value);
+
+			ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+			if (tServer.Fail_f())
+			{
+				return null;
+			}
+			else if (tServer.Freeze_f())
+			{
+				Int32 parameter = uid;
+				List<Object> parameters = new List<Object>();
+				parameters.Add(parameter);
+
+				tServer.AddPendingRequest(tServer.GetType().GetMethod("CreatePADInt"), parameters);
+				return null;
+			}
+
+			PADInt reference = tServer.CreatePADInt(uid, locations.Value);
+			_references.Add(reference);
             return reference;
         }
 
-        //tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
-        // <summary>
-        // Function to get a remote reference to a PADInt with a given uid.
-        // If the object doesn't exist, then returns null, and warns the client.
-        // </summary>
-        // <param name="uid"></param>
-        // <returns>The remote reference to the PADInt object</returns>
+        // tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
+        /// <summary>
+		/// Function to get a remote reference to a PADInt with a given uid.
+		/// If the object doesn't exist, then returns null, and warns the client.
+		/// </summary>
+		/// <param name="uid"></param>
+		/// <returns>The remote reference to the PADInt object</returns>
 		public static PADInt AccessPADInt(int uid)
 		{
             string servers;
 			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
 			servers =  _master.GetServers(uid);
+            Console.Write("the chosen servers are: ");
+            Console.WriteLine(servers);
 
             if (isInTransaction)
             {
@@ -267,7 +278,20 @@ namespace DSTMLib
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
             
             ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
-            
+			if (chosen.Fail_f())
+			{
+				return null;
+			}
+			else if (chosen.Freeze_f())
+			{
+				Int32 parameter = uid;
+				List<Object> parameters = new List<Object>();
+				parameters.Add(parameter);
+
+				chosen.AddPendingRequest(chosen.GetType().GetMethod("AccessPADInt"), parameters);
+				return null;
+			}
+
             PADInt reference = chosen.AccessPADInt(uid);
             _references.Add(reference);
 

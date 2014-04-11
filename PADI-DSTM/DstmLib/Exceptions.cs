@@ -2,7 +2,7 @@
 using System.Runtime.Remoting;
 using System.Runtime.Serialization;
 
-namespace DSTMLib
+namespace DSTMLIB
 {
 	[Serializable]
     public class TxException : RemotingException, ISerializable

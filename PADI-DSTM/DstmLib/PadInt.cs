@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DSTMLib
+namespace DSTMLIB
 {
     [Serializable]
     public class PADInt
@@ -71,8 +71,9 @@ namespace DSTMLib
 			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
 			_temporaryValue = value;
 		}
-        //TODO change the return value to List<strings> (url of the servers)
-        public List<String> getLocations() {
+
+        public List<String> getLocations()
+		{
 			return _servers;
         }
     }

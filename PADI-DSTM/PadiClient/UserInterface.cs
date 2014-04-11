@@ -21,6 +21,8 @@ namespace PADIClient
             this.abortTx_button.Enabled = true;
             this.commitTx_button.Enabled = true;
             this.statusTx_button.Enabled = true;
+
+			_client.TxBegin();
         }
 
         private void serverURL_textBox_TextChanged(object sender, EventArgs e)
@@ -36,23 +38,32 @@ namespace PADIClient
 
         private void serverFail_button_Click(object sender, EventArgs e)
         {
-            serverRecover_button.Enabled = true;
-            serverFail_button.Enabled = false;
-            _client.Fail(serverURL_textBox.Text);
+			if (serverURL_textBox.Text != "")
+			{
+				serverRecover_button.Enabled = true;
+				serverFail_button.Enabled = false;
+				_client.Fail(serverURL_textBox.Text);
+			}
         }
 
         private void serverRecover_button_Click(object sender, EventArgs e)
         {
-            serverRecover_button.Enabled = false;
-            serverFail_button.Enabled = true;
-            _client.Recover(serverURL_textBox.Text);
+			if (serverURL_textBox.Text != "")
+			{
+				serverRecover_button.Enabled = false;
+				serverFail_button.Enabled = true;
+				_client.Recover(serverURL_textBox.Text);
+			}
         }
 
         private void serverFreeze_button_Click(object sender, EventArgs e)
         {
-            serverRecover_button.Enabled = true;
-            serverFreeze_button.Enabled = false;
-            _client.Freeze(serverURL_textBox.Text);
+			if (serverURL_textBox.Text != "")
+			{
+				serverRecover_button.Enabled = true;
+				serverFreeze_button.Enabled = false;
+				_client.Freeze(serverURL_textBox.Text);
+			}
         }
 
         private void createPADInt_button_Click(object sender, EventArgs e)

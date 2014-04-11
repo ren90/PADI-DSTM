@@ -1,4 +1,4 @@
-﻿using DSTMLib;
+﻿using DSTMLIB;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,7 +22,9 @@ namespace PADIServer
             ChannelServices.RegisterChannel(channel, false);
             System.Console.WriteLine("Registered Channel @random");
 
-            MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
+			string address = System.IO.File.ReadAllText(@"../../../mServerLocation.dat");
+
+            MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), address);
             idAndPort = mServer.RegisterTransactionalServer(getIP());
 
             System.Console.WriteLine("Registered at Master");
@@ -39,9 +41,9 @@ namespace PADIServer
             ChannelServices.RegisterChannel(channel, false);
             System.Console.WriteLine("Registered Channel @" + idAndPort.Value);
             TransactionalServer ts = new TransactionalServer(idAndPort.Key, mServer, "tcp://"+getIP()+":"+idAndPort.Value+"/Server");
-            RemotingServices.Marshal(ts, "TransactionalServer", typeof(TransactionalServer));
+            RemotingServices.Marshal(ts, "Server", typeof(TransactionalServer));
             System.Console.WriteLine("SERVER ON");
-            System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value);
+            System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value + "IP: "+ getIP());
             System.Console.ReadLine();
         }
 
@@ -60,7 +62,6 @@ namespace PADIServer
             }
             return localIP;
         }
-
     }
 
     class TransactionalServer : MarshalByRefObject, ServerInterface, ParticipantInterface, CoordinatorInterface
@@ -71,7 +72,7 @@ namespace PADIServer
         private Dictionary<int, PADInt> _padints;
         // list of client requests (access, create, etc) that haven't been executed;
         // this happens when a server is frozen
-        private List<MethodBase> _pendingRequests;
+        private Dictionary<MethodInfo, List<Object>> _pendingRequests;
         // true if the server is functioning correctly; false otherwise
         private bool _status { get; set; }
         // true if the server is simulating a fail situation; false otherwise
@@ -86,6 +87,7 @@ namespace PADIServer
         private MasterInterface _master;
 		// the server's id, given by the master
 		private int _id;
+		//the location of the server (tcp://<ip>:<port>/Server)
         private string _url;
         // map between transaction ID and a list of PADInts
         private Dictionary<int, List<int>> _transactions;
@@ -95,11 +97,9 @@ namespace PADIServer
         
         // Coordinator attributes 
         // map between transaction ID and the list of servers involved
-        private  bool onTime;
-        private  bool coordinating;
-        private  List<bool> votes = new List<bool>();
-
-
+        private bool onTime;
+        private bool coordinating;
+        private List<bool> votes = new List<bool>();
 
         public TransactionalServer(int id, MasterInterface master, string url)
         {
@@ -107,7 +107,7 @@ namespace PADIServer
             _padints = new Dictionary<int, PADInt>();
             _transactions = new Dictionary<int, List<int>>();
             _locks = new Dictionary<int, bool>();
-            _pendingRequests = new List<MethodBase>();
+			_pendingRequests = new Dictionary<MethodInfo, List<Object>>();
             _alive = new Timer(TIMEOUT);
             _alive.Elapsed += IsAlive;
             _alive.Enabled = true;
@@ -123,7 +123,7 @@ namespace PADIServer
         }
 
         // ------------------------------------------------------------------------------------------------------------------
-        // PADInt MAnipulation Methods --------------------------------------------------------------------------------------
+        // PADInt Manipulation Methods --------------------------------------------------------------------------------------
 
         public PADInt CreatePADInt(int uid, string server)
         {
@@ -158,6 +158,10 @@ namespace PADIServer
             return _status;
         }
 
+		/// <summary>
+		/// Simulates a server crash
+		/// </summary>
+		/// <returns></returns>
         public bool Fail()
         {
             _fail = true;
@@ -166,6 +170,10 @@ namespace PADIServer
             return _fail;
         }
 
+		/// <summary>
+		/// Simulates a non-responsive server
+		/// </summary>
+		/// <returns></returns>
         public bool Freeze()
         {
             _freeze = true;
@@ -174,19 +182,23 @@ namespace PADIServer
             return _freeze;
         }
 
+		/// <summary>
+		/// Recovers from a Freeze or Fail state
+		/// </summary>
+		/// <returns></returns>
         public bool Recover()
         {
             bool ok = false;
 
             if (_fail || _freeze)
             {
+				if (_freeze)
+					ok = DispatchPendindRequests();
+
                 _fail = false;
                 _freeze = false;
-                _status = true;
-
-                ok = DispatchPendindRequests();
+				_status = true;                
             }
-
             return ok;
         }
 
@@ -194,10 +206,10 @@ namespace PADIServer
         {
             try
             {
-                foreach (MethodBase m in _pendingRequests)
-                {
-                    m.Invoke(this, m.GetParameters());
-                }
+                foreach (KeyValuePair<MethodInfo, List<Object>> request in _pendingRequests)
+				{
+					request.Key.Invoke(this, request.Value.ToArray());
+				}
             }
             catch (Exception e)
             {
@@ -225,18 +237,17 @@ namespace PADIServer
             _transactions.Remove(tId);
 		}
 
-        public void prepare(int tID, string coordinator, int timestamp)
+        public void Prepare(int tID, string coordinator, int timestamp)
         {
-            bool reply = true;
-            _transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(timestamp));
-            sendVote(reply, coordinator);
-
+			bool reply = true;
+			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(timestamp));
+			SendVote(reply, coordinator);
         }
 
-        private void sendVote(bool reply, string coordinator)
+        private void SendVote(bool reply, string coordinator)
         {
             CoordinatorInterface coord = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), coordinator);
-            coord.receiveVote(reply);
+            coord.ReceiveVote(reply);
         }
 
         // -------------------------------------------------------------------------------------------------------------
@@ -244,17 +255,16 @@ namespace PADIServer
 
         public void LockPADInt(int transactionId, int uid ,int timestamp)
 		{
-            for(int j =0 ; j < _transactions.Keys.Count; j++){
-                if(_transactions[j].Contains(uid))
-                        throw new TxException("The PADInt" + uid + " is already locked!");
-            }
-
-            if (_padints[uid].Timestamp >= timestamp)
-                throw new TxException("The client timestamp is lower than the object's timestamp!");
-            else
+			foreach (KeyValuePair<int, List<int>> t in _transactions)
 			{
-                _transactions[transactionId].Add(uid);
-            }
+				if (t.Value.Contains(uid))
+					throw new TxException("The PADInt" + uid + " is already locked!");
+			}
+
+			if (_padints[uid].Timestamp >= timestamp)
+				throw new TxException("The client timestamp is lower than the object's timestamp!");
+			else
+				_transactions[transactionId].Add(uid);
         }
 
         public void UnlockPADInt(int transactionId, int uid)
@@ -262,23 +272,21 @@ namespace PADIServer
             if (!_transactions[transactionId].Contains(uid))
                 throw new TxException("The PADInt" + uid + "is not locked");
             else
-            {
                 _transactions[transactionId].Remove(uid);
-            }
         }
 
         //-------------------------------------------------------------------------------------------------------------
         // Coordinator Methods ----------------------------------------------------------------------------------------
 
-        public void receiveVote(bool vote)
+        public void ReceiveVote(bool vote)
         {
             votes.Add(vote);
         }
 
-        public string GetServerUrl() {
+        public string GetServerUrl()
+		{
             return _url;
         }
-
 
         public bool TxCommit(int tId, List<string> participants, int timestamp)
         {
@@ -291,18 +299,17 @@ namespace PADIServer
             onTime = true;
             coordinating = true;
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
-            foreach (string participant in participants){
+            foreach (string participant in participants)
                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
-            }
+
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
-                server.prepare(tId, _url, timestamp);
+                server.Prepare(tId, _url, timestamp);
             timeout.Enabled = true;
 
            while (onTime)
            {
                votes.ForEach((bool x) => canCommit = (x && canCommit));
-
                if (canCommit)
                    break;
            }
@@ -313,8 +320,6 @@ namespace PADIServer
                _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId, _url));
 
            return canCommit;
-
-
         }
 
         void timeout_Elapsed(object sender, ElapsedEventArgs e)
@@ -328,10 +333,26 @@ namespace PADIServer
             ParticipantInterface p;
             foreach (string participant in participants)
             {
-                p=(ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
+                p = (ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
                 p.DoAbort(tId, _url);
             }
             return true;
         }
+
+		public bool Freeze_f()
+		{
+			return _freeze;
+		}
+
+		public bool Fail_f()
+		{
+			return _fail;
+		}
+
+		public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
+		{
+			_pendingRequests.Add(methodInfo, parameters);
+			return;
+		}
     }
 }

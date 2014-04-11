@@ -1,4 +1,4 @@
-﻿using DSTMLib;
+﻿using DSTMLIB;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -65,9 +65,11 @@ namespace PADIMaster
         private int timestamps;
         //Server timeout
         const double TIMEOUT = 10000;
-
+		// a list containing the ids of all the transactions that finished
         private List<int> finishedTransactions;
+		// a list containing the ids of all the transactions that haven't finished
         private List<int> transactionsInCourse;
+		// id generator for the transactions
         private int transactionsId;
 
         public MasterServer()
