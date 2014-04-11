@@ -217,27 +217,26 @@ namespace DSTMLib
 
         public static PADInt CreatePADInt(int uid)
 		{
-
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
             KeyValuePair<int, string> locations = _master.GenerateServers(uid);
             Console.Write("the chosen servers are: ");
-            Console.Write(locations.Value);
-            
-            ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-            Console.WriteLine(tServer.ToString());
-            PADInt reference = tServer.CreatePADInt(uid, locations.Value);
-            _references.Add(reference);
+            Console.WriteLine(locations.Value);
+
+			ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+			PADInt reference = tServer.CreatePADInt(uid, locations.Value);
+			_references.Add(reference);
+
             return reference;
         }
 
-        //tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
-        // <summary>
-        // Function to get a remote reference to a PADInt with a given uid.
-        // If the object doesn't exist, then returns null, and warns the client.
-        // </summary>
-        // <param name="uid"></param>
-        // <returns>The remote reference to the PADInt object</returns>
+        // tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
+        /// <summary>
+		/// Function to get a remote reference to a PADInt with a given uid.
+		/// If the object doesn't exist, then returns null, and warns the client.
+		/// </summary>
+		/// <param name="uid"></param>
+		/// <returns>The remote reference to the PADInt object</returns>
 		public static PADInt AccessPADInt(int uid)
 		{
             string servers;

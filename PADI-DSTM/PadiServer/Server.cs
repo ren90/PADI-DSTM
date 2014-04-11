@@ -22,7 +22,9 @@ namespace PADIServer
             ChannelServices.RegisterChannel(channel, false);
             System.Console.WriteLine("Registered Channel @random");
 
-            MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
+			string address = System.IO.File.ReadAllText(@"../../../mServerLocation.dat");
+
+            MasterInterface mServer = (MasterInterface)Activator.GetObject(typeof(MasterInterface), address);
             idAndPort = mServer.RegisterTransactionalServer(getIP());
 
             System.Console.WriteLine("Registered at Master");
@@ -41,7 +43,7 @@ namespace PADIServer
             TransactionalServer ts = new TransactionalServer(idAndPort.Key, mServer, "tcp://"+getIP()+":"+idAndPort.Value+"/Server");
             RemotingServices.Marshal(ts, "TransactionalServer", typeof(TransactionalServer));
             System.Console.WriteLine("SERVER ON");
-            System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value);
+            System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value + "IP: "+ getIP());
             System.Console.ReadLine();
         }
 
@@ -60,7 +62,6 @@ namespace PADIServer
             }
             return localIP;
         }
-
     }
 
     class TransactionalServer : MarshalByRefObject, ServerInterface, ParticipantInterface, CoordinatorInterface
@@ -95,11 +96,9 @@ namespace PADIServer
         
         // Coordinator attributes 
         // map between transaction ID and the list of servers involved
-        private  bool onTime;
-        private  bool coordinating;
-        private  List<bool> votes = new List<bool>();
-
-
+        private bool onTime;
+        private bool coordinating;
+        private List<bool> votes = new List<bool>();
 
         public TransactionalServer(int id, MasterInterface master, string url)
         {
@@ -123,7 +122,7 @@ namespace PADIServer
         }
 
         // ------------------------------------------------------------------------------------------------------------------
-        // PADInt MAnipulation Methods --------------------------------------------------------------------------------------
+        // PADInt Manipulation Methods --------------------------------------------------------------------------------------
 
         public PADInt CreatePADInt(int uid, string server)
         {
