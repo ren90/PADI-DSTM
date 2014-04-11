@@ -57,6 +57,7 @@ namespace DSTMLIB
 				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
                 try
                 {
+                    Console.WriteLine("TAMANHO: " + _references.Count);
                     foreach (PADInt p in _references)
                     {
                         foreach (String server in p.getLocations())
