@@ -61,8 +61,8 @@ namespace DSTMLib
                         foreach (String server in p.getLocations())
                         {
                             ServerInterface serverLocation = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
-                            serverLocation.LockPADInt(p.UID, timestamp);
-                            serverList.Add(serverLocation.GetServerURL());
+                            serverLocation.LockPADInt(transactionId, p.UID, timestamp);
+                            serverList.Add(serverLocation.GetServerUrl());
                         }
                     }
                 }
@@ -86,7 +86,7 @@ namespace DSTMLib
         public static bool TxCommit()
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
-			bool final_result = coordinator.TxCommit(transactionId, serverList);
+			bool final_result = coordinator.TxCommit(transactionId, serverList, timestamp);
 
 			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
 			//foreach (string url in serverList)
@@ -116,10 +116,10 @@ namespace DSTMLib
 			return final_result;
         }
 
-        public static bool TxAbort(int tId)
+        public static bool TxAbort()
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
-			coordinator.TxAbort(serverList, transactionId);
+			coordinator.TxAbort(transactionId, serverList);
 
             foreach (string url in serverList)
 			{
@@ -127,7 +127,7 @@ namespace DSTMLib
                 {
                     ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
                     foreach (PADInt p in _references)
-                        server.UnlockPADInt(p.UID);
+                        server.UnlockPADInt(transactionId, p.UID);
                 }
                 catch (TxException e)
 				{
@@ -217,7 +217,6 @@ namespace DSTMLib
 
         public static PADInt CreatePADInt(int uid)
 		{
-			string server_location = "";
 
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
@@ -226,8 +225,8 @@ namespace DSTMLib
             Console.Write(locations.Value);
             
             ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-
-            PADInt reference = tServer.CreatePADInt(uid, server_location);
+            Console.WriteLine(tServer.ToString());
+            PADInt reference = tServer.CreatePADInt(uid, locations.Value);
             _references.Add(reference);
             return reference;
         }

@@ -18,16 +18,16 @@ namespace DSTMLib
 
     public interface CoordinatorInterface
     {
-        bool TxCommit(int tId, List<string> participants);
+        bool TxCommit(int tId, List<string> participants, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         void receiveVote(bool reply);
     }
 
     public interface ParticipantInterface{
 
-        void DoCommit(int tId, string coordinator);
+        bool DoCommit(int tId, string coordinator);
         void DoAbort(int tId, string coordinator);
-        void prepare(int tId, string coordinator);
+        void prepare(int tId, string coordinator, int timestamp);
         
     }
 
@@ -39,10 +39,10 @@ namespace DSTMLib
         bool Recover();
         bool Freeze();
 		bool Status();
-        void LockPADInt(int uid, int timestamp);
-        void UnlockPADInt(int uid);
-        bool TxCommit(int tId, List<string> participants);
-        bool TxAbort(List<string> participant, int tId);
-        string GetServerURL();
+        void LockPADInt(int transactionId, int uid, int timestamp);
+        void UnlockPADInt(int transactionId, int uid);
+        bool TxCommit(int tId, List<string> participants, int timestamp);
+        bool TxAbort(int tId, List<string> participants);
+        string GetServerUrl();
     }
 }

@@ -210,7 +210,7 @@ namespace PADIServer
         // -------------------------------------------------------------------------------------------------------------------
         // Participant Methods ------------------------------------------------------------------------------------------------
 
-		public bool DoCommit(int tId)
+		public bool DoCommit(int tId, string coordinator)
 		{
 			foreach (int p in _transactions[tId])
 			{
@@ -220,10 +220,9 @@ namespace PADIServer
 			return false;
 		}
 
-		public bool DoAbort(int tId)
+		public void DoAbort(int tId, string coordinator)
 		{
             _transactions.Remove(tId);
-			return true;
 		}
 
         public void prepare(int tID, string coordinator, int timestamp)
@@ -243,7 +242,7 @@ namespace PADIServer
         // -------------------------------------------------------------------------------------------------------------
         // Locking Methods
 
-        public void LockPADInt(int uid, int transactionId ,int timestamp)
+        public void LockPADInt(int transactionId, int uid ,int timestamp)
 		{
             for(int j =0 ; j < _transactions.Keys.Count; j++){
                 if(_transactions[j].Contains(uid))
@@ -258,7 +257,7 @@ namespace PADIServer
             }
         }
 
-        public void UnlockPADInt(int transactionId ,int uid)
+        public void UnlockPADInt(int transactionId, int uid)
         {
             if (!_transactions[transactionId].Contains(uid))
                 throw new TxException("The PADInt" + uid + "is not locked");
@@ -281,7 +280,7 @@ namespace PADIServer
         }
 
 
-        public bool TxCommit(List<string> participants, int tId)
+        public bool TxCommit(int tId, List<string> participants, int timestamp)
         {
             bool canCommit = false;
             Timer timeout = new Timer(10000);
@@ -297,7 +296,7 @@ namespace PADIServer
             }
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
-                server.prepare(tId, _url);
+                server.prepare(tId, _url, timestamp);
             timeout.Enabled = true;
 
            while (onTime)
@@ -323,7 +322,7 @@ namespace PADIServer
             onTime = false;
         }
 
-        public bool TxAbort(List<string> participants, int tId)
+        public bool TxAbort(int tId, List<string> participants)
         {
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
             ParticipantInterface p;
