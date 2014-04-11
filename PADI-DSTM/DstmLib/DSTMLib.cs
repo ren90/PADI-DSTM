@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 
-namespace DSTMLib
+namespace DSTMLIB
 {
     public static class DSTMLib
     {
@@ -54,6 +54,7 @@ namespace DSTMLib
                 isInTransaction = true;
                 transactionCoordinatorUrl = _master.GetCoordinator();
 
+				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
                 try
                 {
                     foreach (PADInt p in _references)
@@ -220,10 +221,26 @@ namespace DSTMLib
             Console.WriteLine("DSTMLib-> calling master to create PADInt!");
             
             KeyValuePair<int, string> locations = _master.GenerateServers(uid);
+
             Console.Write("the chosen servers are: ");
             Console.WriteLine(locations.Value);
 
 			ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+			if (tServer.Fail_f())
+			{
+				return null;
+			}
+			else if (tServer.Freeze_f())
+			{
+				Int32 parameter = uid;
+				List<Object> parameters = new List<Object>();
+				parameters.Add(parameter);
+
+				tServer.AddPendingRequest(tServer.GetType().GetMethod(""), parameters);
+
+				return null;
+			}
+
 			PADInt reference = tServer.CreatePADInt(uid, locations.Value);
 			_references.Add(reference);
 

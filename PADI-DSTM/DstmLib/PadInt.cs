@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DSTMLib
+namespace DSTMLIB
 {
     [Serializable]
     public class PADInt

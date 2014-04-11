@@ -1,4 +1,4 @@
-﻿using DSTMLib;
+﻿using DSTMLIB;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -29,7 +29,7 @@ namespace PADIClient
 
         public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
-            DSTMLib.DSTMLib.Init();
+            DSTMLIB.DSTMLib.Init();
             _padints = new Dictionary<int, PADInt>();
             _logDelegate = logDelegate;
             _listDelegate = listDelegate;
@@ -37,7 +37,7 @@ namespace PADIClient
 
 		public void CreatePADInt(int uid)
 		{
-			PADInt p = DSTMLib.DSTMLib.CreatePADInt(uid);
+			PADInt p = DSTMLIB.DSTMLib.CreatePADInt(uid);
             _padints.Add(uid, p);
             _logDelegate("created int with UID: " + uid);
             _listDelegate("UID:" + uid);
@@ -45,7 +45,7 @@ namespace PADIClient
 
 		public void AccessPADInt(int uid)
 		{
-            PADInt p = DSTMLib.DSTMLib.AccessPADInt(uid);
+            PADInt p = DSTMLIB.DSTMLib.AccessPADInt(uid);
             
             if (p == null)
 			{
@@ -82,30 +82,30 @@ namespace PADIClient
 
         public void Status()
 		{
-			DSTMLib.DSTMLib.Status();
+			DSTMLIB.DSTMLib.Status();
 		}
 
         public void Fail(string URL)
 		{    
-            DSTMLib.DSTMLib.Fail(URL);
+            DSTMLIB.DSTMLib.Fail(URL);
             _logDelegate("Simulated Server fail @" + URL);
         }
 
         public void Freeze(string URL)
 		{
-            DSTMLib.DSTMLib.Freeze(URL);
+            DSTMLIB.DSTMLib.Freeze(URL);
             _logDelegate("Simulated Server freeze @" + URL);
         }
 
         public void Recover(string URL)
 		{
-            DSTMLib.DSTMLib.Recover(URL);
+            DSTMLIB.DSTMLib.Recover(URL);
             _logDelegate("Server recovered @" + URL);
         }
 
         public void TxBegin()
 		{
-            bool result = DSTMLib.DSTMLib.TxBegin();
+            bool result = DSTMLIB.DSTMLib.TxBegin();
 
             if (result)
 				_logDelegate("Transaction started!");
@@ -115,12 +115,12 @@ namespace PADIClient
 
         public void TxCommit()
 		{
-			DSTMLib.DSTMLib.TxCommit();
+			DSTMLIB.DSTMLib.TxCommit();
 		}
 
         public void TxAbort()
 		{
-			DSTMLib.DSTMLib.TxAbort();
+			DSTMLIB.DSTMLib.TxAbort();
 		}
     }
 }
