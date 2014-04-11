@@ -223,11 +223,17 @@ namespace DSTMLib
             KeyValuePair<int, string> locations = _master.GenerateServers(uid);
             Console.Write("the chosen servers are: ");
             Console.Write(locations.Value);
-            
-            ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-            Console.WriteLine(tServer.ToString());
-            PADInt reference = tServer.CreatePADInt(uid, locations.Value);
-            _references.Add(reference);
+            PADInt reference = null;
+            try
+            {
+                ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+                Console.WriteLine(tServer.ToString());
+                reference = tServer.CreatePADInt(uid, locations.Value);
+                _references.Add(reference);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e.StackTrace);
+            }
             return reference;
         }
 
