@@ -22,6 +22,7 @@ namespace DSTMLIB
         private static string transactionCoordinatorUrl;
         // methods for manipulating PADI-DSTM
         private static int transactionId;
+        private static bool set = false;
 
         public static bool Init()
 		{
@@ -53,8 +54,11 @@ namespace DSTMLIB
                 timestamp = data.Value;
                 isInTransaction = true;
                 transactionCoordinatorUrl = _master.GetCoordinator();
-
-				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+                if (!set)
+                {
+                    set = true;
+                    RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+                }
                 try
                 {
                     foreach (PADInt p in _references)

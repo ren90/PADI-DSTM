@@ -287,9 +287,8 @@ namespace PADIServer
         public void UnlockPADInt(int transactionId, int uid)
         {
             if (_transactions[transactionId].Contains(uid))
-                _transactions[transactionId].Remove(transactionId);
+                _transactions[transactionId].Remove(uid);
             else
-
                 throw new TxException("The PADInt" + uid + "is not locked");
         }
 
