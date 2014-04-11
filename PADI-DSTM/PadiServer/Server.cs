@@ -224,11 +224,6 @@ namespace PADIServer
 
 		public bool DoCommit(int tId, string coordinator)
 		{
-			foreach (int p in _transactions[tId])
-			{
-                this.UnlockPADInt(tId, p);
-			
-			}
             _transactions.Remove(tId);
 			return true;
 		}
@@ -239,7 +234,6 @@ namespace PADIServer
             foreach (int id in _transactions[tId])
             {
                 _padints[id].rollback();
-                UnlockPADInt(tId, id);
             }
             _transactions.Remove(tId);
 
@@ -287,7 +281,7 @@ namespace PADIServer
         public void UnlockPADInt(int transactionId, int uid)
         {
             if (_transactions[transactionId].Contains(uid))
-                _transactions[transactionId].Remove(transactionId);
+                _transactions[transactionId].Remove(uid);
             else
 
                 throw new TxException("The PADInt" + uid + "is not locked");
