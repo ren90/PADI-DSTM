@@ -187,6 +187,7 @@ namespace PADIClient
             this.abortTx_button.Enabled = false;
             this.commitTx_button.Enabled = false;
             this.statusTx_button.Enabled = false;
+            _client.TxCommit();
         }
 
         private void abortTx_button_Click(object sender, EventArgs e)
@@ -195,6 +196,7 @@ namespace PADIClient
             this.abortTx_button.Enabled = false;
             this.commitTx_button.Enabled = false;
             this.statusTx_button.Enabled = false;
+            _client.TxAbort();
         }
     }
 }
