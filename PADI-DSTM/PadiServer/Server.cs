@@ -224,6 +224,7 @@ namespace PADIServer
 
 		public bool DoCommit(int tId, string coordinator)
 		{
+            _transactions[tId].Clear();
             _transactions.Remove(tId);
 			return true;
 		}
@@ -235,6 +236,7 @@ namespace PADIServer
             {
                 _padints[id].rollback();
             }
+            _transactions[tId].Clear();
             _transactions.Remove(tId);
 
 		}
