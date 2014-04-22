@@ -103,7 +103,7 @@ namespace PADIClient
             _logDelegate("Server recovered @" + URL);
         }
 
-        public void TxBegin()
+        public bool TxBegin()
 		{
             bool result = DSTMLib.TxBegin();
 
@@ -111,6 +111,8 @@ namespace PADIClient
 				_logDelegate("Transaction started!");
             else
 				_logDelegate("Can not start transaction!");
+
+            return result;
         }
 
         public void TxCommit()

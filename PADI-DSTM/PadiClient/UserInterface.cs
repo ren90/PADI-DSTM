@@ -22,7 +22,12 @@ namespace PADIClient
             this.commitTx_button.Enabled = true;
             this.statusTx_button.Enabled = true;
 
-			_client.TxBegin();
+            if (!_client.TxBegin()) {
+                this.beginTx_button.Enabled = true;
+                this.abortTx_button.Enabled = false;
+                this.commitTx_button.Enabled = false;
+                this.statusTx_button.Enabled = false;
+            }
         }
 
         private void serverURL_textBox_TextChanged(object sender, EventArgs e)
