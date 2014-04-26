@@ -37,10 +37,16 @@ namespace PADIClient
 
 		public void CreatePADInt(int uid)
 		{
-			PADInt p = DSTMLib.CreatePADInt(uid);
-            _padints.Add(uid, p);
-            _logDelegate("created int with UID: " + uid);
-            _listDelegate("UID:" + uid);
+            try
+            {
+                PADInt p = DSTMLib.CreatePADInt(uid);
+                _padints.Add(uid, p);
+                _logDelegate("created int with UID: " + uid);
+                _listDelegate("UID:" + uid);
+            }
+            catch (TxException e) {
+                _logDelegate("ERROR: " + e.Message);
+            }
 		}
 
 		public void AccessPADInt(int uid)

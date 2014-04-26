@@ -208,32 +208,40 @@ namespace DSTMLIB
 
         public static PADInt CreatePADInt(int uid)
 		{
-            Console.WriteLine("DSTMLib-> calling master to create PADInt!");
-            
-            KeyValuePair<int, string> locations = _master.GenerateServers(uid);
+            try
+            {
+                Console.WriteLine("DSTMLib-> calling master to create PADInt!");
 
-            Console.Write("the chosen servers are: ");
+                KeyValuePair<int, string> locations = _master.GenerateServers(uid);
 
-            Console.WriteLine(locations.Value);
+                Console.Write("the chosen servers are: ");
 
-			ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-			if (tServer.Fail_f())
-			{
-				return null;
-			}
-			else if (tServer.Freeze_f())
-			{
-				Int32 parameter = uid;
-				List<Object> parameters = new List<Object>();
-				parameters.Add(parameter);
+                Console.WriteLine(locations.Value);
 
-				tServer.AddPendingRequest(tServer.GetType().GetMethod("CreatePADInt"), parameters);
-				return null;
-			}
+                ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
+                if (tServer.Fail_f())
+                {
+                    return null;
+                }
+                else if (tServer.Freeze_f())
+                {
+                    Int32 parameter = uid;
+                    List<Object> parameters = new List<Object>();
+                    parameters.Add(parameter);
 
-			PADInt reference = tServer.CreatePADInt(uid, locations.Value);
-			_references.Add(reference);
-            return reference;
+                    tServer.AddPendingRequest(tServer.GetType().GetMethod("CreatePADInt"), parameters);
+                    return null;
+                }
+
+                PADInt reference = tServer.CreatePADInt(uid, locations.Value);
+                _references.Add(reference);
+                return reference;
+            }
+            catch (TxException e)
+            {
+                Console.WriteLine("DSTMLib->ERROR: " + e.Message);
+                throw e;
+            }
         }
 
         // tem um insecto! faxabor de por isto a reotrnar os addresses faxabor

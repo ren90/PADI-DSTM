@@ -43,7 +43,7 @@ namespace PADIServer
             TransactionalServer ts = new TransactionalServer(idAndPort.Key, mServer, "tcp://"+getIP()+":"+idAndPort.Value+"/Server");
             RemotingServices.Marshal(ts, "Server", typeof(TransactionalServer));
             System.Console.WriteLine("SERVER ON");
-            System.Console.WriteLine("Name: " + idAndPort.Key + " Port: " + idAndPort.Value + "IP: "+ getIP());
+            System.Console.WriteLine("Server: " + idAndPort.Key + " Port: " + idAndPort.Value + " IP: "+ getIP());
             System.Console.ReadLine();
         }
 

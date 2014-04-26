@@ -6,6 +6,7 @@ using System.Timers;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Net.Sockets;
 
 namespace PADIMaster
 {
@@ -132,12 +133,16 @@ namespace PADIMaster
 
         public KeyValuePair<int, string> GenerateServers(int uid)
         {
-            int server = HashServers(0);
-            KeyValuePair<int, string> servers = new KeyValuePair<int, string>(server, _transactionalServers[server]);
-            int serverId = servers.Key;
-            _padintReferences.Add(uid, serverId);
-
-            return servers;
+            try{
+                int server = HashServers(0);
+                KeyValuePair<int, string> servers = new KeyValuePair<int, string>(server, _transactionalServers[server]);
+                int serverId = servers.Key;
+                _padintReferences.Add(uid, serverId);
+                return servers;
+            }
+            catch(TxException e){
+                throw new TxException("The uid already exists");
+            }
         }
 
         public string GetServers(int uid)
