@@ -208,15 +208,16 @@ namespace DSTMLIB
 
         public static PADInt CreatePADInt(int uid)
 		{
-            try
-            {
                 Console.WriteLine("DSTMLib-> calling master to create PADInt!");
 
                 KeyValuePair<int, string> locations = _master.GenerateServers(uid);
 
-                Console.Write("the chosen servers are: ");
+                if (locations.Key == -1){
+                    Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
+                    return null;
+                }
 
-                Console.WriteLine(locations.Value);
+                Console.Write("the chosen servers are: " + locations.Value);
 
                 ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
                 if (tServer.Fail_f())
@@ -234,14 +235,9 @@ namespace DSTMLIB
                 }
 
                 PADInt reference = tServer.CreatePADInt(uid, locations.Value);
-                _references.Add(reference);
+                //_references.Add(reference);
+
                 return reference;
-            }
-            catch (TxException e)
-            {
-                Console.WriteLine("DSTMLib->ERROR: " + e.Message);
-                throw e;
-            }
         }
 
         // tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
@@ -254,44 +250,35 @@ namespace DSTMLIB
 		public static PADInt AccessPADInt(int uid)
 		{
             string servers;
-			Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
-			servers =  _master.GetServers(uid);
-            Console.Write("the chosen servers are: ");
-            Console.WriteLine(servers);
-
-            if (isInTransaction)
-            {
-                Console.WriteLine("DSTMLib-> ERROR: There is already a transaction started");
-                throw new TxException("There is already a transaction started");
-            }
+            Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
+            servers = _master.GetServers(uid);
 
             if (servers == null)
-			{
-               Console.WriteLine("ERROR: The PADInt does not exist!");
-               return null;
+            {
+                Console.WriteLine("DSTMLib-> ERROR: The PadInt with uid" + uid + "does not exist");
+                return null;
             }
 
-            Console.WriteLine("The PADInts are at these servers: ");
-            Console.WriteLine(servers.ToString());
+            Console.WriteLine("The PADInts are at these servers: " +  servers.ToString());
             Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
-            
+               
             ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
-			if (chosen.Fail_f())
-			{
-				return null;
-			}
-			else if (chosen.Freeze_f())
-			{
-				Int32 parameter = uid;
-				List<Object> parameters = new List<Object>();
-				parameters.Add(parameter);
+            if (chosen.Fail_f())
+            {
+                return null;
+            }
+            else if (chosen.Freeze_f())
+            {
+                Int32 parameter = uid;
+                List<Object> parameters = new List<Object>();
+                parameters.Add(parameter);
 
-				chosen.AddPendingRequest(chosen.GetType().GetMethod("AccessPADInt"), parameters);
-				return null;
-			}
+                chosen.AddPendingRequest(chosen.GetType().GetMethod("AccessPADInt"), parameters);
+                return null;
+            }
 
             PADInt reference = chosen.AccessPADInt(uid);
-            _references.Add(reference);
+           // _references.Add(reference);
 
             return reference;
 		}

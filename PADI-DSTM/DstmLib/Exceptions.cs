@@ -12,3 +12,21 @@ namespace DSTMLIB
 		public TxException(string message, Exception ex) : base(message, ex) { }
     }
 }
+
+
+    /*[Serializable]
+    public class TxException : ApplicationException
+    {
+        public String msg;
+    
+        public TxException(string c)
+        {
+            msg = c;
+        }
+    
+        public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        {
+            base.GetObjectData(info, context);
+            info.AddValue("msg", msg);
+        }
+    }*/

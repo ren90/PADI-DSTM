@@ -37,33 +37,31 @@ namespace PADIClient
 
 		public void CreatePADInt(int uid)
 		{
-            try
-            {
-                PADInt p = DSTMLib.CreatePADInt(uid);
+            PADInt p = DSTMLib.CreatePADInt(uid);
+
+            if(p != null){
                 _padints.Add(uid, p);
                 _logDelegate("created int with UID: " + uid);
                 _listDelegate("UID:" + uid);
             }
-            catch (TxException e) {
-                _logDelegate("ERROR: " + e.Message);
+            else  {
+                _logDelegate("ERROR: the Padint with the uid = " + uid + " could not be created");
             }
 		}
 
 		public void AccessPADInt(int uid)
 		{
             PADInt p = DSTMLib.AccessPADInt(uid);
-            
-            if (p == null)
-			{
-                _logDelegate("The PadInt with the uid " + uid + " does not exist");
-                return;
+
+            if(p != null){
+                if (!_padints.ContainsKey(uid))
+                _padints.Add(uid, p);
+
+                _logDelegate("accessed int with UID: " + uid);
+                _listDelegate("UID:" + uid);
             }
-
-			if (!_padints.ContainsKey(uid))
-				_padints.Add(uid, p);
-
-            _logDelegate("accessed int with UID: " + uid);
-            _listDelegate("UID:" + uid);
+            else 
+                _logDelegate("The PadInt "+ uid + " could not be accessed");
 		}
 
 		public int Read(int uid)

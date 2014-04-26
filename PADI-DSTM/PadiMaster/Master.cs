@@ -133,28 +133,26 @@ namespace PADIMaster
 
         public KeyValuePair<int, string> GenerateServers(int uid)
         {
-            try{
+                if (_padintReferences.ContainsKey(uid))
+                    return new KeyValuePair<int,string>(-1,"null");
+
                 int server = HashServers(0);
                 KeyValuePair<int, string> servers = new KeyValuePair<int, string>(server, _transactionalServers[server]);
                 int serverId = servers.Key;
                 _padintReferences.Add(uid, serverId);
                 return servers;
-            }
-            catch(TxException e){
-                throw new TxException("The uid already exists");
-            }
         }
 
         public string GetServers(int uid)
         {
             Console.WriteLine("Received PADInt access request with the UID: " + uid);
-            int serverId;
             List<String> addressList = new List<string>();
 
-            if (_padintReferences.TryGetValue(uid, out serverId))
-                return _transactionalServers[serverId];
-            else
+            if (_padintReferences.ContainsKey(uid))
+                return _transactionalServers[ _padintReferences[uid]];
+            else {
                 return null;
+            }
         }
 
         public string GetCoordinator()
