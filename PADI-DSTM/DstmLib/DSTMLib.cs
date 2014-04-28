@@ -44,11 +44,6 @@ namespace DSTMLIB
 		{
             if (!isInTransaction)
             {
-                if (_references.Count == 0)
-                {
-                    Console.WriteLine("DSTMLib->ERROR: there are no PADInt references to make a transaction!");
-                    return false;
-                }
                 KeyValuePair<int, int> data = _master.GetTransactionData();
                 transactionId = data.Key;
                 timestamp = data.Value;
@@ -59,7 +54,7 @@ namespace DSTMLIB
                     set = true;
                     RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
                 }
-                try
+                /*try
                 {
                     foreach (PADInt p in _references)
                     {
@@ -75,7 +70,7 @@ namespace DSTMLIB
                 {
                     Console.WriteLine("DSTMLib->ERROR: " + e.Message);
                     return false;
-                }
+                }*/
 
                 return true;
             }
@@ -89,7 +84,7 @@ namespace DSTMLIB
         public static bool TxCommit()
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
-			bool final_result = coordinator.TxCommit(transactionId, serverList, timestamp);
+			bool final_result = coordinator.TxCommit(transactionId, _references, timestamp);
 
 			#region Old Stuff
 			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
@@ -234,10 +229,11 @@ namespace DSTMLIB
                     return null;
                 }
 
-                PADInt reference = tServer.CreatePADInt(uid, locations.Value);
-                //_references.Add(reference);
+                PADInt reference = tServer.CreatePADInt(uid, locations.Value, transactionId);
+                PADInt localCopy = new PADInt(reference, transactionId);
+                _references.Add(localCopy);
 
-                return reference;
+                return localCopy;
         }
 
         // tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
@@ -250,6 +246,14 @@ namespace DSTMLIB
 		public static PADInt AccessPADInt(int uid)
 		{
             string servers;
+
+            foreach(PADInt p in _references){
+                if(p.UID == uid){
+                    Console.WriteLine("The reference for the PADInt " + uid + " was in cache");
+                    return p;
+                }
+            }
+
             Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
             servers = _master.GetServers(uid);
 
@@ -277,10 +281,10 @@ namespace DSTMLIB
                 return null;
             }
 
-            PADInt reference = chosen.AccessPADInt(uid);
-           // _references.Add(reference);
-
-            return reference;
+            PADInt reference = chosen.AccessPADInt(uid, transactionId);
+            PADInt localCopy = new PADInt(reference, transactionId);
+            _references.Add(localCopy);
+            return localCopy;
 		}
     }
 }

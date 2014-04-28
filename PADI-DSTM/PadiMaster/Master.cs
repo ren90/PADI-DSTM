@@ -140,7 +140,9 @@ namespace PADIMaster
                 KeyValuePair<int, string> servers = new KeyValuePair<int, string>(server, _transactionalServers[server]);
                 int serverId = servers.Key;
                 _padintReferences.Add(uid, serverId);
-                return servers;
+                Console.WriteLine("The PADInt with the uid " + uid + " will be created in the servers: " + servers.Value);
+                
+            return servers;
         }
 
         public string GetServers(int uid)

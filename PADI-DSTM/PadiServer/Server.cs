@@ -126,7 +126,7 @@ namespace PADIServer
         // ------------------------------------------------------------------------------------------------------------------
         // PADInt Manipulation Methods --------------------------------------------------------------------------------------
 
-        public PADInt CreatePADInt(int uid, string server)
+        public PADInt CreatePADInt(int uid, string server, int transactionId)
         {
             if (_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " already exists!");
@@ -137,18 +137,33 @@ namespace PADIServer
             _padints.Add(uid, p);
             Console.WriteLine("Added to dictionary");
 
+            if (!_transactions.ContainsKey(transactionId))
+            {
+                _transactions.Add(transactionId, new List<int>());
+                _transactions[transactionId].Add(uid);
+            }
+            else
+            {
+                _transactions[transactionId].Add(uid);
+            }
+
 			return p;
         }
 
-        public PADInt AccessPADInt(int uid)
+        public PADInt AccessPADInt(int uid, int transactionId)
         {
             if (!_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " doesn't exist!");
-
-            PADInt p = _padints[uid];
             Console.WriteLine("SERVER: Accessing PADInt with uid " + uid + "...");
-
-            return p;
+            if (!_transactions.ContainsKey(transactionId))
+            {
+                _transactions.Add(transactionId, new List<int>());
+                _transactions[transactionId].Add(uid);
+            }
+            else {
+                _transactions[transactionId].Add(uid);
+            }
+            return _padints[uid];
         }
 
         // ---------------------------------------------------------------------------------------------------------------------
@@ -245,7 +260,8 @@ namespace PADIServer
         public void Prepare(int tID, string coordinator, int timestamp)
         {
 			bool reply = true;
-			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(timestamp));
+			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(tID, 
+                timestamp));
 			SendVote(reply, coordinator);
         }
 
@@ -260,11 +276,14 @@ namespace PADIServer
 
         public void LockPADInt(int transactionId, int uid ,int timestamp)
 		{
+
 			foreach (KeyValuePair<int, List<int>> t in _transactions)
 			{
                 if (t.Value.Contains(uid))
                 {
-                    throw new TxException("The PADInt" + uid + " is already locked!");
+                    if (!_transactions.ContainsKey(transactionId))
+                        throw new TxException("The PADInt" + uid + " is already locked!");
+                    else return;
                 }
 			}
             if (_padints[uid].Timestamp > timestamp)
@@ -302,7 +321,7 @@ namespace PADIServer
             return _url;
         }
 
-        public bool TxCommit(int tId, List<string> participants, int timestamp)
+         public bool TxCommit(int tId, List<PADInt> _references, int timestamp)
         {
             bool canCommit = true;
             Timer timeout = new Timer(10000);
@@ -313,9 +332,11 @@ namespace PADIServer
             onTime = true;
             coordinating = true;
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
-            foreach (string participant in participants)
-                _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
-
+            foreach (PADInt p in _references)
+            {
+                foreach (string participant in p.originalPadint().getLocations())
+                    _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
+            }
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
                 server.Prepare(tId, _url, timestamp);

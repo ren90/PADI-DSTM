@@ -18,7 +18,7 @@ namespace DSTMLIB
     //Transactional server interfaces
     public interface CoordinatorInterface
     {
-        bool TxCommit(int tId, List<string> participants, int timestamp);
+        bool TxCommit(int tId, List<PADInt> _references, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         void ReceiveVote(bool reply);
     }
@@ -32,15 +32,15 @@ namespace DSTMLIB
 
 	public interface ServerInterface
 	{
-        PADInt CreatePADInt(int uid, string servers);
-        PADInt AccessPADInt(int uid);
+        PADInt CreatePADInt(int uid, string servers, int transactionId);
+        PADInt AccessPADInt(int uid, int transactionId);
         bool Fail();
         bool Recover();
         bool Freeze();
 		bool Status();
         void LockPADInt(int transactionId, int uid, int timestamp);
         void UnlockPADInt(int transactionId, int uid);
-        bool TxCommit(int tId, List<string> participants, int timestamp);
+        bool TxCommit(int tId, List<PADInt> _references, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         string GetServerUrl();
 		bool Fail_f();
