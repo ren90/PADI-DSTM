@@ -34,6 +34,11 @@ namespace PADIClient
         {
             serverFail_button.Enabled = true;
             serverFreeze_button.Enabled = true;
+			if (serverURL_textBox.Text == "")
+			{
+				serverFail_button.Enabled = false;
+				serverFreeze_button.Enabled = false;
+			}
         }
 
         private void statusTx_button_Click(object sender, EventArgs e)

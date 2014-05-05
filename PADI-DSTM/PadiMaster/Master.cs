@@ -14,6 +14,8 @@ namespace PADIMaster
     {
         static void Main(string[] args)
         {
+			RemotingConfiguration.Configure(@"../../App.config", true);
+
             int port = 8087;
 
             TcpChannel channel = new TcpChannel(port);

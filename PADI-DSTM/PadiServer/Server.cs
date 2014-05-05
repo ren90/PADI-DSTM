@@ -17,6 +17,8 @@ namespace PADIServer
     {
         static void Main(string[] args)
         {
+			RemotingConfiguration.Configure(@"../../App.config", true);
+
             KeyValuePair<int, int> idAndPort;
             System.Console.WriteLine("Bootstrapping...");
             TcpChannel channel = new TcpChannel();
