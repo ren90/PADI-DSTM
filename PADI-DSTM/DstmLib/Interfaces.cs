@@ -6,10 +6,10 @@ namespace DSTMLIB
 {
     public interface MasterInterface
     {
-        KeyValuePair<int, string> GenerateServers(int uid);
+        List<KeyValuePair<int, string>> GenerateServers(int uid);
 		KeyValuePair<int, int> RegisterTransactionalServer(string ip);
         KeyValuePair<int, int> GetTransactionData();
-		string GetServers(int uid);
+		List<string> GetServers(int uid);
         string GetCoordinator();
         bool FinishTransaction(int uid);
         void ImAlive(int serverId);
@@ -18,7 +18,7 @@ namespace DSTMLIB
     //Transactional server interfaces
     public interface CoordinatorInterface
     {
-        bool TxCommit(int tId, List<PADInt> _references, int timestamp);
+        bool TxCommit(int tId, List<string> _servers, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         void ReceiveVote(bool reply);
     }
@@ -32,7 +32,7 @@ namespace DSTMLIB
 
 	public interface ServerInterface
 	{
-        PADInt CreatePADInt(int uid, string servers, int transactionId);
+        PADInt CreatePADInt(int uid, List<string> servers, int transactionId);
         PADInt AccessPADInt(int uid, int transactionId);
         bool Fail();
         bool Recover();
@@ -40,7 +40,7 @@ namespace DSTMLIB
 		bool Status();
         void LockPADInt(int transactionId, int uid, int timestamp);
         void UnlockPADInt(int transactionId, int uid);
-        bool TxCommit(int tId, List<PADInt> _references, int timestamp);
+        bool TxCommit(int tId, List<string> _servers, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         string GetServerUrl();
 		bool Fail_f();

@@ -126,16 +126,21 @@ namespace PADIServer
         // ------------------------------------------------------------------------------------------------------------------
         // PADInt Manipulation Methods --------------------------------------------------------------------------------------
 
-        public PADInt CreatePADInt(int uid, string server, int transactionId)
+        public PADInt CreatePADInt(int uid, List<string> servers, int transactionId)
         {
+            Console.WriteLine("SERVER: Create request for the PadInt " + uid + " with the transaction id " + transactionId);
             if (_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " already exists!");
 
-            PADInt p = new PADInt(uid, server);
-            Console.WriteLine("SERVER: Created PADInt with uid: " + p.UID);
+            PADInt p = new PADInt(uid, servers);
 
             _padints.Add(uid, p);
-            Console.WriteLine("Added to dictionary");
+           
+            Console.WriteLine("======================");
+            foreach (PADInt pad in _padints.Values) {
+                Console.WriteLine(pad.UID + "|" + pad.Value);
+            }
+            Console.WriteLine("======================");
 
             if (!_transactions.ContainsKey(transactionId))
             {
@@ -146,15 +151,18 @@ namespace PADIServer
             {
                 _transactions[transactionId].Add(uid);
             }
+            
 
 			return p;
         }
 
         public PADInt AccessPADInt(int uid, int transactionId)
         {
+            Console.WriteLine("SERVER: Access request for the PadInt " + uid + " from the transaction " + transactionId);
+
             if (!_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " doesn't exist!");
-            Console.WriteLine("SERVER: Accessing PADInt with uid " + uid + "...");
+
             if (!_transactions.ContainsKey(transactionId))
             {
                 _transactions.Add(transactionId, new List<int>());
@@ -163,6 +171,14 @@ namespace PADIServer
             else {
                 _transactions[transactionId].Add(uid);
             }
+
+            Console.WriteLine("======================");
+            foreach (PADInt pad in _padints.Values)
+            {
+                Console.WriteLine(pad.UID + "|" + pad.Value);
+            }
+            Console.WriteLine("======================");
+
             return _padints[uid];
         }
 
@@ -321,7 +337,7 @@ namespace PADIServer
             return _url;
         }
 
-         public bool TxCommit(int tId, List<PADInt> _references, int timestamp)
+         public bool TxCommit(int tId, List<string> _references, int timestamp)
         {
             bool canCommit = true;
             Timer timeout = new Timer(10000);
@@ -332,15 +348,16 @@ namespace PADIServer
             onTime = true;
             coordinating = true;
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
-            foreach (PADInt p in _references)
+            
+             foreach (String server in _references)
             {
-                foreach (string participant in p.originalPadint().getLocations())
-                    _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant));
+                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), server));
             }
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
                 server.Prepare(tId, _url, timestamp);
-            timeout.Enabled = true;
+            
+           timeout.Enabled = true;
 
            while (onTime)
            {

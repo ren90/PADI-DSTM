@@ -13,15 +13,15 @@ namespace DSTMLIB
 		// the master remote interface
         private static MasterInterface _master;
       
-        private static List<PADInt> _references;
-        private static List<string> serverList;
-        private static int timestamp;
+        private static Dictionary<int,PADInt> _references;
+        private static List<string> _serverList;
+        private static int _timestamp;
 		// true if a transaction is occurring; false otherwise
-        private static bool isInTransaction;
+        private static bool _isInTransaction;
         //The URL of the transactions coodinator
-        private static string transactionCoordinatorUrl;
+        private static string _transactionCoordinatorUrl;
         // methods for manipulating PADI-DSTM
-        private static int transactionId;
+        private static int _transactionId;
         private static bool set = false;
 
         public static bool Init()
@@ -29,9 +29,9 @@ namespace DSTMLIB
             _channel = new TcpChannel();
             ChannelServices.RegisterChannel(_channel, false);
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
-            isInTransaction = false;
-            _references = new List<PADInt>();
-            serverList = new List<string>();
+            _isInTransaction = false;
+            _references = new Dictionary<int,PADInt>();
+            _serverList = new List<string>();
 
 			return true;
         }
@@ -42,36 +42,19 @@ namespace DSTMLIB
         /// </summary>
         public static bool TxBegin()
 		{
-            if (!isInTransaction)
+            if (!_isInTransaction)
             {
+                _isInTransaction = true;
                 KeyValuePair<int, int> data = _master.GetTransactionData();
-                transactionId = data.Key;
-                timestamp = data.Value;
-                isInTransaction = true;
-                transactionCoordinatorUrl = _master.GetCoordinator();
+                _transactionId = data.Key;
+                _timestamp = data.Value;
+                _transactionCoordinatorUrl = _master.GetCoordinator();
+
                 if (!set)
                 {
                     set = true;
                     RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
                 }
-                /*try
-                {
-                    foreach (PADInt p in _references)
-                    {
-                        foreach (String server in p.getLocations())
-                        {
-                            ServerInterface serverLocation = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
-                            serverLocation.LockPADInt(transactionId, p.UID, timestamp);
-                            serverList.Add(serverLocation.GetServerUrl());
-                        }
-                    }
-                }
-                catch (TxException e)
-                {
-                    Console.WriteLine("DSTMLib->ERROR: " + e.Message);
-                    return false;
-                }*/
-
                 return true;
             }
             else
@@ -83,9 +66,10 @@ namespace DSTMLIB
 
         public static bool TxCommit()
 		{
-			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
-			bool final_result = coordinator.TxCommit(transactionId, _references, timestamp);
-
+			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
+            bool final_result = coordinator.TxCommit(_transactionId, _serverList, _timestamp);
+            _references.Clear();
+            _serverList.Clear();
 			#region Old Stuff
 			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
 			//foreach (string url in serverList)
@@ -112,20 +96,20 @@ namespace DSTMLIB
 			//}
 			#endregion
 
-			isInTransaction = false;
+			_isInTransaction = false;
 			return final_result;
         }
 
         public static bool TxAbort()
 		{
-			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), transactionCoordinatorUrl);
-			coordinator.TxAbort(transactionId, serverList);
+			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
+			coordinator.TxAbort(_transactionId, _serverList);
 
-            isInTransaction = false;
-            timestamp = -1;
-            transactionId = -1;
-            transactionCoordinatorUrl = "";
-            serverList.Clear();
+            _isInTransaction = false;
+            _timestamp = -1;
+            _transactionId = -1;
+            _transactionCoordinatorUrl = "";
+            _serverList.Clear();
             _references.Clear();
 
 			return true;
@@ -133,7 +117,7 @@ namespace DSTMLIB
 		
         public static bool Status()
         {
-			foreach (string server in serverList)
+			foreach (string server in _serverList)
 			{
 				ServerInterface iserver = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
 				if (iserver.Status())
@@ -205,38 +189,36 @@ namespace DSTMLIB
 		{
                 Console.WriteLine("DSTMLib-> calling master to create PADInt!");
 
-                KeyValuePair<int, string> locations = _master.GenerateServers(uid);
+               List<KeyValuePair<int, string>> locations = _master.GenerateServers(uid);
+               List<PADInt> objectReferences = new List<PADInt>();
+               List<string> servers = new List<string>();
 
-                if (locations.Key == -1){
+                if (locations == null)
+                {
                     Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
                     return null;
                 }
 
-                Console.Write("the chosen servers are: " + locations.Value);
+               foreach(KeyValuePair<int, string> pair in locations)
+                   servers.Add(pair.Value);
+           
+                Console.Write("the chosen servers are: " + locations[0].Value);//Adiionar o resto
+                    
 
-                ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), locations.Value);
-                if (tServer.Fail_f())
+                foreach (KeyValuePair<int, string> pair in locations)
                 {
-                    return null;
-                }
-                else if (tServer.Freeze_f())
-                {
-                    Int32 parameter = uid;
-                    List<Object> parameters = new List<Object>();
-                    parameters.Add(parameter);
+                    ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), pair.Value);
+                    objectReferences.Add(tServer.CreatePADInt(uid, servers, _transactionId));
 
-                    tServer.AddPendingRequest(tServer.GetType().GetMethod("CreatePADInt"), parameters);
-                    return null;
+                    if (!_serverList.Contains(pair.Value))
+                        _serverList.Add(pair.Value);
                 }
 
-                PADInt reference = tServer.CreatePADInt(uid, locations.Value, transactionId);
-                PADInt localCopy = new PADInt(reference, transactionId);
-                _references.Add(localCopy);
-
+                PADInt localCopy = new PADInt(objectReferences, _transactionId);
+                _references.Add(localCopy.UID,localCopy);
                 return localCopy;
         }
 
-        // tem um insecto! faxabor de por isto a reotrnar os addresses faxabor
         /// <summary>
 		/// Function to get a remote reference to a PADInt with a given uid.
 		/// If the object doesn't exist, then returns null, and warns the client.
@@ -245,13 +227,13 @@ namespace DSTMLIB
 		/// <returns>The remote reference to the PADInt object</returns>
 		public static PADInt AccessPADInt(int uid)
 		{
-            string servers;
+            List<PADInt> objectReferences = new List<PADInt>();
+            List<string> servers;
 
-            foreach(PADInt p in _references){
-                if(p.UID == uid){
-                    Console.WriteLine("The reference for the PADInt " + uid + " was in cache");
-                    return p;
-                }
+            if(_references.ContainsKey(uid))
+            {
+                Console.WriteLine("The reference for the PADInt " + uid + " was in cache");
+                return _references[uid];
             }
 
             Console.WriteLine("DSTMLib-> calling master to get the servers for the PADInt!");
@@ -264,9 +246,8 @@ namespace DSTMLIB
             }
 
             Console.WriteLine("The PADInts are at these servers: " +  servers.ToString());
-            Console.WriteLine("DSTMLib-> connecting to the server to get the PADInt");
-               
-            ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
+   
+          /*  ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
             if (chosen.Fail_f())
             {
                 return null;
@@ -279,11 +260,20 @@ namespace DSTMLIB
 
                 chosen.AddPendingRequest(chosen.GetType().GetMethod("AccessPADInt"), parameters);
                 return null;
+            }*/
+
+            foreach (String server in servers) 
+            {
+                Console.WriteLine("DSTMLib-> connecting to the server " + server);
+                ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
+                objectReferences.Add(chosen.AccessPADInt(uid, _transactionId));
+
+                if (!_serverList.Contains(server))
+                    _serverList.Add(server);
             }
 
-            PADInt reference = chosen.AccessPADInt(uid, transactionId);
-            PADInt localCopy = new PADInt(reference, transactionId);
-            _references.Add(localCopy);
+            PADInt localCopy = new PADInt(objectReferences, _transactionId);
+            _references.Add(uid, localCopy);
             return localCopy;
 		}
     }

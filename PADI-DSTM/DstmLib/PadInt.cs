@@ -7,20 +7,20 @@ namespace DSTMLIB
     public class PADInt
 	{
         //-----Values used by the PADInt object-----//
-        private Dictionary<int, PADInt> _copies;
+        private Dictionary<int, int> _temporaryValues;
         // identifies unequivocally a PADInt
         private int _uid;
 		// the value stored in the PADInt
         private int _value;
         List<string> _servers = new List<string>();
-
+        private int _oldValue;
 
         //------------------------------------------//
 
         //-----Values used by the copy of the PADInt//
 		// temporary value storage used in a transaction context;
 		// only when the transaction commits, the temporary value becomes persistent
-        private PADInt _originalValue;
+        private List<PADInt> _originalValues;
 		// used for concurrency control
         private int _timestamp;
 
@@ -45,25 +45,29 @@ namespace DSTMLIB
 			private set { _uid = value; }
 		}
 		
-		public PADInt(int uid, string server)
+		public PADInt(int uid, List<string> servers)
 		{
 			_uid = uid;
-			_servers.Add(server);
+            _servers = servers;
             _value = 0;
-            _copies = new Dictionary<int, PADInt>();
+            _temporaryValues = new Dictionary<int, int>();
 		}
 
-        public PADInt(PADInt p, int id)
+        public PADInt(List<PADInt> originals, int id)
         {
-            _originalValue = p;
+            _originalValues = new List<PADInt>();
+            _value = originals[0].Value;
             _transactionId = id;
-            _value = _originalValue.Value;
-            _uid = _originalValue.UID;
-            _originalValue.addCopy(this, id);
+            _uid = originals[0].UID;
+            
+            foreach (PADInt p in originals) {
+                _originalValues.Add(p);
+                p.UpdateTemporay(_transactionId, _value);
+            }  
         }
 
-        public PADInt originalPadint() {
-            return _originalValue;
+        public List<PADInt> originalPadint() {
+            return _originalValues;
         }
 
 		// "transform" the temporary value to persistent;
@@ -72,14 +76,15 @@ namespace DSTMLIB
         {
             try
             {
-                _value = getCopy(tId).Value;
-                Timestamp = getCopy(tId).Timestamp;
-                removeCopy(tId);
+                _oldValue = _value;
+                _value = _temporaryValues[tId];
+                Timestamp = timestamp;
+                _temporaryValues.Remove(tId);
                 return true;
             }
             catch (Exception e)
             {
-                removeCopy(tId);
+                _temporaryValues.Remove(tId);
                 Console.WriteLine(e.StackTrace);
                 return false;
             }
@@ -87,31 +92,21 @@ namespace DSTMLIB
 
         public void rollback()
         {
-
-            _value = _originalValue.Value;
-
+            _value = _oldValue;
         }
 
 		public int Read()
 		{
 			Console.WriteLine("DSTMLib-> reading from PADInt " + this.UID + " with value " + this.Value);
-            /*foreach (String server in _originalValue.getLocations())
-            {
-                ServerInterface serverLocation = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
-                serverLocation.LockPADInt(_transactionId, UID, _timestamp);
-            }*/
 			return _value;
 		}
 
 		public void Write(int value)
 		{
 			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
-          /*  foreach (String server in _originalValue.getLocations())
-            {
-                ServerInterface serverLocation = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
-                serverLocation.LockPADInt(_transactionId, UID, _timestamp);
-            }*/
 			_value = value;
+            foreach (PADInt o in _originalValues)
+                o.UpdateTemporay(_transactionId, value);
 		}
 
         public List<String> getLocations()
@@ -119,21 +114,10 @@ namespace DSTMLIB
 			return _servers;
         }
 
-        public void addCopy(PADInt copy, int tId) {
-            _copies.Add(tId, copy);
+        public void UpdateTemporay(int tId, int value) {
+            if (!_temporaryValues.ContainsKey(tId))
+                _temporaryValues.Add(tId, value);
+            else _temporaryValues[tId] = value;
         }
-
-        public void removeCopy(int tId) {
-            if (_copies.ContainsKey(tId)) {
-                _copies.Remove(tId);            
-            }
-        }
-
-        public PADInt getCopy(int tId) {
-            if (_copies.ContainsKey(tId))
-                return _copies[tId];
-            else return null;
-        }
-
     }
 }

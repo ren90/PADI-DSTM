@@ -122,7 +122,7 @@ namespace PADIMaster
         //TODO ------------
         public static void OnTimeout(object sender, ElapsedEventArgs e, int serverId)
         {
-            Console.WriteLine("O servidor " + serverId + " mooorrrrrreu!");
+            Console.WriteLine("The server " + serverId + " is down!");
         }
 
         public void ImAlive(int tServerId)
@@ -131,28 +131,35 @@ namespace PADIMaster
             Console.WriteLine("server " + tServerId +" says: ALIVE");
         }
 
-        public KeyValuePair<int, string> GenerateServers(int uid)
+        public List<KeyValuePair<int, string>> GenerateServers(int uid)
         {
                 if (_padintReferences.ContainsKey(uid))
-                    return new KeyValuePair<int,string>(-1,"null");
+                    return null;
 
+                List<KeyValuePair<int, string>> servers = new List<KeyValuePair<int, string>>();
                 int server = HashServers(0);
-                KeyValuePair<int, string> servers = new KeyValuePair<int, string>(server, _transactionalServers[server]);
-                int serverId = servers.Key;
+                //Adicionar o resto(Criar um foreach)
+                KeyValuePair<int,string> serverPair = new KeyValuePair<int, string>(server, _transactionalServers[server]); 
+                servers.Add(new KeyValuePair<int, string>(server, _transactionalServers[server]));
+                int serverId = serverPair.Key;
                 _padintReferences.Add(uid, serverId);
-                Console.WriteLine("The PADInt with the uid " + uid + " will be created in the servers: " + servers.Value);
+               // Console.WriteLine("The PADInt with the uid " + uid + " will be created in the servers: " + servers.Value);
                 
             return servers;
         }
 
-        public string GetServers(int uid)
+        public List<string> GetServers(int uid)
         {
             Console.WriteLine("Received PADInt access request with the UID: " + uid);
             List<String> addressList = new List<string>();
 
             if (_padintReferences.ContainsKey(uid))
-                return _transactionalServers[ _padintReferences[uid]];
-            else {
+            {//MELHORAR ISTO adicionar todos
+                addressList.Add(_transactionalServers[_padintReferences[uid]]);
+                return addressList;
+            }
+            else
+            {
                 return null;
             }
         }
