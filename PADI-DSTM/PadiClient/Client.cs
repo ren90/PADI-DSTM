@@ -1,6 +1,7 @@
 ﻿using DSTMLIB;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting;
 using System.Windows.Forms;
 
 namespace PADIClient
@@ -15,6 +16,8 @@ namespace PADIClient
         [STAThread]
         static void Main()
         {
+			RemotingConfiguration.Configure(@"../../App.config", true);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new UserInterface());
@@ -26,6 +29,7 @@ namespace PADIClient
 		private Dictionary<int, PADInt> _padints;
         private WriteDelegate _logDelegate { get; set; }
         private WriteDelegate _listDelegate { get; set; }
+		private int _serversFreezed = 0;
 
         public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
@@ -39,29 +43,30 @@ namespace PADIClient
 		{
             PADInt p = DSTMLib.CreatePADInt(uid);
 
-            if(p != null){
+            if (p != null)
+			{
                 _padints.Add(uid, p);
-                _logDelegate("created int with UID: " + uid);
+                _logDelegate("PADInt with uid " + uid + "created!");
                 _listDelegate("UID:" + uid);
             }
-            else  {
-                _logDelegate("ERROR: the Padint with the uid = " + uid + " could not be created");
-            }
+            else
+                _logDelegate("ERROR: PADInt with uid " + uid + " already exists!");
 		}
 
 		public void AccessPADInt(int uid)
 		{
             PADInt p = DSTMLib.AccessPADInt(uid);
 
-            if(p != null){
+            if (p != null)
+			{
                 if (!_padints.ContainsKey(uid))
                 _padints.Add(uid, p);
 
-                _logDelegate("accessed int with UID: " + uid);
+                _logDelegate("PADInt with uid " + uid + " accessed!");
                 _listDelegate("UID:" + uid);
             }
             else 
-                _logDelegate("The PadInt "+ uid + " could not be accessed");
+                _logDelegate("PADInt with uid "+ uid + " could not be accessed!");
 		}
 
 		public int Read(int uid)
@@ -71,7 +76,8 @@ namespace PADIClient
 				throw new TxException("An error occurred while reading from PADInt " + uid);
 
 			read_value = _padints[uid].Read();
-			_logDelegate("PADInt " + uid + " has value " + read_value);
+			_logDelegate("PADInt with uid " + uid + " has value " + read_value);
+			
 			return read_value;
 		}
 
@@ -81,7 +87,7 @@ namespace PADIClient
 				throw new TxException("An error occurred while writing to PADInt " + uid);
 
 			_padints[uid].Write(value);
-			_logDelegate("PADInt " + uid + " written with value " + value);				
+			_logDelegate("PADInt with uid " + uid + " written with value " + value);				
 		}
 
         public void Status()
@@ -90,21 +96,45 @@ namespace PADIClient
 		}
 
         public void Fail(string URL)
-		{    
-            DSTMLib.Fail(URL);
-            _logDelegate("Simulated Server fail @" + URL);
+		{
+			try
+			{
+				DSTMLib.Fail(URL);
+				_logDelegate("Simulated Server fail @ " + URL);
+			}
+			catch (RemotingException e)
+			{
+				_logDelegate(e.Message);
+			}
         }
 
         public void Freeze(string URL)
 		{
-            DSTMLib.Freeze(URL);
-            _logDelegate("Simulated Server freeze @" + URL);
+			try
+			{
+				DSTMLib.Freeze(URL);
+				_serversFreezed++;
+				_logDelegate("Simulated Server freeze @ " + URL);
+			}
+			catch (RemotingException e)
+			{
+				_logDelegate(e.Message);
+			}
         }
 
         public void Recover(string URL)
 		{
-            DSTMLib.Recover(URL);
-            _logDelegate("Server recovered @" + URL);
+			try
+			{
+				DSTMLib.Recover(URL);
+				if (_serversFreezed < 0)
+					_serversFreezed = 0;
+				_logDelegate("Server recovered @ " + URL);
+			}
+			catch (RemotingException e)
+			{
+				_logDelegate(e.Message);
+			}
         }
 
         public bool TxBegin()
@@ -114,18 +144,25 @@ namespace PADIClient
             if (result)
 				_logDelegate("Transaction started!");
             else
-				_logDelegate("Can not start transaction!");
+				_logDelegate("Cannot start transaction!");
 
             return result;
         }
 
         public void TxCommit()
 		{
-			bool result = DSTMLib.TxCommit();
-            if (result)
-                _logDelegate("Transaction successful");
-            else
-                _logDelegate("failed transaction");
+			if (_serversFreezed > 0)
+			{
+				_logDelegate("All servers must be unfreezed before commiting!");
+			}
+			else
+			{
+				bool result = DSTMLib.TxCommit();
+				if (result)
+					_logDelegate("Transaction successful");
+				else
+					_logDelegate("Transaction failed");
+			}
 		}
 
         public void TxAbort()
