@@ -187,9 +187,9 @@ namespace DSTMLIB
 
         public static PADInt CreatePADInt(int uid)
 		{
-                Console.WriteLine("DSTMLib-> calling master to create PADInt!");
+               Console.WriteLine("DSTMLib-> calling master to create PADInt!");
 
-               List<KeyValuePair<int, string>> locations = _master.GenerateServers(uid);
+               Dictionary<int, string> locations = _master.GenerateServers(uid);
                List<PADInt> objectReferences = new List<PADInt>();
                List<string> servers = new List<string>();
 
@@ -202,7 +202,7 @@ namespace DSTMLIB
                foreach(KeyValuePair<int, string> pair in locations)
                    servers.Add(pair.Value);
            
-                Console.Write("the chosen servers are: " + locations[0].Value);//Adiionar o resto
+                Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto
                     
 
                 foreach (KeyValuePair<int, string> pair in locations)

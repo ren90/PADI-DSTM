@@ -131,16 +131,16 @@ namespace PADIMaster
             Console.WriteLine("server " + tServerId +" says: ALIVE");
         }
 
-        public List<KeyValuePair<int, string>> GenerateServers(int uid)
+        public Dictionary<int, string> GenerateServers(int uid)
         {
                 if (_padintReferences.ContainsKey(uid))
                     return null;
 
-                List<KeyValuePair<int, string>> servers = new List<KeyValuePair<int, string>>();
+                Dictionary<int, string> servers = new Dictionary<int, string>();
                 int server = HashServers(0);
                 //Adicionar o resto(Criar um foreach)
                 KeyValuePair<int,string> serverPair = new KeyValuePair<int, string>(server, _transactionalServers[server]); 
-                servers.Add(new KeyValuePair<int, string>(server, _transactionalServers[server]));
+                servers.Add(server, _transactionalServers[server]);
                 int serverId = serverPair.Key;
                 _padintReferences.Add(uid, serverId);
                // Console.WriteLine("The PADInt with the uid " + uid + " will be created in the servers: " + servers.Value);

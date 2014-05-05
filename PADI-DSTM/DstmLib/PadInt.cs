@@ -7,6 +7,7 @@ namespace DSTMLIB
     public class PADInt
 	{
         //-----Values used by the PADInt object-----//
+
         private Dictionary<int, int> _temporaryValues;
         // identifies unequivocally a PADInt
         private int _uid;
@@ -59,10 +60,10 @@ namespace DSTMLIB
             _value = originals[0].Value;
             _transactionId = id;
             _uid = originals[0].UID;
-            
+
             foreach (PADInt p in originals) {
                 _originalValues.Add(p);
-                p.UpdateTemporay(_transactionId, _value);
+                p.UpdateTemporary(_transactionId, _value);
             }  
         }
 
@@ -104,20 +105,25 @@ namespace DSTMLIB
 		public void Write(int value)
 		{
 			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
+
 			_value = value;
+
             foreach (PADInt o in _originalValues)
-                o.UpdateTemporay(_transactionId, value);
-		}
+                o.UpdateTemporary(_transactionId, value);
+
+		
+        }
 
         public List<String> getLocations()
 		{
 			return _servers;
         }
 
-        public void UpdateTemporay(int tId, int value) {
+        public void UpdateTemporary(int tId, int value) {
             if (!_temporaryValues.ContainsKey(tId))
                 _temporaryValues.Add(tId, value);
             else _temporaryValues[tId] = value;
+
         }
     }
 }
