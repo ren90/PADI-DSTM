@@ -20,7 +20,7 @@ namespace DSTMLIB
         //-----Values used by the copy of the PADInt//
 		// temporary value storage used in a transaction context;
 		// only when the transaction commits, the temporary value becomes persistent
-        private List<PADInt> _originalValues;
+        public List<String> _originalValuesServers;
 		// used for concurrency control
         private int _timestamp;
 
@@ -44,6 +44,15 @@ namespace DSTMLIB
 			get { return this._uid; }
 			private set { _uid = value; }
 		}
+
+        public List<String> Servers {
+            get { return _servers; }
+        }
+
+        public List<String> OriginalServers
+        {
+            get { return _originalValuesServers; }
+        }
 		
 		public PADInt(int uid, List<string> servers)
 		{
@@ -53,33 +62,36 @@ namespace DSTMLIB
             _temporaryValues = new Dictionary<int, int>();
 		}
 
-        public PADInt(List<PADInt> originals, int id)
+        public PADInt(List<String> originals, int tId, int uid, int value)
         {
-            _originalValues = new List<PADInt>();
-            _value = originals[0].Value;
-            _transactionId = id;
-            _uid = originals[0].UID;
-            
-            foreach (PADInt p in originals) {
-                _originalValues.Add(p);
-                p.UpdateTemporay(_transactionId, _value);
-            }  
+            _originalValuesServers = originals;
+            _value = value;
+            _transactionId = tId;
+            _uid = uid;
         }
 
-        public List<PADInt> originalPadint() {
-            return _originalValues;
+        public List<String> originalPadintServers() {
+            return _originalValuesServers;
         }
 
 		// "transform" the temporary value to persistent;
 		// basically, the function writes to the _value field (which represents "persistency")
         public bool persistValue(int tId, int timestamp)
         {
+            Console.WriteLine("ESTOU NO PERSIST VALUE " + tId);
+
+            if (_temporaryValues.Keys.Count == 0)
+            {
+                Console.WriteLine("Estou vazio");
+            }
+            else Console.WriteLine("Não estou vazio");
+
             try
             {
                 _oldValue = _value;
                 _value = _temporaryValues[tId];
                 Timestamp = timestamp;
-                _temporaryValues.Remove(tId);
+                _temporaryValues.Remove(tId); 
                 return true;
             }
             catch (Exception e)
@@ -105,19 +117,29 @@ namespace DSTMLIB
 		{
 			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
 			_value = value;
-            foreach (PADInt o in _originalValues)
-                o.UpdateTemporay(_transactionId, value);
-		}
 
-        public List<String> getLocations()
-		{
-			return _servers;
-        }
+            Console.WriteLine("HELLO: " + _originalValuesServers[0]);
+
+            foreach (String server in OriginalServers)
+            {
+                    Console.WriteLine("Estou a fazer update ao padint original no servidor "+ server);
+                    ServerInterface iserver = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
+                    iserver.updatePadintTemporaryValue(UID, _transactionId, value);
+            }
+		}
 
         public void UpdateTemporay(int tId, int value) {
             if (!_temporaryValues.ContainsKey(tId))
+            {
+                Console.WriteLine("Estou a fazer update com o tid: " + tId + "e valor: " + value);
                 _temporaryValues.Add(tId, value);
-            else _temporaryValues[tId] = value;
+                _temporaryValues[tId] = value;
+            }
+            else
+            {
+                Console.WriteLine("Estou a fazer update com o tid: " + tId + "e valor: "+ value);
+                _temporaryValues[tId] = value;
+            }
         }
     }
 }

@@ -120,6 +120,7 @@ namespace PADIServer
 
         void IsAlive(object sender, ElapsedEventArgs e)
         {
+            
             _master.ImAlive(_id);
         }
 
@@ -129,18 +130,13 @@ namespace PADIServer
         public PADInt CreatePADInt(int uid, List<string> servers, int transactionId)
         {
             Console.WriteLine("SERVER: Create request for the PadInt " + uid + " with the transaction id " + transactionId);
+          
             if (_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " already exists!");
 
             PADInt p = new PADInt(uid, servers);
 
             _padints.Add(uid, p);
-           
-            Console.WriteLine("======================");
-            foreach (PADInt pad in _padints.Values) {
-                Console.WriteLine(pad.UID + "|" + pad.Value);
-            }
-            Console.WriteLine("======================");
 
             if (!_transactions.ContainsKey(transactionId))
             {
@@ -169,15 +165,9 @@ namespace PADIServer
                 _transactions[transactionId].Add(uid);
             }
             else {
-                _transactions[transactionId].Add(uid);
+                if(!_transactions[transactionId].Contains(uid))
+                    _transactions[transactionId].Add(uid);
             }
-
-            Console.WriteLine("======================");
-            foreach (PADInt pad in _padints.Values)
-            {
-                Console.WriteLine(pad.UID + "|" + pad.Value);
-            }
-            Console.WriteLine("======================");
 
             return _padints[uid];
         }
@@ -276,6 +266,7 @@ namespace PADIServer
         public void Prepare(int tID, string coordinator, int timestamp)
         {
 			bool reply = true;
+
 			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(tID, 
                 timestamp));
 			SendVote(reply, coordinator);
@@ -406,5 +397,9 @@ namespace PADIServer
 			_pendingRequests.Add(methodInfo, parameters);
 			return;
 		}
+
+        public void updatePadintTemporaryValue(int uid, int tid, int value) {
+            _padints[uid].UpdateTemporay(tid, value);
+        }
     }
 }

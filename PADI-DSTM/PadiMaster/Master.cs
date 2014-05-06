@@ -138,6 +138,7 @@ namespace PADIMaster
 
                 List<KeyValuePair<int, string>> servers = new List<KeyValuePair<int, string>>();
                 int server = HashServers(0);
+
                 //Adicionar o resto(Criar um foreach)
                 KeyValuePair<int,string> serverPair = new KeyValuePair<int, string>(server, _transactionalServers[server]); 
                 servers.Add(new KeyValuePair<int, string>(server, _transactionalServers[server]));

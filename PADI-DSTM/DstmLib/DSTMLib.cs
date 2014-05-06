@@ -30,8 +30,6 @@ namespace DSTMLIB
             ChannelServices.RegisterChannel(_channel, false);
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
             _isInTransaction = false;
-            _references = new Dictionary<int,PADInt>();
-            _serverList = new List<string>();
 
 			return true;
         }
@@ -49,6 +47,8 @@ namespace DSTMLIB
                 _transactionId = data.Key;
                 _timestamp = data.Value;
                 _transactionCoordinatorUrl = _master.GetCoordinator();
+                _references = new Dictionary<int, PADInt>();
+                _serverList = new List<string>();
 
                 if (!set)
                 {
@@ -70,7 +70,8 @@ namespace DSTMLIB
             bool final_result = coordinator.TxCommit(_transactionId, _serverList, _timestamp);
             _references.Clear();
             _serverList.Clear();
-			#region Old Stuff
+			
+            #region Old Stuff
 			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
 			//foreach (string url in serverList)
 			//{
@@ -193,28 +194,30 @@ namespace DSTMLIB
                List<PADInt> objectReferences = new List<PADInt>();
                List<string> servers = new List<string>();
 
-                if (locations == null)
+               if (locations == null)
                 {
                     Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
                     return null;
                 }
 
-               foreach(KeyValuePair<int, string> pair in locations)
+               foreach (KeyValuePair<int, string> pair in locations)
+               {
+                   Console.WriteLine("Servidor: " + pair.Value);
                    servers.Add(pair.Value);
+               }
            
-                Console.Write("the chosen servers are: " + locations[0].Value);//Adiionar o resto
-                    
+                Console.Write("the chosen servers are: " + locations[0].Value);//Adiionar o resto*/
 
-                foreach (KeyValuePair<int, string> pair in locations)
+                foreach (String server in servers)
                 {
-                    ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), pair.Value);
+                    ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
                     objectReferences.Add(tServer.CreatePADInt(uid, servers, _transactionId));
 
-                    if (!_serverList.Contains(pair.Value))
-                        _serverList.Add(pair.Value);
+                    if (!_serverList.Contains(server))
+                        _serverList.Add(server);
                 }
 
-                PADInt localCopy = new PADInt(objectReferences, _transactionId);
+                PADInt localCopy = new PADInt(servers, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
                 _references.Add(localCopy.UID,localCopy);
                 return localCopy;
         }
@@ -272,8 +275,8 @@ namespace DSTMLIB
                     _serverList.Add(server);
             }
 
-            PADInt localCopy = new PADInt(objectReferences, _transactionId);
-            _references.Add(uid, localCopy);
+            PADInt localCopy = new PADInt(servers, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
+            _references.Add(localCopy.UID, localCopy);
             return localCopy;
 		}
     }

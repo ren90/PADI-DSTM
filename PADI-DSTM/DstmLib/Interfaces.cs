@@ -46,5 +46,6 @@ namespace DSTMLIB
 		bool Fail_f();
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
+        void updatePadintTemporaryValue(int uid, int tid, int value);
 	}
 }
