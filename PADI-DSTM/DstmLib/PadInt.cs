@@ -7,54 +7,60 @@ namespace DSTMLIB
     public class PADInt
 	{
         //-----Values used by the PADInt object-----//
-
         private Dictionary<int, int> _temporaryValues;
+        public Dictionary<int,int> Temporary{
+            get { return _temporaryValues; }
+            private set { _temporaryValues = value; }
+        }
         // identifies unequivocally a PADInt
         private int _uid;
+        public int UID {
+            get { return _uid; }
+            private set { _uid = value; }
+        }
 		// the value stored in the PADInt
         private int _value;
-        List<string> _servers = new List<string>();
-        private int _oldValue;
+        public int Value {
+            get { return _value;}
+            private set{_value = value;}
+        }
 
+        private List<String> _servers;
+        public List<String> Servers {
+            get { return _servers; }
+            set { _servers = value; }
+        }
+
+        private int _oldValue;
+        public int OldValue {
+            get { return _oldValue; }
+            set { _oldValue = value; }
+        }
         //------------------------------------------//
 
         //-----Values used by the copy of the PADInt//
-		// temporary value storage used in a transaction context;
-		// only when the transaction commits, the temporary value becomes persistent
+        //Location of the original Padints
         public List<String> _originalValuesServers;
-		// used for concurrency control
-        private int _timestamp;
-
-        private int _transactionId;
-        //------------------------------------------//
-    
-        public int Timestamp
-        {
-            get { return this._value; }
-            private set {_timestamp = value;}
-        }
-
-        public int Value
-		{
-			get { return this._value; }
-			private set { _value = value; }
-		}
-        
-		public int UID
-		{
-			get { return this._uid; }
-			private set { _uid = value; }
-		}
-
-        public List<String> Servers {
-            get { return _servers; }
-        }
-
         public List<String> OriginalServers
         {
             get { return _originalValuesServers; }
+            set { _originalValuesServers = value; }
         }
-		
+		// used for concurrency control
+        private int _timestamp;
+        public int Timestamp
+        {
+            get { return _timestamp; }
+            private set { _timestamp = value; }
+        }
+
+        private int _transactionId;
+        public int TransactioId {
+            get { return _transactionId; }
+            private set { _transactionId = value; }
+        }
+        //------------------------------------------//
+
 		public PADInt(int uid, List<string> servers)
 		{
 			_uid = uid;
@@ -71,22 +77,10 @@ namespace DSTMLIB
             _uid = uid;
         }
 
-        public List<String> originalPadintServers() {
-            return _originalValuesServers;
-        }
-
 		// "transform" the temporary value to persistent;
 		// basically, the function writes to the _value field (which represents "persistency")
         public bool persistValue(int tId, int timestamp)
         {
-            Console.WriteLine("ESTOU NO PERSIST VALUE " + tId);
-
-            if (_temporaryValues.Keys.Count == 0)
-            {
-                Console.WriteLine("Estou vazio");
-            }
-            else Console.WriteLine("Não estou vazio");
-
             try
             {
                 _oldValue = _value;
@@ -96,8 +90,7 @@ namespace DSTMLIB
                 return true;
             }
             catch (Exception e)
-            {
-                _temporaryValues.Remove(tId);
+            {   
                 Console.WriteLine(e.StackTrace);
                 return false;
             }
@@ -116,16 +109,11 @@ namespace DSTMLIB
 
 		public void Write(int value)
 		{
-			Console.WriteLine("DSTMLib-> writing to PADInt " + this.UID + " the value " + value);
-
+			Console.WriteLine("PadInt-> writing to PADInt " + this.UID + " the value " + value);
 			_value = value;
-
-
-            Console.WriteLine("HELLO: " + _originalValuesServers[0]);
 
             foreach (String server in OriginalServers)
             {
-                    Console.WriteLine("Estou a fazer update ao padint original no servidor "+ server);
                     ServerInterface iserver = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
                     iserver.updatePadintTemporaryValue(UID, _transactionId, value);
             }
@@ -133,15 +121,9 @@ namespace DSTMLIB
 
         public void UpdateTemporary(int tId, int value) {
             if (!_temporaryValues.ContainsKey(tId))
-            {
-                Console.WriteLine("Estou a fazer update com o tid: " + tId + "e valor: " + value);
                 _temporaryValues.Add(tId, value);
-            }
             else
-            {
-                Console.WriteLine("Estou a fazer update com o tid: " + tId + "e valor: "+ value);
                 _temporaryValues[tId] = value;
-            }
         }
     }
 }

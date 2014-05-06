@@ -43,9 +43,12 @@ namespace DSTMLIB
             {
                 _isInTransaction = true;
                 KeyValuePair<int, int> data = _master.GetTransactionData();
+
                 _transactionId = data.Key;
                 _timestamp = data.Value;
+
                 _transactionCoordinatorUrl = _master.GetCoordinator();
+
                 _references = new Dictionary<int, PADInt>();
                 _serverList = new List<string>();
 
@@ -162,15 +165,17 @@ namespace DSTMLIB
                List<string> servers = new List<string>();
 
                if (locations == null)
-                {
-                    Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
-                    return null;
-                }
-
-               foreach (KeyValuePair<int, string> pair in locations)
                {
-                   Console.WriteLine("Servidor: " + pair.Value);
-                   servers.Add(pair.Value);
+                   Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
+                   return null;
+               }
+               else
+               {
+
+                   foreach (string server in locations.Values)
+                   {
+                       servers.Add(server);
+                   }
                }
            
                 Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto

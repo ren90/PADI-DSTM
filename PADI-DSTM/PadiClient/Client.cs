@@ -34,7 +34,6 @@ namespace PADIClient
         public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
             DSTMLib.Init();
-            _padints = new Dictionary<int, PADInt>();
             _logDelegate = logDelegate;
             _listDelegate = listDelegate;
         }
@@ -140,6 +139,7 @@ namespace PADIClient
         public bool TxBegin()
 		{
             bool result = DSTMLib.TxBegin();
+            _padints = new Dictionary<int, PADInt>();
 
             if (result)
 				_logDelegate("Transaction started!");
@@ -157,6 +157,7 @@ namespace PADIClient
 			}
 			else
 			{
+                _padints.Clear(); 
 				bool result = DSTMLib.TxCommit();
 				if (result)
 					_logDelegate("Transaction successful");
@@ -168,6 +169,7 @@ namespace PADIClient
         public void TxAbort()
 		{
 			DSTMLib.TxAbort();
+            _padints.Clear();
 		}
     }
 }

@@ -250,11 +250,17 @@ namespace PADIServer
 		{
             _transactions[tId].Clear();
             _transactions.Remove(tId);
+            Console.WriteLine("commit cool");
+            Console.WriteLine("===================");
+            foreach (PADInt p in _padints.Values)
+                Console.WriteLine(p.UID + " " + p.Value);
+            Console.WriteLine("===================");
 			return true;
 		}
 
 		public void DoAbort(int tId, string coordinator)
 		{
+            Console.WriteLine("TOCA A FAZER ABORT");
 
             foreach (int id in _transactions[tId])
             {
@@ -401,7 +407,7 @@ namespace PADIServer
 		}
 
         public void updatePadintTemporaryValue(int uid, int tid, int value) {
-            _padints[uid].UpdateTemporay(tid, value);
+            _padints[uid].UpdateTemporary(tid, value);
         }
     }
 }
