@@ -6,7 +6,7 @@ namespace DSTMLIB
 {
     public interface MasterInterface
     {
-        List<KeyValuePair<int, string>> GenerateServers(int uid);
+        Dictionary<int, string> GenerateServers(int uid);
 		KeyValuePair<int, int> RegisterTransactionalServer(string ip);
         KeyValuePair<int, int> GetTransactionData();
 		List<string> GetServers(int uid);

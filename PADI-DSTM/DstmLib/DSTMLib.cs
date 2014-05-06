@@ -22,7 +22,6 @@ namespace DSTMLIB
         private static string _transactionCoordinatorUrl;
         // methods for manipulating PADI-DSTM
         private static int _transactionId;
-        private static bool set = false;
 
         public static bool Init()
 		{
@@ -50,16 +49,11 @@ namespace DSTMLIB
                 _references = new Dictionary<int, PADInt>();
                 _serverList = new List<string>();
 
-                if (!set)
-                {
-                    set = true;
-                    RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
-                }
                 return true;
             }
             else
             {
-                Console.WriteLine("DSTMLib-> ERROR: There is already a started transaction");
+                Console.WriteLine("DSTMLib-> ERROR: There's already a transaction ocurring");
                 return false;
             }
         }
@@ -68,43 +62,18 @@ namespace DSTMLIB
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
             bool final_result = coordinator.TxCommit(_transactionId, _serverList, _timestamp);
-            _references.Clear();
+            
+			_references.Clear();
             _serverList.Clear();
-			
-            #region Old Stuff
-			//List<ServerInterface> _serversToCommit = new List<ServerInterface>();
-			//foreach (string url in serverList)
-			//{
-			//	ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
-			//	_serversToCommit.Add(server);
-			//}
-			//
-			//while (_serversToCommit.Capacity != 0)
-			//{
-			//	foreach (ServerInterface s in _serversToCommit)
-			//	{
-			//		bool result = s.TxCommit();
-			//		if (result)
-			//		{
-			//			foreach (PADInt p in _references)
-			//			{
-			//				if (p.getLocations().Contains(s.GetServerURL()))
-			//					s.UnlockPADInt(p.UID);
-			//			}
-			//			_serversToCommit.Remove(s);
-			//		}
-			//	}
-			//}
-			#endregion
-
 			_isInTransaction = false;
+			
 			return final_result;
         }
 
         public static bool TxAbort()
 		{
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
-			coordinator.TxAbort(_transactionId, _serverList);
+			bool result = coordinator.TxAbort(_transactionId, _serverList);
 
             _isInTransaction = false;
             _timestamp = -1;
@@ -113,7 +82,7 @@ namespace DSTMLIB
             _serverList.Clear();
             _references.Clear();
 
-			return true;
+			return result;
 		}
 		
         public static bool Status()
@@ -124,10 +93,10 @@ namespace DSTMLIB
 				if (iserver.Status())
 					Console.WriteLine("Server " + server + " is up");
 				else
-					Console.WriteLine("Server " + server + " is down / not responding!");
+					Console.WriteLine("Server " + server + " is down / not responding");
 				return true;
 			}
-			Console.WriteLine("All servers are down / not responding!");
+			Console.WriteLine("All servers are down / not responding");
 			return false;
         }
 
@@ -142,9 +111,9 @@ namespace DSTMLIB
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
                 return server.Fail();
             }
-            catch (Exception e) {
-                Console.WriteLine(e.StackTrace);
-                return false;
+            catch (RemotingException)
+			{
+				throw;
             }
         }
 
@@ -159,10 +128,9 @@ namespace DSTMLIB
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
                 return server.Freeze();
             }
-            catch (Exception e)
+            catch (RemotingException)
             {
-                Console.WriteLine(e.StackTrace);
-                return false;
+                throw;
             }
         }
 
@@ -177,10 +145,9 @@ namespace DSTMLIB
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
                 return server.Recover();
             }
-            catch (Exception e)
+            catch (RemotingException)
             {
-                Console.WriteLine(e.StackTrace);
-                return false;
+				throw;
             }
         }
 
@@ -188,9 +155,9 @@ namespace DSTMLIB
 
         public static PADInt CreatePADInt(int uid)
 		{
-                Console.WriteLine("DSTMLib-> calling master to create PADInt!");
+               Console.WriteLine("DSTMLib-> calling master to create PADInt!");
 
-               List<KeyValuePair<int, string>> locations = _master.GenerateServers(uid);
+               Dictionary<int, string> locations = _master.GenerateServers(uid);
                List<PADInt> objectReferences = new List<PADInt>();
                List<string> servers = new List<string>();
 
@@ -206,7 +173,7 @@ namespace DSTMLIB
                    servers.Add(pair.Value);
                }
            
-                Console.Write("the chosen servers are: " + locations[0].Value);//Adiionar o resto*/
+                Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto
 
                 foreach (String server in servers)
                 {
