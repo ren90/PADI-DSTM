@@ -122,7 +122,8 @@ namespace PADIServer
 
         void IsAlive(object sender, ElapsedEventArgs e)
         {
-            
+			if (_fail || _freeze)
+				return;
             _master.ImAlive(_id);
         }
 
