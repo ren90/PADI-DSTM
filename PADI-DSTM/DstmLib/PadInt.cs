@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace DSTMLIB
 {
     [Serializable]
-    public class PADInt
+    public class PADInt : MarshalByRefObject
 	{
         //-----Values used by the PADInt object-----//
-        private Dictionary<int, int> _temporaryValues;
-        public Dictionary<int,int> Temporary{
+        private Dictionary<int, PADInt> _temporaryValues;
+        public Dictionary<int,PADInt> Temporary{
             get { return _temporaryValues; }
             private set { _temporaryValues = value; }
         }
@@ -40,11 +40,11 @@ namespace DSTMLIB
 
         //-----Values used by the copy of the PADInt//
         //Location of the original Padints
-        public List<String> _originalValuesServers;
-        public List<String> OriginalServers
+        public List<PADInt> _originalValues;
+        public List<PADInt> OriginalValues
         {
-            get { return _originalValuesServers; }
-            set { _originalValuesServers = value; }
+            get { return _originalValues; }
+            set { _originalValues = value; }
         }
 		// used for concurrency control
         private int _timestamp;
@@ -66,12 +66,12 @@ namespace DSTMLIB
 			_uid = uid;
             _servers = servers;
             _value = 0;
-            _temporaryValues = new Dictionary<int, int>();
+           // _temporaryValues = new Dictionary<int, PADInt>();
 		}
 
-        public PADInt(List<String> originals, int tId, int uid, int value)
+        public PADInt(List<PADInt> originals, int tId, int uid, int value)
         {
-            _originalValuesServers = originals;
+            _originalValues = originals;
             _value = value;
             _transactionId = tId;
             _uid = uid;
@@ -84,7 +84,7 @@ namespace DSTMLIB
             try
             {
                 _oldValue = _value;
-                _value = _temporaryValues[tId];
+                //_value = _temporaryValues[tId];
                 Timestamp = timestamp;
                 _temporaryValues.Remove(tId); 
                 return true;
@@ -111,19 +111,13 @@ namespace DSTMLIB
 		{
 			Console.WriteLine("PadInt-> writing to PADInt " + this.UID + " the value " + value);
 			_value = value;
-
-            foreach (String server in OriginalServers)
-            {
-                    ServerInterface iserver = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
-                    iserver.updatePadintTemporaryValue(UID, _transactionId, value);
-            }
 		}
 
-        public void UpdateTemporary(int tId, int value) {
+      /*  public void UpdateTemporary(int tId, int value) {
             if (!_temporaryValues.ContainsKey(tId))
                 _temporaryValues.Add(tId, value);
             else
                 _temporaryValues[tId] = value;
-        }
+        }*/
     }
 }
