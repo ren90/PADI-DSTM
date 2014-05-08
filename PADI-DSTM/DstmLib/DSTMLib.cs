@@ -75,9 +75,7 @@ namespace DSTMLIB
 
             _master.FinishTransaction(_transactionId);
 
-			_references.Clear();
-            _serverList.Clear();
-			_isInTransaction = false;
+            clearVariables();
 			
 			return final_result;
         }
@@ -87,15 +85,11 @@ namespace DSTMLIB
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
 			bool result = coordinator.TxAbort(_transactionId, _serverList);
 
-            _isInTransaction = false;
-            _timestamp = -1;
-            _transactionId = -1;
-            _transactionCoordinatorUrl = "";
-            _serverList.Clear();
-            _references.Clear();
+            clearVariables();
 
 			return result;
 		}
+
 		
         public static bool Status()
         {
@@ -221,5 +215,15 @@ namespace DSTMLIB
             _references.Add(localCopy.UID, localCopy);
             return localCopy;
 		}
+
+        private static void clearVariables()
+        {
+            _isInTransaction = false;
+            _timestamp = -1;
+            _transactionId = -1;
+            _transactionCoordinatorUrl = "";
+            _serverList.Clear();
+            _references.Clear();
+        }
     }
 }

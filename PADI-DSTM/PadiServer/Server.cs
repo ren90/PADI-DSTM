@@ -355,7 +355,7 @@ namespace PADIServer
            while (onTime)
            {
                votes.ForEach((bool x) => canCommit = (x && canCommit));
-               if (canCommit)
+               if ((votes.Count == _serversToCommit.Count) && canCommit)
                    break;
            }
 
@@ -364,7 +364,8 @@ namespace PADIServer
            else
                _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId, _url));
 
-           return canCommit;
+           timeout.Enabled = false;
+           return canCommit && onTime;
         }
 
         void timeout_Elapsed(object sender, ElapsedEventArgs e)
@@ -400,8 +401,5 @@ namespace PADIServer
 			return;
 		}
 
-        public void updatePadintTemporaryValue(int uid, int tid, int value) {
-            //_padints[uid].UpdateTemporary(tid, value);
-        }
     }
 }
