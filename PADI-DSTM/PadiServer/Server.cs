@@ -267,6 +267,9 @@ namespace PADIServer
 
         public void Prepare(int tID, string coordinator, int timestamp)
         {
+
+
+
 			bool reply = true;
 
 			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(tID, 

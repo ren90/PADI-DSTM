@@ -81,12 +81,23 @@ namespace DSTMLIB
 		// basically, the function writes to the _value field (which represents "persistency")
         public bool persistValue(int tId, int timestamp)
         {
+            //test timestamp
+            if (timestamp <= _timestamp)
+                return false;
+            //lock
+            if (this.isLocked())
+                return false;
+            this.lockPADInt();
+            //do stuff
             try
             {
                 _oldValue = _value;
                 _value = _temporaryValues[tId];
-                Timestamp = timestamp;
                 _temporaryValues.Remove(tId); 
+                //increment timestamp
+                Timestamp = timestamp;
+                //unlock
+                this.unlockPADInt();
                 return true;
             }
             catch (Exception e)
@@ -94,6 +105,23 @@ namespace DSTMLIB
                 Console.WriteLine(e.StackTrace);
                 return false;
             }
+
+        
+        }
+
+        private void lockPADInt()
+        {
+            _lockFlag = true;
+        }
+
+        private void unlockPADInt()
+        {
+            _lockFlag = false;
+        }
+
+        private bool isLocked()
+        {
+            return _lockFlag;
         }
 
         public void rollback()
@@ -116,5 +144,7 @@ namespace DSTMLIB
         public void temporaryValue(int tId, int value) {
                 _temporaryValues.Add(tId, value);
         }
+
+        public bool _lockFlag { get; set; }
     }
 }
