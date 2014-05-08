@@ -167,9 +167,9 @@ namespace DSTMLIB
 					_serverList.Add(server);
 			}
 
-			PADInt localCopy = new PADInt(servers, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
-			_references.Add(localCopy.UID,localCopy);
-			return localCopy;
+                PADInt localCopy = new PADInt(objectReferences, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
+                _references.Add(localCopy.UID,localCopy);
+                return localCopy;
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace DSTMLIB
                     _serverList.Add(server);
             }
 
-            PADInt localCopy = new PADInt(servers, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
+            PADInt localCopy = new PADInt(objectReferences, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
             _references.Add(localCopy.UID, localCopy);
             return localCopy;
 		}

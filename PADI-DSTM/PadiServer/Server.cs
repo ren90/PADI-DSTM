@@ -408,7 +408,7 @@ namespace PADIServer
 		}
 
         public void updatePadintTemporaryValue(int uid, int tid, int value) {
-            _padints[uid].UpdateTemporary(tid, value);
+            //_padints[uid].UpdateTemporary(tid, value);
         }
     }
 }
