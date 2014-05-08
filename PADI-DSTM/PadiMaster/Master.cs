@@ -124,7 +124,6 @@ namespace PADIMaster
             return (_padintReferences.Keys.Count + seed) % _transactionalServers.Keys.Count;
         }
 
-        //TODO ------------
         public void OnTimeout(object sender, ElapsedEventArgs e, int serverId)
         {
             Console.WriteLine("The server " + serverId + " is down!");
@@ -178,9 +177,13 @@ namespace PADIMaster
             if (counter == 0)
                 return "";
 
-			_transactionalServers.TryGetValue(rnd.Next(counter), out url);
+			url = _transactionalServers[rnd.Next(counter)];
+			while (_deadServers.Contains(url))
+			{
+				url = _transactionalServers[rnd.Next(counter)];
+			}
 
-            return url;
+			return url;
         }
 
         public KeyValuePair<int, int> GetTransactionData()

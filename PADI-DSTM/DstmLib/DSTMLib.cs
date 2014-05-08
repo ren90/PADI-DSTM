@@ -111,15 +111,8 @@ namespace DSTMLIB
         /// <param name="URL"></param>
         public static bool Fail(string URL)
 		{
-            try
-            {
-                ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
-                return server.Fail();
-            }
-            catch (Exception)
-			{
-				throw;
-            }
+            ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
+            return server.Fail();
         }
 
         /// <summary>
@@ -128,15 +121,8 @@ namespace DSTMLIB
         /// <param name="URL"></param>
         public static bool Freeze(string URL)
 		{
-            try
-            {
-                ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
-                return server.Freeze();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
+            return server.Freeze();
         }
 
         /// <summary>
@@ -145,15 +131,8 @@ namespace DSTMLIB
         /// <param name="URL"></param>
         public static bool Recover(string URL)
 		{
-            try
-            {
-                ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
-                return server.Recover();
-            }
-            catch (Exception)
-            {
-				throw;
-            }
+            ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
+            return server.Recover();
         }
 
         // methods for creating and accessing PADInts
@@ -173,11 +152,8 @@ namespace DSTMLIB
 			}
 			else
 			{
-
 				foreach (string server in locations.Values)
-				{
 					servers.Add(server);
-				}
 			}
            
 			Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto

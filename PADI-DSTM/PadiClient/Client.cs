@@ -29,7 +29,6 @@ namespace PADIClient
 		private Dictionary<int, PADInt> _padints;
         private WriteDelegate _logDelegate { get; set; }
         private WriteDelegate _listDelegate { get; set; }
-		private int _serversFreezed = 0;
 
         public Client(WriteDelegate logDelegate, WriteDelegate listDelegate)
         {
@@ -40,58 +39,94 @@ namespace PADIClient
 
 		public void CreatePADInt(int uid)
 		{
-            PADInt p = DSTMLib.CreatePADInt(uid);
-
-            if (p != null)
+			try
 			{
-                _padints.Add(uid, p);
-                _logDelegate("PADInt with uid " + uid + "created!");
-                _listDelegate("UID:" + uid);
-            }
-            else
-                _logDelegate("ERROR: PADInt with uid " + uid + " already exists!");
+				PADInt p = DSTMLib.CreatePADInt(uid);
+
+				if (p != null)
+				{
+					_padints.Add(uid, p);
+					_logDelegate("PADInt with uid " + uid + "created!");
+					_listDelegate("UID:" + uid);
+				}
+				else
+					_logDelegate("ERROR: PADInt with uid " + uid + " already exists!");
+			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+			}
 		}
 
 		public void AccessPADInt(int uid)
 		{
-            PADInt p = DSTMLib.AccessPADInt(uid);
-
-            if (p != null)
+			try
 			{
-                if (!_padints.ContainsKey(uid))
-					_padints.Add(uid, p);
+				PADInt p = DSTMLib.AccessPADInt(uid);
 
-                _logDelegate("PADInt with uid " + uid + " accessed!");
-                _listDelegate("UID:" + uid);
-            }
-            else 
-                _logDelegate("PADInt with uid "+ uid + " could not be accessed!");
+				if (p != null)
+				{
+					if (!_padints.ContainsKey(uid))
+						_padints.Add(uid, p);
+
+					_logDelegate("PADInt with uid " + uid + " accessed!");
+					_listDelegate("UID:" + uid);
+				}
+				else
+					_logDelegate("PADInt with uid " + uid + " could not be accessed!");
+			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+			}
 		}
 
 		public int Read(int uid)
 		{
-			int read_value;
-			if (!_padints.ContainsKey(uid))
-				throw new TxException("You haven't accessed PADInt " + uid + ", read/write operations not available.");
+			try
+			{
+				int read_value;
+				if (!_padints.ContainsKey(uid))
+					throw new TxException("You haven't accessed PADInt " + uid);
 
-			read_value = _padints[uid].Read();
-			_logDelegate("PADInt with uid " + uid + " has value " + read_value);
-			
-			return read_value;
+				read_value = _padints[uid].Read();
+				_logDelegate("PADInt with uid " + uid + " has value " + read_value);
+
+				return read_value;
+			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+				return -1;
+			}
 		}
 
 		public void Write(int uid, int value)
 		{
 			if (!_padints.ContainsKey(uid))
 				throw new TxException("You haven't accessed PADInt " + uid + ", read/write operations not available.");
-
-			_padints[uid].Write(value);
-			_logDelegate("PADInt with uid " + uid + " written with value " + value);				
+			try
+			{
+				_padints[uid].Write(value);
+				_logDelegate("PADInt with uid " + uid + " written with value " + value);
+			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+			}
 		}
 
         public void Status()
 		{
-			DSTMLib.Status();
+			try
+			{
+				DSTMLib.Status();
+				_logDelegate("Servers status:");
+			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+			}
 		}
 
         public void Fail(string URL)
@@ -101,7 +136,7 @@ namespace PADIClient
 				DSTMLib.Fail(URL);
 				_logDelegate("Simulated Server fail @ " + URL);
 			}
-			catch (Exception e)
+			catch (TxException e)
 			{
 				_logDelegate(e.Message);
 			}
@@ -112,10 +147,9 @@ namespace PADIClient
 			try
 			{
 				DSTMLib.Freeze(URL);
-				_serversFreezed++;
 				_logDelegate("Simulated Server freeze @ " + URL);
 			}
-			catch (Exception e)
+			catch (TxException e)
 			{
 				_logDelegate(e.Message);
 			}
@@ -126,13 +160,9 @@ namespace PADIClient
 			try
 			{
 				DSTMLib.Recover(URL);
-				if (_serversFreezed <= 0)
-					_serversFreezed = 0;
-				else
-					_serversFreezed--;
 				_logDelegate("Server recovered @ " + URL);
 			}
-			catch (Exception e)
+			catch (TxException e)
 			{
 				_logDelegate(e.Message);
 			}
@@ -140,38 +170,53 @@ namespace PADIClient
 
         public bool TxBegin()
 		{
-            bool result = DSTMLib.TxBegin();
-            _padints = new Dictionary<int, PADInt>();
+			try
+			{
+				bool result = DSTMLib.TxBegin();
+				_padints = new Dictionary<int, PADInt>();
 
-            if (result)
-				_logDelegate("Transaction started!");
-            else
-				_logDelegate("Cannot start transaction!");
+				if (result)
+					_logDelegate("Transaction started!");
+				else
+					_logDelegate("Cannot start transaction!");
 
-            return result;
+				return result;
+			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+				return false;
+			}
         }
 
         public void TxCommit()
 		{
-			if (_serversFreezed > 0)
+			try
 			{
-				_logDelegate("All servers must be unfreezed before commiting!");
-			}
-			else
-			{
-                _padints.Clear(); 
+				_padints.Clear();
 				bool result = DSTMLib.TxCommit();
 				if (result)
 					_logDelegate("Transaction successful");
 				else
 					_logDelegate("Transaction failed");
 			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+			}
 		}
 
         public void TxAbort()
 		{
-			DSTMLib.TxAbort();
-            _padints.Clear();
+			try
+			{
+				DSTMLib.TxAbort();
+				_padints.Clear();
+			}
+			catch (TxException e)
+			{
+				_logDelegate(e.Message);
+			}
 		}
     }
 }
