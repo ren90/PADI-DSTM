@@ -82,22 +82,22 @@ namespace PADIServer
         private bool _fail { get; set; }
         // true if the server is simulating a freeze situation; false otherwise
         private bool _freeze { get; set; }
-		// event handler to send "I'm alive" messages
+        // event handler to send "I'm alive" messages
         private Timer _alive;
-		// time interval to send the master an "I'm Alive" message
+        // time interval to send the master an "I'm Alive" message
         private const long TIMEOUT = 2000;
-		// the master's interface, through which the server communicates
+        // the master's interface, through which the server communicates
         private MasterInterface _master;
-		// the server's id, given by the master
-		private int _id;
-		//the location of the server (tcp://<ip>:<port>/Server)
+        // the server's id, given by the master
+        private int _id;
+        //the location of the server (tcp://<ip>:<port>/Server)
         private string _url;
         // map between transaction ID and a list of PADInts
         private Dictionary<int, List<int>> _transactions;
         // map between PADInt ID and the locking status
         private Dictionary<int, bool> _locks;
-        
-        
+
+
         // Coordinator attributes 
         // map between transaction ID and the list of servers involved
         private bool onTime;
@@ -110,7 +110,7 @@ namespace PADIServer
             _padints = new Dictionary<int, PADInt>();
             _transactions = new Dictionary<int, List<int>>();
             _locks = new Dictionary<int, bool>();
-			_pendingRequests = new Dictionary<MethodInfo, List<Object>>();
+            _pendingRequests = new Dictionary<MethodInfo, List<Object>>();
             _alive = new Timer(TIMEOUT);
             _alive.Elapsed += IsAlive;
             _alive.Enabled = true;
@@ -122,8 +122,8 @@ namespace PADIServer
 
         void IsAlive(object sender, ElapsedEventArgs e)
         {
-			if (_fail || _freeze)
-				return;
+            if (_fail || _freeze)
+                return;
             _master.ImAlive(_id);
         }
 
@@ -150,9 +150,9 @@ namespace PADIServer
             {
                 _transactions[transactionId].Add(uid);
             }
-            
 
-			return p;
+
+            return p;
         }
 
         public PADInt AccessPADInt(int uid, int transactionId)
@@ -167,8 +167,9 @@ namespace PADIServer
                 _transactions.Add(transactionId, new List<int>());
                 _transactions[transactionId].Add(uid);
             }
-            else {
-                if(!_transactions[transactionId].Contains(uid))
+            else
+            {
+                if (!_transactions[transactionId].Contains(uid))
                     _transactions[transactionId].Add(uid);
             }
 
@@ -183,10 +184,10 @@ namespace PADIServer
             return _status;
         }
 
-		/// <summary>
-		/// Simulates a server crash
-		/// </summary>
-		/// <returns></returns>
+        /// <summary>
+        /// Simulates a server crash
+        /// </summary>
+        /// <returns></returns>
         public bool Fail()
         {
             _fail = true;
@@ -195,10 +196,10 @@ namespace PADIServer
             return _fail;
         }
 
-		/// <summary>
-		/// Simulates a non-responsive server
-		/// </summary>
-		/// <returns></returns>
+        /// <summary>
+        /// Simulates a non-responsive server
+        /// </summary>
+        /// <returns></returns>
         public bool Freeze()
         {
             _freeze = true;
@@ -207,22 +208,22 @@ namespace PADIServer
             return _freeze;
         }
 
-		/// <summary>
-		/// Recovers from a Freeze or Fail state
-		/// </summary>
-		/// <returns></returns>
+        /// <summary>
+        /// Recovers from a Freeze or Fail state
+        /// </summary>
+        /// <returns></returns>
         public bool Recover()
         {
             bool ok = false;
 
             if (_fail || _freeze)
             {
-				if (_freeze)
-					ok = DispatchPendindRequests();
+                if (_freeze)
+                    ok = DispatchPendindRequests();
 
                 _fail = false;
                 _freeze = false;
-				_status = true;                
+                _status = true;
             }
             return ok;
         }
@@ -232,9 +233,9 @@ namespace PADIServer
             try
             {
                 foreach (KeyValuePair<MethodInfo, List<Object>> request in _pendingRequests)
-				{
-					request.Key.Invoke(this, request.Value.ToArray());
-				}
+                {
+                    request.Key.Invoke(this, request.Value.ToArray());
+                }
             }
             catch (Exception e)
             {
@@ -247,14 +248,14 @@ namespace PADIServer
         // -------------------------------------------------------------------------------------------------------------------
         // Participant Methods ------------------------------------------------------------------------------------------------
 
-		public bool DoCommit(int tId, string coordinator)
-		{
+        public bool DoCommit(int tId, string coordinator)
+        {
             _transactions[tId].Clear();
             _transactions.Remove(tId);
-			return true;
-		}
+            return true;
+        }
 
-		public void DoAbort(int tId, string coordinator)
+        public void DoAbort(int tId, string coordinator)
         {
             foreach (int id in _transactions[tId])
             {
@@ -263,15 +264,18 @@ namespace PADIServer
             _transactions[tId].Clear();
             _transactions.Remove(tId);
 
-		}
+        }
 
         public void Prepare(int tID, string coordinator, int timestamp)
         {
-			bool reply = true;
 
-			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(tID, 
+
+
+            bool reply = true;
+
+            _transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(tID,
                 timestamp));
-			SendVote(reply, coordinator);
+            SendVote(reply, coordinator);
         }
 
         private void SendVote(bool reply, string coordinator)
@@ -283,28 +287,30 @@ namespace PADIServer
         // -------------------------------------------------------------------------------------------------------------
         // Locking Methods
 
-        public void LockPADInt(int transactionId, int uid ,int timestamp)
-		{
+        public void LockPADInt(int transactionId, int uid, int timestamp)
+        {
 
-			foreach (KeyValuePair<int, List<int>> t in _transactions)
-			{
+            foreach (KeyValuePair<int, List<int>> t in _transactions)
+            {
                 if (t.Value.Contains(uid))
                 {
                     if (!_transactions.ContainsKey(transactionId))
                         throw new TxException("The PADInt" + uid + " is already locked!");
                     else return;
                 }
-			}
+            }
             if (_padints[uid].Timestamp > timestamp)
             {
                 throw new TxException("The client timestamp is lower than the object's timestamp!");
             }
             else
             {
-                if (!_transactions.ContainsKey(transactionId)) {
+                if (!_transactions.ContainsKey(transactionId))
+                {
                     _transactions.Add(transactionId, new List<int>());
                     _transactions[transactionId].Add(uid);
-                }else
+                }
+                else
                     _transactions[transactionId].Add(uid);
             }
         }
@@ -326,11 +332,11 @@ namespace PADIServer
         }
 
         public string GetServerUrl()
-		{
+        {
             return _url;
         }
 
-         public bool TxCommit(int tId, List<string> _references, int timestamp)
+        public bool TxCommit(int tId, List<string> _references, int timestamp)
         {
             bool canCommit = true;
             Timer timeout = new Timer(10000);
@@ -341,30 +347,31 @@ namespace PADIServer
             onTime = true;
             coordinating = true;
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
-            
-             foreach (String server in _references)
+
+            foreach (String server in _references)
             {
-                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), server));
+                _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), server));
             }
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
                 server.Prepare(tId, _url, timestamp);
-            
-           timeout.Enabled = true;
 
-           while (onTime)
-           {
-               votes.ForEach((bool x) => canCommit = (x && canCommit));
-               if (canCommit)
-                   break;
-           }
+            timeout.Enabled = true;
 
-           if (onTime && canCommit)
-               _serversToCommit.ForEach((ParticipantInterface p) => p.DoCommit(tId, _url));
-           else
-               _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId, _url));
+            while (onTime)
+            {
+                votes.ForEach((bool x) => canCommit = (x && canCommit));
+                if ((votes.Count == _serversToCommit.Count) && canCommit)
+                    break;
+            }
 
-           return canCommit;
+            if (onTime && canCommit)
+                _serversToCommit.ForEach((ParticipantInterface p) => p.DoCommit(tId, _url));
+            else
+                _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId, _url));
+
+            timeout.Enabled = false;
+            return canCommit && onTime;
         }
 
         void timeout_Elapsed(object sender, ElapsedEventArgs e)
@@ -384,20 +391,20 @@ namespace PADIServer
             return true;
         }
 
-		public bool Freeze_f()
-		{
-			return _freeze;
-		}
+        public bool Freeze_f()
+        {
+            return _freeze;
+        }
 
-		public bool Fail_f()
-		{
-			return _fail;
-		}
+        public bool Fail_f()
+        {
+            return _fail;
+        }
 
-		public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
-		{
-			_pendingRequests.Add(methodInfo, parameters);
-			return;
-		}
+        public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
+        {
+            _pendingRequests.Add(methodInfo, parameters);
+            return;
+        }
     }
 }
