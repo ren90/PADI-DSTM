@@ -59,7 +59,7 @@ namespace PADIClient
             if (p != null)
 			{
                 if (!_padints.ContainsKey(uid))
-                _padints.Add(uid, p);
+					_padints.Add(uid, p);
 
                 _logDelegate("PADInt with uid " + uid + " accessed!");
                 _listDelegate("UID:" + uid);
@@ -72,7 +72,7 @@ namespace PADIClient
 		{
 			int read_value;
 			if (!_padints.ContainsKey(uid))
-				throw new TxException("An error occurred while reading from PADInt " + uid);
+				throw new TxException("You haven't accessed PADInt " + uid + ", read/write operations not available.");
 
 			read_value = _padints[uid].Read();
 			_logDelegate("PADInt with uid " + uid + " has value " + read_value);
@@ -83,7 +83,7 @@ namespace PADIClient
 		public void Write(int uid, int value)
 		{
 			if (!_padints.ContainsKey(uid))
-				throw new TxException("An error occurred while writing to PADInt " + uid);
+				throw new TxException("You haven't accessed PADInt " + uid + ", read/write operations not available.");
 
 			_padints[uid].Write(value);
 			_logDelegate("PADInt with uid " + uid + " written with value " + value);				
@@ -101,7 +101,7 @@ namespace PADIClient
 				DSTMLib.Fail(URL);
 				_logDelegate("Simulated Server fail @ " + URL);
 			}
-			catch (RemotingException e)
+			catch (Exception e)
 			{
 				_logDelegate(e.Message);
 			}
@@ -115,7 +115,7 @@ namespace PADIClient
 				_serversFreezed++;
 				_logDelegate("Simulated Server freeze @ " + URL);
 			}
-			catch (RemotingException e)
+			catch (Exception e)
 			{
 				_logDelegate(e.Message);
 			}
@@ -126,11 +126,13 @@ namespace PADIClient
 			try
 			{
 				DSTMLib.Recover(URL);
-				if (_serversFreezed < 0)
+				if (_serversFreezed <= 0)
 					_serversFreezed = 0;
+				else
+					_serversFreezed--;
 				_logDelegate("Server recovered @ " + URL);
 			}
-			catch (RemotingException e)
+			catch (Exception e)
 			{
 				_logDelegate(e.Message);
 			}

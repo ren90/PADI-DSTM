@@ -48,6 +48,8 @@ namespace DSTMLIB
                 _timestamp = data.Value;
 
                 _transactionCoordinatorUrl = _master.GetCoordinator();
+				if (_transactionCoordinatorUrl == "")
+					throw new TxException("404 Coordinator not found");
 
                 _references = new Dictionary<int, PADInt>();
                 _serverList = new List<string>();
@@ -114,7 +116,7 @@ namespace DSTMLIB
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
                 return server.Fail();
             }
-            catch (RemotingException)
+            catch (Exception)
 			{
 				throw;
             }
@@ -131,7 +133,7 @@ namespace DSTMLIB
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
                 return server.Freeze();
             }
-            catch (RemotingException)
+            catch (Exception)
             {
                 throw;
             }
@@ -148,7 +150,7 @@ namespace DSTMLIB
                 ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), URL);
                 return server.Recover();
             }
-            catch (RemotingException)
+            catch (Exception)
             {
 				throw;
             }
@@ -158,36 +160,36 @@ namespace DSTMLIB
 
         public static PADInt CreatePADInt(int uid)
 		{
-               Console.WriteLine("DSTMLib-> calling master to create PADInt!");
+			Console.WriteLine("DSTMLib-> calling master to create PADInt!");
 
-               Dictionary<int, string> locations = _master.GenerateServers(uid);
-               List<PADInt> objectReferences = new List<PADInt>();
-               List<string> servers = new List<string>();
+			Dictionary<int, string> locations = _master.GenerateServers(uid);
+			List<PADInt> objectReferences = new List<PADInt>();
+			List<string> servers = new List<string>();
 
-               if (locations == null)
-               {
-                   Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
-                   return null;
-               }
-               else
-               {
+			if (locations == null)
+			{
+				Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
+				return null;
+			}
+			else
+			{
 
-                   foreach (string server in locations.Values)
-                   {
-                       servers.Add(server);
-                   }
-               }
+				foreach (string server in locations.Values)
+				{
+					servers.Add(server);
+				}
+			}
            
-                Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto
+			Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto
 
-                foreach (String server in servers)
-                {
-                    ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
-                    objectReferences.Add(tServer.CreatePADInt(uid, servers, _transactionId));
+			foreach (String server in servers)
+			{
+				ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
+				objectReferences.Add(tServer.CreatePADInt(uid, servers, _transactionId));
 
-                    if (!_serverList.Contains(server))
-                        _serverList.Add(server);
-                }
+				if (!_serverList.Contains(server))
+					_serverList.Add(server);
+			}
 
                 PADInt localCopy = new PADInt(objectReferences, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
                 _references.Add(localCopy.UID,localCopy);
@@ -205,7 +207,7 @@ namespace DSTMLIB
             List<PADInt> objectReferences = new List<PADInt>();
             List<string> servers;
 
-            if(_references.ContainsKey(uid))
+            if (_references.ContainsKey(uid))
             {
                 Console.WriteLine("The reference for the PADInt " + uid + " was in cache");
                 return _references[uid];
@@ -221,21 +223,6 @@ namespace DSTMLIB
             }
 
             Console.WriteLine("The PADInts are at these servers: " +  servers.ToString());
-   
-          /*  ServerInterface chosen = (ServerInterface)Activator.GetObject(typeof(ServerInterface), servers);
-            if (chosen.Fail_f())
-            {
-                return null;
-            }
-            else if (chosen.Freeze_f())
-            {
-                Int32 parameter = uid;
-                List<Object> parameters = new List<Object>();
-                parameters.Add(parameter);
-
-                chosen.AddPendingRequest(chosen.GetType().GetMethod("AccessPADInt"), parameters);
-                return null;
-            }*/
 
             foreach (String server in servers) 
             {
