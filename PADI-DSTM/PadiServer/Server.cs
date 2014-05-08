@@ -133,9 +133,9 @@ namespace PADIServer
         public PADInt CreatePADInt(int uid, List<string> servers, int transactionId)
         {
             Console.WriteLine("SERVER: Create request for the PadInt " + uid + " with the transaction id " + transactionId);
-          
+
             if (_padints.ContainsKey(uid))
-                throw new TxException("SERVER: PADInt with uid " + uid + " already exists!");
+                return null;
 
             PADInt p = new PADInt(uid, servers);
 
@@ -160,7 +160,7 @@ namespace PADIServer
             Console.WriteLine("SERVER: Access request for the PadInt " + uid + " from the transaction " + transactionId);
 
             if (!_padints.ContainsKey(uid))
-                throw new TxException("SERVER: PADInt with uid " + uid + " doesn't exist!");
+                return null;
 
             if (!_transactions.ContainsKey(transactionId))
             {
@@ -251,18 +251,11 @@ namespace PADIServer
 		{
             _transactions[tId].Clear();
             _transactions.Remove(tId);
-            Console.WriteLine("commit cool");
-            Console.WriteLine("===================");
-            foreach (PADInt p in _padints.Values)
-                Console.WriteLine(p.UID + " " + p.Value);
-            Console.WriteLine("===================");
 			return true;
 		}
 
 		public void DoAbort(int tId, string coordinator)
-		{
-            Console.WriteLine("TOCA A FAZER ABORT");
-
+        {
             foreach (int id in _transactions[tId])
             {
                 _padints[id].rollback();

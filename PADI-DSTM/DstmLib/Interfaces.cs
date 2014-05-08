@@ -8,11 +8,12 @@ namespace DSTMLIB
     {
         Dictionary<int, string> GenerateServers(int uid);
 		KeyValuePair<int, int> RegisterTransactionalServer(string ip);
-        KeyValuePair<int, int> GetTransactionData();
 		List<string> GetServers(int uid);
         string GetCoordinator();
-        bool FinishTransaction(int uid);
+        bool FinishTransaction(int tId);
         void ImAlive(int serverId);
+        int getTimestamp();
+        int getTransactionID();
     }
 
     //Transactional server interfaces
@@ -46,6 +47,5 @@ namespace DSTMLIB
 		bool Fail_f();
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
-        void updatePadintTemporaryValue(int uid, int tid, int value);
 	}
 }

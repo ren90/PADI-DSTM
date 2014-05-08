@@ -7,8 +7,8 @@ namespace DSTMLIB
     public class PADInt : MarshalByRefObject
 	{
         //-----Values used by the PADInt object-----//
-        private Dictionary<int, PADInt> _temporaryValues;
-        public Dictionary<int,PADInt> Temporary{
+       private Dictionary<int, int> _temporaryValues;
+        public Dictionary<int,int> Temporary{
             get { return _temporaryValues; }
             private set { _temporaryValues = value; }
         }
@@ -66,7 +66,7 @@ namespace DSTMLIB
 			_uid = uid;
             _servers = servers;
             _value = 0;
-           // _temporaryValues = new Dictionary<int, PADInt>();
+           _temporaryValues = new Dictionary<int, int>();
 		}
 
         public PADInt(List<PADInt> originals, int tId, int uid, int value)
@@ -84,7 +84,7 @@ namespace DSTMLIB
             try
             {
                 _oldValue = _value;
-                //_value = _temporaryValues[tId];
+                _value = _temporaryValues[tId];
                 Timestamp = timestamp;
                 _temporaryValues.Remove(tId); 
                 return true;
@@ -104,7 +104,7 @@ namespace DSTMLIB
 		public int Read()
 		{
 			Console.WriteLine("DSTMLib-> reading from PADInt " + this.UID + " with value " + this.Value);
-			return _value;
+            return _value;
 		}
 
 		public void Write(int value)
@@ -113,11 +113,8 @@ namespace DSTMLIB
 			_value = value;
 		}
 
-      /*  public void UpdateTemporary(int tId, int value) {
-            if (!_temporaryValues.ContainsKey(tId))
+        public void temporaryValue(int tId, int value) {
                 _temporaryValues.Add(tId, value);
-            else
-                _temporaryValues[tId] = value;
-        }*/
+        }
     }
 }
