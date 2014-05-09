@@ -8,31 +8,36 @@ namespace DSTMLIB
 	{
         //-----Values used by the PADInt object-----//
         private Dictionary<int, PADInt> _temporaryValues;
-        public Dictionary<int,PADInt> Temporary{
+        public Dictionary<int,PADInt> Temporary
+		{
             get { return _temporaryValues; }
             private set { _temporaryValues = value; }
         }
         // identifies unequivocally a PADInt
         private int _uid;
-        public int UID {
+        public int UID
+		{
             get { return _uid; }
             private set { _uid = value; }
         }
 		// the value stored in the PADInt
         private int _value;
-        public int Value {
+        public int Value
+		{
             get { return _value;}
             private set{_value = value;}
         }
 
         private List<String> _servers;
-        public List<String> Servers {
+        public List<String> Servers
+		{
             get { return _servers; }
             set { _servers = value; }
         }
 
         private int _oldValue;
-        public int OldValue {
+        public int OldValue
+		{
             get { return _oldValue; }
             set { _oldValue = value; }
         }
@@ -55,7 +60,8 @@ namespace DSTMLIB
         }
 
         private int _transactionId;
-        public int TransactioId {
+        public int TransactioId
+		{
             get { return _transactionId; }
             private set { _transactionId = value; }
         }
@@ -79,7 +85,7 @@ namespace DSTMLIB
 
 		// "transform" the temporary value to persistent;
 		// basically, the function writes to the _value field (which represents "persistency")
-        public bool persistValue(int tId, int timestamp)
+        public bool PersistValue(int tId, int timestamp)
         {
             try
             {
@@ -96,7 +102,7 @@ namespace DSTMLIB
             }
         }
 
-        public void rollback()
+        public void Rollback()
         {
             _value = _oldValue;
         }

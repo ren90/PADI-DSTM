@@ -101,7 +101,7 @@ namespace PADIServer
         // Coordinator attributes 
         // map between transaction ID and the list of servers involved
         private bool onTime;
-        private bool coordinating;
+        private bool isCoordinating;
         private List<bool> votes = new List<bool>();
 
         public TransactionalServer(int id, MasterInterface master, string url)
@@ -124,7 +124,7 @@ namespace PADIServer
         {
 			if (_fail || _freeze)
 				return;
-            _master.ImAlive(_id);
+            _master.ImAlive(_id, _url);
         }
 
         // ------------------------------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ namespace PADIServer
 
         public PADInt CreatePADInt(int uid, List<string> servers, int transactionId)
         {
-            Console.WriteLine("SERVER: Create request for the PadInt " + uid + " with the transaction id " + transactionId);
+            Console.WriteLine("SERVER: Create request for the PADInt " + uid + " with the transaction id " + transactionId);
           
             if (_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " already exists!");
@@ -147,17 +147,14 @@ namespace PADIServer
                 _transactions[transactionId].Add(uid);
             }
             else
-            {
                 _transactions[transactionId].Add(uid);
-            }
-            
 
 			return p;
         }
 
         public PADInt AccessPADInt(int uid, int transactionId)
         {
-            Console.WriteLine("SERVER: Access request for the PadInt " + uid + " from the transaction " + transactionId);
+			Console.WriteLine("SERVER: Access request for the PADInt " + uid + " from the transaction " + transactionId);
 
             if (!_padints.ContainsKey(uid))
                 throw new TxException("SERVER: PADInt with uid " + uid + " doesn't exist!");
@@ -167,8 +164,9 @@ namespace PADIServer
                 _transactions.Add(transactionId, new List<int>());
                 _transactions[transactionId].Add(uid);
             }
-            else {
-                if(!_transactions[transactionId].Contains(uid))
+            else
+			{
+                if (!_transactions[transactionId].Contains(uid))
                     _transactions[transactionId].Add(uid);
             }
 
@@ -191,6 +189,24 @@ namespace PADIServer
         {
             _fail = true;
             _status = false;
+
+			#region Nao ta terminado, falta pensar mais nisto
+			//foreach (PADInt p in _padints.Values)
+			//{
+			//	if (p.Servers.Count <= 1)
+			//		_master.ReplicatePADInt(p, _url);
+			//	p.Servers.Remove(_url);
+			//}
+
+			//foreach (PADInt p in _padints.Values)
+			//{
+			//	foreach (string address in p.Servers)
+			//	{
+			//		ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), address);
+
+			//	}
+			//} 
+			#endregion
 
             return _fail;
         }
@@ -265,7 +281,7 @@ namespace PADIServer
 
             foreach (int id in _transactions[tId])
             {
-                _padints[id].rollback();
+                _padints[id].Rollback();
             }
             _transactions[tId].Clear();
             _transactions.Remove(tId);
@@ -275,9 +291,7 @@ namespace PADIServer
         public void Prepare(int tID, string coordinator, int timestamp)
         {
 			bool reply = true;
-
-			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].persistValue(tID, 
-                timestamp));
+			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].PersistValue(tID, timestamp));
 			SendVote(reply, coordinator);
         }
 
@@ -292,7 +306,6 @@ namespace PADIServer
 
         public void LockPADInt(int transactionId, int uid ,int timestamp)
 		{
-
 			foreach (KeyValuePair<int, List<int>> t in _transactions)
 			{
                 if (t.Value.Contains(uid))
@@ -303,15 +316,14 @@ namespace PADIServer
                 }
 			}
             if (_padints[uid].Timestamp > timestamp)
-            {
                 throw new TxException("The client timestamp is lower than the object's timestamp!");
-            }
             else
             {
                 if (!_transactions.ContainsKey(transactionId)) {
                     _transactions.Add(transactionId, new List<int>());
                     _transactions[transactionId].Add(uid);
-                }else
+                }
+				else
                     _transactions[transactionId].Add(uid);
             }
         }
@@ -337,7 +349,7 @@ namespace PADIServer
             return _url;
         }
 
-         public bool TxCommit(int tId, List<string> _references, int timestamp)
+        public bool TxCommit(int tId, List<string> _references, int timestamp)
         {
             bool canCommit = true;
             Timer timeout = new Timer(10000);
@@ -346,7 +358,7 @@ namespace PADIServer
 
             //acquire participant objects
             onTime = true;
-            coordinating = true;
+            isCoordinating = true;
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
             
              foreach (String server in _references)
@@ -410,5 +422,10 @@ namespace PADIServer
         public void updatePadintTemporaryValue(int uid, int tid, int value) {
             //_padints[uid].UpdateTemporary(tid, value);
         }
-    }
+
+		public void ReplicatePADInt(PADInt p, List<string> servers)
+		{
+			
+		}
+	}
 }

@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Timers;
+using System.Net.Sockets;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using System.Net.Sockets;
+using System.Timers;
 
 namespace PADIMaster
 {
@@ -74,8 +74,6 @@ namespace PADIMaster
         private List<int> transactionsInCourse;
 		// id generator for the transactions
         private int transactionsId;
-		// list of "dead" servers
-		private List<string> _deadServers;
 
         public MasterServer()
         {
@@ -87,7 +85,6 @@ namespace PADIMaster
             _timers = new Dictionary<int,Timer>();
             finishedTransactions = new List<int>();
             transactionsInCourse = new List<int>();
-			_deadServers = new List<string>();
             timestamps = 0;
             transactionsId = 0;
         }
@@ -127,13 +124,18 @@ namespace PADIMaster
         public void OnTimeout(object sender, ElapsedEventArgs e, int serverId)
         {
             Console.WriteLine("The server " + serverId + " is down!");
-			_deadServers.Add(_transactionalServers[serverId]);
+			_transactionalServers.Remove(serverId);
         }
 
-        public void ImAlive(int tServerId)
+        public void ImAlive(int tServerId, string address)
         {
             _timers[tServerId].Interval = TIMEOUT;
-            Console.WriteLine("server " + tServerId +" says: ALIVE");
+			if (!_transactionalServers.ContainsKey(tServerId))
+				_transactionalServers.Add(tServerId, address);
+
+			ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), address);
+
+			Console.WriteLine("server " + tServerId +" says: ALIVE");
         }
 
         public Dictionary<int, string> GenerateServers(int uid)
@@ -171,19 +173,12 @@ namespace PADIMaster
         public string GetCoordinator()
         {
             Random rnd = new Random();
-            string url;
             int counter = _transactionalServers.Count;
 
             if (counter == 0)
                 return "";
 
-			url = _transactionalServers[rnd.Next(counter)];
-			while (_deadServers.Contains(url))
-			{
-				url = _transactionalServers[rnd.Next(counter)];
-			}
-
-			return url;
+			return _transactionalServers[rnd.Next(counter)];
         }
 
         public KeyValuePair<int, int> GetTransactionData()
@@ -201,5 +196,18 @@ namespace PADIMaster
 				finishedTransactions.Add(uid);
             return true;
         }
-    }
+
+		public void ReplicatePADInt(PADInt p, string url)
+		{
+			foreach (string serverAddress in _transactionalServers.Values)
+			{
+				if (serverAddress != url)
+				{
+					ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
+					if ( (!server.Fail_f()) && (!server.Freeze_f()) )
+						server.ReplicatePADInt(p, p.Servers);
+				}
+			}
+		}
+	}
 }

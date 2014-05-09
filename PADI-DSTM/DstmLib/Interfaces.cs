@@ -12,8 +12,9 @@ namespace DSTMLIB
 		List<string> GetServers(int uid);
         string GetCoordinator();
         bool FinishTransaction(int uid);
-        void ImAlive(int serverId);
-    }
+        void ImAlive(int serverId, string address);
+		void ReplicatePADInt(PADInt p, string url);
+	}
 
     //Transactional server interfaces
     public interface CoordinatorInterface
@@ -47,5 +48,6 @@ namespace DSTMLIB
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
         void updatePadintTemporaryValue(int uid, int tid, int value);
+		void ReplicatePADInt(PADInt p, List<string> servers);
 	}
 }

@@ -12,7 +12,6 @@ namespace DSTMLIB
         private static TcpChannel _channel;
 		// the master remote interface
         private static MasterInterface _master;
-      
         private static Dictionary<int,PADInt> _references;
         private static List<string> _serverList;
         private static int _timestamp;
@@ -155,7 +154,7 @@ namespace DSTMLIB
 				foreach (string server in locations.Values)
 					servers.Add(server);
 			}
-           
+
 			Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto
 
 			foreach (String server in servers)
@@ -167,9 +166,9 @@ namespace DSTMLIB
 					_serverList.Add(server);
 			}
 
-                PADInt localCopy = new PADInt(objectReferences, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
-                _references.Add(localCopy.UID,localCopy);
-                return localCopy;
+            PADInt localCopy = new PADInt(objectReferences, _transactionId, objectReferences[0].UID, objectReferences[0].Value);
+            _references.Add(localCopy.UID, localCopy);
+            return localCopy;
         }
 
         /// <summary>
