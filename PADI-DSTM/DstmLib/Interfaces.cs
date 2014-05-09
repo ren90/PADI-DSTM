@@ -8,13 +8,14 @@ namespace DSTMLIB
     {
         Dictionary<int, string> GenerateServers(int uid);
 		KeyValuePair<int, int> RegisterTransactionalServer(string ip);
-        KeyValuePair<int, int> GetTransactionData();
 		List<string> GetServers(int uid);
         string GetCoordinator();
         bool FinishTransaction(int uid);
         void ImAlive(int serverId, string address);
 		void ReplicatePADInt(PADInt p, string url);
-	}
+        int getTimestamp();
+        int getTransactionID();
+    }
 
     //Transactional server interfaces
     public interface CoordinatorInterface

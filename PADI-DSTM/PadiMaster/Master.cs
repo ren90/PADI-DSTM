@@ -181,19 +181,22 @@ namespace PADIMaster
 			return _transactionalServers[rnd.Next(counter)];
         }
 
-        public KeyValuePair<int, int> GetTransactionData()
-		{
-            KeyValuePair<int, int> data = new KeyValuePair<int, int>(transactionsId++, timestamps++);
-            transactionsInCourse.Add(data.Key);
-            return data;
+        public int getTransactionID(){
+            int id = transactionsId++;
+            transactionsInCourse.Add(id);
+            return transactionsId;
         }
 
-        public bool FinishTransaction(int uid)
+        public int getTimestamp(){
+            return timestamps++;
+        }
+
+        public bool FinishTransaction(int tId)
 		{
-            if (finishedTransactions.Contains(uid))
+            if (finishedTransactions.Contains(tId))
                 return false;
             else
-				finishedTransactions.Add(uid);
+				finishedTransactions.Add(tId);
             return true;
         }
 

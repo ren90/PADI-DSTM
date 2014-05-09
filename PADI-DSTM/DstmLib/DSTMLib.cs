@@ -41,14 +41,8 @@ namespace DSTMLIB
             if (!_isInTransaction)
             {
                 _isInTransaction = true;
-                KeyValuePair<int, int> data = _master.GetTransactionData();
-
-                _transactionId = data.Key;
-                _timestamp = data.Value;
-
-                _transactionCoordinatorUrl = _master.GetCoordinator();
-				if (_transactionCoordinatorUrl == "")
-					throw new TxException("404 Coordinator not found");
+                _transactionId = _master.getTransactionID();
+                _timestamp = _master.getTimestamp();
 
                 _references = new Dictionary<int, PADInt>();
                 _serverList = new List<string>();
@@ -64,12 +58,23 @@ namespace DSTMLIB
 
         public static bool TxCommit()
 		{
+
+            _transactionCoordinatorUrl = _master.GetCoordinator();
+            if (_transactionCoordinatorUrl == "")
+                throw new TxException("404 Coordinator not found");
+
+            foreach (PADInt localCopy in _references.Values) {
+                foreach (PADInt original in localCopy.OriginalValues) {
+                    original.temporaryValue(localCopy.TransactioId, localCopy.Value);
+                }
+            }
+
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
             bool final_result = coordinator.TxCommit(_transactionId, _serverList, _timestamp);
-            
-			_references.Clear();
-            _serverList.Clear();
-			_isInTransaction = false;
+
+            _master.FinishTransaction(_transactionId);
+
+            clearVariables();
 			
 			return final_result;
         }
@@ -79,15 +84,11 @@ namespace DSTMLIB
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
 			bool result = coordinator.TxAbort(_transactionId, _serverList);
 
-            _isInTransaction = false;
-            _timestamp = -1;
-            _transactionId = -1;
-            _transactionCoordinatorUrl = "";
-            _serverList.Clear();
-            _references.Clear();
+            clearVariables();
 
 			return result;
 		}
+
 		
         public static bool Status()
         {
@@ -157,7 +158,7 @@ namespace DSTMLIB
 
 			Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto
 
-			foreach (String server in servers)
+			foreach (String server in locations.Values)
 			{
 				ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
 				objectReferences.Add(tServer.CreatePADInt(uid, servers, _transactionId));
@@ -213,5 +214,15 @@ namespace DSTMLIB
             _references.Add(localCopy.UID, localCopy);
             return localCopy;
 		}
+
+        private static void clearVariables()
+        {
+            _isInTransaction = false;
+            _timestamp = -1;
+            _transactionId = -1;
+            _transactionCoordinatorUrl = "";
+            _serverList.Clear();
+            _references.Clear();
+        }
     }
 }
