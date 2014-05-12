@@ -7,8 +7,8 @@
     <ProjectGuid>{F2610138-1615-40C9-96BD-2B60251FC4B4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PadiMaster</RootNamespace>
-    <AssemblyName>PadiMaster</AssemblyName>
+    <RootNamespace>PADIMaster</RootNamespace>
+    <AssemblyName>PADIMaster</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>

@@ -7,8 +7,8 @@
     <ProjectGuid>{C62B18BE-B166-43AC-B34F-E61D1028B12B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DstmLib</RootNamespace>
-    <AssemblyName>DstmLib</AssemblyName>
+    <RootNamespace>DSTMLib</RootNamespace>
+    <AssemblyName>DSTMLib</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

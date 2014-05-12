@@ -41,8 +41,8 @@ namespace DSTMLIB
             if (!_isInTransaction)
             {
                 _isInTransaction = true;
-                _transactionId = _master.getTransactionID();
-                _timestamp = _master.getTimestamp();
+                _transactionId = _master.GetTransactionID();
+                _timestamp = _master.GetTimestamp();
 
                 _references = new Dictionary<int, PADInt>();
                 _serverList = new List<string>();
@@ -141,10 +141,10 @@ namespace DSTMLIB
 		{
 			Console.WriteLine("DSTMLib-> calling master to create PADInt!");
 
-			Dictionary<int, string> locations = _master.GenerateServers(uid);
 			List<PADInt> objectReferences = new List<PADInt>();
-			List<string> servers = new List<string>();
-
+			List<string> servers = new List<string>(); 
+			Dictionary<int, string> locations = _master.GenerateServers(uid);
+			
 			if (locations == null)
 			{
 				Console.WriteLine("DSTMLib-> ERROR: There is already a PADInt with the uid: " + uid);
@@ -156,9 +156,9 @@ namespace DSTMLIB
 					servers.Add(server);
 			}
 
-			Console.Write("the chosen servers are: " + locations[0]);//Adiionar o resto
+			Console.WriteLine("the chosen servers are: " + locations[0]);//Adicionar o resto
 
-			foreach (String server in locations.Values)
+			foreach (String server in servers)
 			{
 				ServerInterface tServer = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
 				objectReferences.Add(tServer.CreatePADInt(uid, servers, _transactionId));

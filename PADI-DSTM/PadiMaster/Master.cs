@@ -181,13 +181,13 @@ namespace PADIMaster
 			return _transactionalServers[rnd.Next(counter)];
         }
 
-        public int getTransactionID(){
+        public int GetTransactionID(){
             int id = transactionsId++;
             transactionsInCourse.Add(id);
             return transactionsId;
         }
 
-        public int getTimestamp(){
+        public int GetTimestamp(){
             return timestamps++;
         }
 
@@ -208,9 +208,14 @@ namespace PADIMaster
 				{
 					ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
 					if ( (!server.Fail_f()) && (!server.Freeze_f()) )
-						server.ReplicatePADInt(p, p.Servers);
+						server.ReplicatePADInt(p);
 				}
 			}
+		}
+
+		public void PropagateUpdates()
+		{
+			
 		}
 	}
 }

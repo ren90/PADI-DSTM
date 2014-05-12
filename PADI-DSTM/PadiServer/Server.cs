@@ -77,11 +77,11 @@ namespace PADIServer
         // this happens when a server is frozen
         private Dictionary<MethodInfo, List<Object>> _pendingRequests;
         // true if the server is functioning correctly; false otherwise
-        private bool _status { get; set; }
+		private bool _status;
         // true if the server is simulating a fail situation; false otherwise
-        private bool _fail { get; set; }
+        private bool _fail;
         // true if the server is simulating a freeze situation; false otherwise
-        private bool _freeze { get; set; }
+		private bool _freeze;
         // event handler to send "I'm alive" messages
         private Timer _alive;
         // time interval to send the master an "I'm Alive" message
@@ -96,6 +96,12 @@ namespace PADIServer
         private Dictionary<int, List<int>> _transactions;
         // map between PADInt ID and the locking status
         private Dictionary<int, bool> _locks;
+		// true if server is currently inside a transaction
+		private bool _isInTransaction;
+		// the coordinator's url for the current transaction
+		private string currentCoordinator { get; set; }
+		// the coordinator's url for the current transaction
+		private int currentTID { get; set; }
 
 
         // Coordinator attributes 
@@ -116,6 +122,7 @@ namespace PADIServer
             _alive.Enabled = true;
             _master = master;
             _url = url;
+			_isInTransaction = false;
         }
 
         // Is Alive Method
@@ -127,8 +134,8 @@ namespace PADIServer
             _master.ImAlive(_id, _url);
         }
 
-        // ------------------------------------------------------------------------------------------------------------------
-        // PADInt Manipulation Methods --------------------------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------------
+        // PADInt Manipulation Methods -------------------------------------------------------------
 
         public PADInt CreatePADInt(int uid, List<string> servers, int transactionId)
 		{
@@ -172,8 +179,8 @@ namespace PADIServer
             return _padints[uid];
         }
 
-        // ---------------------------------------------------------------------------------------------------------------------
-        // Status methods ------------------------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------
+        // Status methods --------------------------------------------------------------------------
 
         public bool Status()
         {
@@ -189,23 +196,8 @@ namespace PADIServer
             _fail = true;
             _status = false;
 
-			#region Nao ta terminado, falta pensar mais nisto
-			//foreach (PADInt p in _padints.Values)
-			//{
-			//	if (p.Servers.Count <= 1)
-			//		_master.ReplicatePADInt(p, _url);
-			//	p.Servers.Remove(_url);
-			//}
-
-			//foreach (PADInt p in _padints.Values)
-			//{
-			//	foreach (string address in p.Servers)
-			//	{
-			//		ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), address);
-
-			//	}
-			//} 
-			#endregion
+			if (_isInTransaction)
+				DoAbort(currentTID, currentCoordinator);
 
             return _fail;
         }
@@ -259,13 +251,14 @@ namespace PADIServer
             return true;
         }
 
-        // -------------------------------------------------------------------------------------------------------------------
-        // Participant Methods ------------------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------
+        // Participant Methods ---------------------------------------------------------------------
 
         public bool DoCommit(int tId, string coordinator)
         {
             _transactions[tId].Clear();
             _transactions.Remove(tId);
+			_master.PropagateUpdates();
             return true;
         }
 
@@ -283,6 +276,9 @@ namespace PADIServer
         public void Prepare(int tID, string coordinator, int timestamp)
         {
 			bool reply = true;
+			currentTID = tID;
+			currentCoordinator = coordinator;
+
 			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].PersistValue(tID, timestamp));
 			SendVote(reply, coordinator);
         }
@@ -293,8 +289,8 @@ namespace PADIServer
             coord.ReceiveVote(reply);
         }
 
-        // -------------------------------------------------------------------------------------------------------------
-        // Locking Methods
+        // -----------------------------------------------------------------------------------------
+        // Locking Methods -------------------------------------------------------------------------
 
         public void LockPADInt(int transactionId, int uid, int timestamp)
         {
@@ -330,8 +326,8 @@ namespace PADIServer
                 throw new TxException("The PADInt" + uid + "is not locked");
         }
 
-        //-------------------------------------------------------------------------------------------------------------
-        // Coordinator Methods ----------------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------------------
+        // Coordinator Methods ---------------------------------------------------------------------
 
         public void ReceiveVote(bool vote)
         {
@@ -414,9 +410,10 @@ namespace PADIServer
             return;
         }
 
-		public void ReplicatePADInt(PADInt p, List<string> servers)
+		// nao deve ser bem assim mas por agora serve
+		public void ReplicatePADInt(PADInt p)
 		{
-			
+			CreatePADInt(p.UID, p.Servers, p.TransactioId);
 		}
 
 		public void updatePadintTemporaryValue(int uid, int tid, int value)
