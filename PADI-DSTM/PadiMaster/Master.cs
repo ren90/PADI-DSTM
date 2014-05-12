@@ -155,6 +155,7 @@ namespace PADIMaster
             return servers;
         }
 
+		// Returns the servers that hold the PADInt with the given uid
         public List<string> GetServers(int uid)
         {
             Console.WriteLine("Received PADInt access request with the UID: " + uid);
@@ -181,13 +182,16 @@ namespace PADIMaster
 			return _transactionalServers[rnd.Next(counter)];
         }
 
-        public int GetTransactionID(){
+        public int GetTransactionID()
+		{
             int id = transactionsId++;
             transactionsInCourse.Add(id);
-            return transactionsId;
+
+			return transactionsId;
         }
 
-        public int GetTimestamp(){
+        public int GetTimestamp()
+		{
             return timestamps++;
         }
 
@@ -202,20 +206,42 @@ namespace PADIMaster
 
 		public void ReplicatePADInt(PADInt p, string url)
 		{
+			int numberOfReplicas = 0;
 			foreach (string serverAddress in _transactionalServers.Values)
 			{
 				if (serverAddress != url)
 				{
-					ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
-					if ( (!server.Fail_f()) && (!server.Freeze_f()) )
-						server.ReplicatePADInt(p);
+					if (numberOfReplicas < 2)
+					{
+						ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
+						if ((!server.Fail_f()) && (!server.Freeze_f()))
+						{
+							server.ReplicatePADInt(p);
+							numberOfReplicas++;
+						}
+					}
 				}
 			}
 		}
 
-		public void PropagateUpdates()
+		public void PropagateUpdates(int tId, string url)
 		{
-			
+			int numberOfUpdates = 0;
+			foreach (string serverAddress in _transactionalServers.Values)
+			{
+				if (serverAddress != url)
+				{
+					if (numberOfUpdates < 3)
+					{
+						ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
+						if ((!server.Fail_f()) && (!server.Freeze_f()))
+						{
+							server.PropagateUpdates(tId, server.GetPADIntReferences());
+							numberOfUpdates++;
+						}
+					}
+				}
+			}
 		}
 	}
 }

@@ -15,7 +15,7 @@ namespace DSTMLIB
 		void ReplicatePADInt(PADInt p, string url);
         int GetTimestamp();
         int GetTransactionID();
-		void PropagateUpdates();
+		void PropagateUpdates(int tId, string url);
 	}
 
     //Transactional server interfaces
@@ -51,5 +51,7 @@ namespace DSTMLIB
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
         void updatePadintTemporaryValue(int uid, int tid, int value);
 		void ReplicatePADInt(PADInt p);
+		void PropagateUpdates(int tId, List<PADInt> padints);
+		List<PADInt> GetPADIntReferences();
 	}
 }

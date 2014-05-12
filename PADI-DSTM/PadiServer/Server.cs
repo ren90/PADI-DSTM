@@ -197,7 +197,11 @@ namespace PADIServer
             _status = false;
 
 			if (_isInTransaction)
+			{
+				// tem que avisar os outros participantes
+				// verificar que nao recebeu ja doCommit do coord
 				DoAbort(currentTID, currentCoordinator);
+			}
 
             return _fail;
         }
@@ -251,6 +255,17 @@ namespace PADIServer
             return true;
         }
 
+		public List<PADInt> GetPADIntReferences()
+		{
+			List<PADInt> padints = new List<PADInt>();
+			foreach (PADInt p in _padints.Values)
+			{
+				padints.Add(p);
+			}
+
+			return padints;
+		}
+
         // -----------------------------------------------------------------------------------------
         // Participant Methods ---------------------------------------------------------------------
 
@@ -258,7 +273,7 @@ namespace PADIServer
         {
             _transactions[tId].Clear();
             _transactions.Remove(tId);
-			_master.PropagateUpdates();
+			_master.PropagateUpdates(tId, _url);
             return true;
         }
 
@@ -407,13 +422,27 @@ namespace PADIServer
         public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
         {
             _pendingRequests.Add(methodInfo, parameters);
-            return;
         }
 
 		// nao deve ser bem assim mas por agora serve
 		public void ReplicatePADInt(PADInt p)
 		{
 			CreatePADInt(p.UID, p.Servers, p.TransactioId);
+		}
+
+		public void PropagateUpdates(int tId, List<PADInt> padints)
+		{
+			List<int> ownReferences = _transactions[tId];
+			foreach (PADInt p in padints)
+			{
+				if (!ownReferences.Contains(p.UID))
+					UpdatePADInt(p);
+			}
+		}
+
+		private void UpdatePADInt(PADInt p)
+		{
+			
 		}
 
 		public void updatePadintTemporaryValue(int uid, int tid, int value)
