@@ -223,25 +223,5 @@ namespace PADIMaster
 				}
 			}
 		}
-
-		public void PropagateUpdates(int tId, string url)
-		{
-			int numberOfUpdates = 0;
-			foreach (string serverAddress in _transactionalServers.Values)
-			{
-				if (serverAddress != url)
-				{
-					if (numberOfUpdates < 3)
-					{
-						ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
-						if ((!server.Fail_f()) && (!server.Freeze_f()))
-						{
-							server.PropagateUpdates(tId, server.GetPADIntReferences());
-							numberOfUpdates++;
-						}
-					}
-				}
-			}
-		}
 	}
 }

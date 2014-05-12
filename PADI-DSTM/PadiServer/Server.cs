@@ -273,7 +273,6 @@ namespace PADIServer
         {
             _transactions[tId].Clear();
             _transactions.Remove(tId);
-			_master.PropagateUpdates(tId, _url);
             return true;
         }
 
@@ -428,26 +427,6 @@ namespace PADIServer
 		public void ReplicatePADInt(PADInt p)
 		{
 			CreatePADInt(p.UID, p.Servers, p.TransactioId);
-		}
-
-		public void PropagateUpdates(int tId, List<PADInt> padints)
-		{
-			List<int> ownReferences = _transactions[tId];
-			foreach (PADInt p in padints)
-			{
-				if (!ownReferences.Contains(p.UID))
-					UpdatePADInt(p);
-			}
-		}
-
-		private void UpdatePADInt(PADInt p)
-		{
-			
-		}
-
-		public void updatePadintTemporaryValue(int uid, int tid, int value)
-		{
-
 		}
 	}
 }
