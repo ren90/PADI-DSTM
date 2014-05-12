@@ -81,6 +81,10 @@ namespace DSTMLIB
 
         public static bool TxAbort()
 		{
+            _transactionCoordinatorUrl = _master.GetCoordinator();
+            if (_transactionCoordinatorUrl == "")
+                throw new TxException("404 Coordinator not found");
+
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
 			bool result = coordinator.TxAbort(_transactionId, _serverList);
 

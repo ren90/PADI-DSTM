@@ -72,6 +72,7 @@ namespace DSTMLIB
 			_uid = uid;
             _servers = servers;
             _value = 0;
+            _timestamp = -1;
            _temporaryValues = new Dictionary<int, int>();
 		}
 
@@ -87,17 +88,20 @@ namespace DSTMLIB
 		// basically, the function writes to the _value field (which represents "persistency")
         public bool PersistValue(int tId, int timestamp)
         {
-            //test timestamp
-            if (timestamp <= _timestamp)
-                return false;
-            //lock
-            if (this.isLocked())
-                return false;
-            this.lockPADInt();
             //do stuff
             try
             {
                 _oldValue = _value;
+
+                //test timestamp
+                if (timestamp <= _timestamp)
+                    return false;
+
+                //lock
+                if (this.isLocked())
+                    return false;
+                this.lockPADInt();
+                //seccao critica
                 _value = _temporaryValues[tId];
                 _temporaryValues.Remove(tId); 
                 //increment timestamp

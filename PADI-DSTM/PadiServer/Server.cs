@@ -109,6 +109,7 @@ namespace PADIServer
         private bool onTime;
         private bool isCoordinating;
         private List<bool> votes = new List<bool>();
+        private bool _prepared;
 
         public TransactionalServer(int id, MasterInterface master, string url)
         {
@@ -123,6 +124,7 @@ namespace PADIServer
             _master = master;
             _url = url;
 			_isInTransaction = false;
+            _prepared = false;
         }
 
         // Is Alive Method
@@ -279,10 +281,11 @@ namespace PADIServer
 
         public void DoAbort(int tId, string coordinator)
         {
-            foreach (int id in _transactions[tId])
-            {
-                _padints[id].Rollback();
-            }
+            if(_prepared)
+                foreach (int id in _transactions[tId])
+                {
+                    _padints[id].Rollback();
+                }
             _transactions[tId].Clear();
             _transactions.Remove(tId);
 
@@ -290,11 +293,14 @@ namespace PADIServer
 
         public void Prepare(int tID, string coordinator, int timestamp)
         {
+            Console.WriteLine("Preparing Transaction");
 			bool reply = true;
 			currentTID = tID;
 			currentCoordinator = coordinator;
 
 			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].PersistValue(tID, timestamp));
+            Console.WriteLine("Vote: " + reply);
+            _prepared = true;
 			SendVote(reply, coordinator);
         }
 
@@ -304,8 +310,8 @@ namespace PADIServer
             coord.ReceiveVote(reply);
         }
 
-        // -----------------------------------------------------------------------------------------
-        // Locking Methods -------------------------------------------------------------------------
+        //// -----------------------------------------------------------------------------------------
+        //// Locking Methods -------------------------------------------------------------------------
 
         public void LockPADInt(int transactionId, int uid, int timestamp)
         {
@@ -318,8 +324,8 @@ namespace PADIServer
                     else return;
                 }
             }
-            
-			if (_padints[uid].Timestamp > timestamp)
+           
+            if (_padints[uid].Timestamp > timestamp)
                 throw new TxException("The client timestamp is lower than the object's timestamp!");
             else
             {
@@ -328,7 +334,7 @@ namespace PADIServer
                     _transactions.Add(transactionId, new List<int>());
                     _transactions[transactionId].Add(uid);
                 }
-				else
+                else
                     _transactions[transactionId].Add(uid);
             }
         }
@@ -400,11 +406,16 @@ namespace PADIServer
         public bool TxAbort(int tId, List<string> participants)
         {
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
-            ParticipantInterface p;
-            foreach (string participant in participants)
-            {
-                p = (ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
-                p.DoAbort(tId, _url);
+            
+            if (_prepared){
+                
+                foreach (string participant in participants)
+                {
+                    ParticipantInterface p;
+                    p = (ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
+                    p.DoAbort(tId, _url);
+                }
+
             }
             return true;
         }
