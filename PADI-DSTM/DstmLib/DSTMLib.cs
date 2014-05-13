@@ -58,15 +58,14 @@ namespace DSTMLIB
 
         public static bool TxCommit()
 		{
-
             _transactionCoordinatorUrl = _master.GetCoordinator();
             if (_transactionCoordinatorUrl == "")
                 throw new TxException("404 Coordinator not found");
 
-            foreach (PADInt localCopy in _references.Values) {
-                foreach (PADInt original in localCopy.OriginalValues) {
+            foreach (PADInt localCopy in _references.Values)
+			{
+                foreach (PADInt original in localCopy.OriginalValues)
                     original.temporaryValue(localCopy.TransactioId, localCopy.Value);
-                }
             }
 
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
@@ -93,7 +92,6 @@ namespace DSTMLIB
 			return result;
 		}
 
-		
         public static bool Status()
         {
 			foreach (string server in _serverList)

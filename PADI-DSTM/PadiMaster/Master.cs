@@ -203,25 +203,5 @@ namespace PADIMaster
 				finishedTransactions.Add(tId);
             return true;
         }
-
-		public void ReplicatePADInt(PADInt p, string url)
-		{
-			int numberOfReplicas = 0;
-			foreach (string serverAddress in _transactionalServers.Values)
-			{
-				if (serverAddress != url)
-				{
-					if (numberOfReplicas < 2)
-					{
-						ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), url);
-						if ((!server.Fail_f()) && (!server.Freeze_f()))
-						{
-							server.ReplicatePADInt(p);
-							numberOfReplicas++;
-						}
-					}
-				}
-			}
-		}
 	}
 }

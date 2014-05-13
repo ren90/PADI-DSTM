@@ -12,7 +12,6 @@ namespace DSTMLIB
         string GetCoordinator();
         bool FinishTransaction(int uid);
         void ImAlive(int serverId, string address);
-		void ReplicatePADInt(PADInt p, string url);
         int GetTimestamp();
         int GetTransactionID();
 	}
@@ -46,6 +45,5 @@ namespace DSTMLIB
 		bool Fail_f();
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
-		void ReplicatePADInt(PADInt p);
 	}
 }

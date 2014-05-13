@@ -421,15 +421,9 @@ namespace PADIServer
             return _fail;
         }
 
-        public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
-        {
-            _pendingRequests.Add(methodInfo, parameters);
-        }
-
-		// nao deve ser bem assim mas por agora serve
-		public void ReplicatePADInt(PADInt p)
+		public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
 		{
-			CreatePADInt(p.UID, p.Servers, p.TransactioId);
+			_pendingRequests.Add(methodInfo, parameters);
 		}
 	}
 }
