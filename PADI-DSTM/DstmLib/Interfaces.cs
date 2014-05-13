@@ -49,6 +49,5 @@ namespace DSTMLIB
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
 		void ReplicatePADInt(PADInt p);
-		List<PADInt> GetPADIntReferences();
 	}
 }

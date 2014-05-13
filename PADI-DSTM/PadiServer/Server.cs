@@ -141,45 +141,90 @@ namespace PADIServer
 
         public PADInt CreatePADInt(int uid, List<string> servers, int transactionId)
 		{
-            Console.WriteLine("SERVER: Create request for the PADInt " + uid + " with the transaction id " + transactionId);
+			List<object> _parameters = new List<object>();
+			_parameters.Add(uid);
+			_parameters.Add(servers);
+			_parameters.Add(transactionId);
 
-            if (_padints.ContainsKey(uid))
-                return null;
+			if (!Fail_f())
+			{
+				if (!Freeze_f())
+				{
+					Console.WriteLine("SERVER: Create request for the PADInt " + uid + " with the transaction id " + transactionId);
 
-            PADInt p = new PADInt(uid, servers);
+					if (_padints.ContainsKey(uid))
+						return null;
 
-            _padints.Add(uid, p);
-
-            if (!_transactions.ContainsKey(transactionId))
-            {
-                _transactions.Add(transactionId, new List<int>());
-                _transactions[transactionId].Add(uid);
-            }
-            else
-                _transactions[transactionId].Add(uid);
-
-            return p;
+					return CreateNewPADInt(uid, servers, transactionId);
+				}
+				else
+				{
+					AddPendingRequest(this.GetType().GetMethod("CreateNewPADInt"), _parameters);
+					return null;
+				}
+			}
+			else
+				return null;
         }
+
+		private PADInt CreateNewPADInt(int uid, List<string> servers, int transactionId)
+		{
+			PADInt p = new PADInt(uid, servers);
+
+			_padints.Add(uid, p);
+
+			if (!_transactions.ContainsKey(transactionId))
+			{
+				_transactions.Add(transactionId, new List<int>());
+				_transactions[transactionId].Add(uid);
+			}
+			else
+				_transactions[transactionId].Add(uid);
+
+			return p;
+		}
 
         public PADInt AccessPADInt(int uid, int transactionId)
         {
-			Console.WriteLine("SERVER: Access request for the PADInt " + uid + " from the transaction " + transactionId);
+			List<object> _parameters = new List<object>();
+			_parameters.Add(uid);
+			_parameters.Add(transactionId);
 
-            if (!_padints.ContainsKey(uid))
-                return null;
-
-            if (!_transactions.ContainsKey(transactionId))
-            {
-                _transactions.Add(transactionId, new List<int>());
-                _transactions[transactionId].Add(uid);
-            }
-            else
+			if (!Fail_f())
 			{
-                if (!_transactions[transactionId].Contains(uid))
-                    _transactions[transactionId].Add(uid);
-            }
-            return _padints[uid];
+				if (!Freeze_f())
+				{
+					Console.WriteLine("SERVER: Access request for the PADInt " + uid + " from the transaction " + transactionId);
+
+					if (!_padints.ContainsKey(uid))
+						return null;
+
+					return AccessExistingPADInt(uid, transactionId);
+				}
+				else
+				{
+					AddPendingRequest(this.GetType().GetMethod("AccessExistingPADInt"), _parameters);
+					return null;
+				}
+			}
+			else
+				return null;
         }
+
+		private PADInt AccessExistingPADInt(int uid, int transactionId)
+		{
+			if (!_transactions.ContainsKey(transactionId))
+			{
+				_transactions.Add(transactionId, new List<int>());
+				_transactions[transactionId].Add(uid);
+			}
+			else
+			{
+				if (!_transactions[transactionId].Contains(uid))
+					_transactions[transactionId].Add(uid);
+			}
+			return _padints[uid];
+		}
 
         // -----------------------------------------------------------------------------------------
         // Status methods --------------------------------------------------------------------------
@@ -244,29 +289,16 @@ namespace PADIServer
         {
             try
             {
-                foreach (KeyValuePair<MethodInfo, List<Object>> request in _pendingRequests)
-                {
+                foreach (KeyValuePair<MethodInfo, List<object>> request in _pendingRequests)
                     request.Key.Invoke(this, request.Value.ToArray());
-                }
+				return true;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.StackTrace);
+                Console.WriteLine(e.Message);
                 return false;
             }
-            return true;
         }
-
-		public List<PADInt> GetPADIntReferences()
-		{
-			List<PADInt> padints = new List<PADInt>();
-			foreach (PADInt p in _padints.Values)
-			{
-				padints.Add(p);
-			}
-
-			return padints;
-		}
 
         // -----------------------------------------------------------------------------------------
         // Participant Methods ---------------------------------------------------------------------
@@ -275,19 +307,20 @@ namespace PADIServer
         {
             _transactions[tId].Clear();
             _transactions.Remove(tId);
+			_pendingRequests.Clear();
             return true;
         }
 
         public void DoAbort(int tId, string coordinator)
         {
-            if(_prepared)
-                foreach (int id in _transactions[tId])
-                {
-                    _padints[id].Rollback();
-                }
+			if (_prepared)
+			{
+				foreach (int id in _transactions[tId])
+					_padints[id].Rollback();
+			}
             _transactions[tId].Clear();
             _transactions.Remove(tId);
-
+			_pendingRequests.Clear();
         }
 
         public void Prepare(int tID, string coordinator, int timestamp)
@@ -372,9 +405,8 @@ namespace PADIServer
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
 
             foreach (String server in _references)
-            {
                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), server));
-            }
+
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
                 server.Prepare(tId, _url, timestamp);
@@ -406,15 +438,14 @@ namespace PADIServer
         {
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
             
-            if (_prepared){
-                
+            if (_prepared)
+			{    
                 foreach (string participant in participants)
                 {
                     ParticipantInterface p;
                     p = (ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
                     p.DoAbort(tId, _url);
                 }
-
             }
             return true;
         }

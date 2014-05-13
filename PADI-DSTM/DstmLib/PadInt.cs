@@ -41,6 +41,14 @@ namespace DSTMLIB
             get { return _oldValue; }
             set { _oldValue = value; }
         }
+
+		private bool _lockFlag;
+		public bool LockFlag
+		{
+			get { return _lockFlag; }
+			set { _lockFlag = value; }
+		}
+
         //------------------------------------------//
 
         //-----Values used by the copy of the PADInt//
@@ -105,7 +113,7 @@ namespace DSTMLIB
                 _value = _temporaryValues[tId];
                 _temporaryValues.Remove(tId); 
                 //increment timestamp
-                Timestamp = timestamp;
+                _timestamp = timestamp;
                 //unlock
                 this.unlockPADInt();
                 return true;
@@ -115,8 +123,6 @@ namespace DSTMLIB
                 Console.WriteLine(e.StackTrace);
                 return false;
             }
-
-        
         }
 
         private void lockPADInt()
@@ -151,10 +157,9 @@ namespace DSTMLIB
 			_value = value;
 		}
 
-        public void temporaryValue(int tId, int value) {
-                _temporaryValues.Add(tId, value);
+        public void temporaryValue(int tId, int value)
+		{
+			_temporaryValues.Add(tId, value);
         }
-
-        public bool _lockFlag { get; set; }
     }
 }
