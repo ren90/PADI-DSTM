@@ -41,6 +41,14 @@ namespace DSTMLIB
             get { return _oldValue; }
             set { _oldValue = value; }
         }
+
+		private bool _lockFlag;
+		public bool LockFlag
+		{
+			get { return _lockFlag; }
+			set { _lockFlag = value; }
+		}
+
         //------------------------------------------//
 
         //-----Values used by the copy of the PADInt//
@@ -72,6 +80,7 @@ namespace DSTMLIB
 			_uid = uid;
             _servers = servers;
             _value = 0;
+            _timestamp = -1;
            _temporaryValues = new Dictionary<int, int>();
 		}
 
@@ -87,21 +96,24 @@ namespace DSTMLIB
 		// basically, the function writes to the _value field (which represents "persistency")
         public bool PersistValue(int tId, int timestamp)
         {
-            //test timestamp
-            if (timestamp <= _timestamp)
-                return false;
-            //lock
-            if (this.isLocked())
-                return false;
-            this.lockPADInt();
             //do stuff
             try
             {
                 _oldValue = _value;
+
+                //test timestamp
+                if (timestamp <= _timestamp)
+                    return false;
+
+                //lock
+                if (this.isLocked())
+                    return false;
+                this.lockPADInt();
+                //seccao critica
                 _value = _temporaryValues[tId];
                 _temporaryValues.Remove(tId); 
                 //increment timestamp
-                Timestamp = timestamp;
+                _timestamp = timestamp;
                 //unlock
                 this.unlockPADInt();
                 return true;
@@ -111,8 +123,6 @@ namespace DSTMLIB
                 Console.WriteLine(e.StackTrace);
                 return false;
             }
-
-        
         }
 
         private void lockPADInt()
@@ -147,10 +157,9 @@ namespace DSTMLIB
 			_value = value;
 		}
 
-        public void temporaryValue(int tId, int value) {
-                _temporaryValues.Add(tId, value);
+        public void temporaryValue(int tId, int value)
+		{
+			_temporaryValues.Add(tId, value);
         }
-
-        public bool _lockFlag { get; set; }
     }
 }

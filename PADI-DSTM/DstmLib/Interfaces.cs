@@ -12,10 +12,8 @@ namespace DSTMLIB
         string GetCoordinator();
         bool FinishTransaction(int uid);
         void ImAlive(int serverId, string address);
-		void ReplicatePADInt(PADInt p, string url);
         int GetTimestamp();
         int GetTransactionID();
-		void PropagateUpdates(int tId, string url);
 	}
 
     //Transactional server interfaces
@@ -41,17 +39,11 @@ namespace DSTMLIB
         bool Recover();
         bool Freeze();
 		bool Status();
-        void LockPADInt(int transactionId, int uid, int timestamp);
-        void UnlockPADInt(int transactionId, int uid);
         bool TxCommit(int tId, List<string> _servers, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         string GetServerUrl();
 		bool Fail_f();
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
-        void updatePadintTemporaryValue(int uid, int tid, int value);
-		void ReplicatePADInt(PADInt p);
-		void PropagateUpdates(int tId, List<PADInt> padints);
-		List<PADInt> GetPADIntReferences();
 	}
 }

@@ -94,8 +94,6 @@ namespace PADIServer
         private string _url;
         // map between transaction ID and a list of PADInts
         private Dictionary<int, List<int>> _transactions;
-        // map between PADInt ID and the locking status
-        private Dictionary<int, bool> _locks;
 		// true if server is currently inside a transaction
 		private bool _isInTransaction;
 		// the coordinator's url for the current transaction
@@ -109,13 +107,13 @@ namespace PADIServer
         private bool onTime;
         private bool isCoordinating;
         private List<bool> votes = new List<bool>();
+        private bool _prepared;
 
         public TransactionalServer(int id, MasterInterface master, string url)
         {
             _id = id;
             _padints = new Dictionary<int, PADInt>();
             _transactions = new Dictionary<int, List<int>>();
-            _locks = new Dictionary<int, bool>();
             _pendingRequests = new Dictionary<MethodInfo, List<Object>>();
             _alive = new Timer(TIMEOUT);
             _alive.Elapsed += IsAlive;
@@ -123,6 +121,7 @@ namespace PADIServer
             _master = master;
             _url = url;
 			_isInTransaction = false;
+            _prepared = false;
         }
 
         // Is Alive Method
@@ -139,45 +138,90 @@ namespace PADIServer
 
         public PADInt CreatePADInt(int uid, List<string> servers, int transactionId)
 		{
-            Console.WriteLine("SERVER: Create request for the PADInt " + uid + " with the transaction id " + transactionId);
+			List<object> _parameters = new List<object>();
+			_parameters.Add(uid);
+			_parameters.Add(servers);
+			_parameters.Add(transactionId);
 
-            if (_padints.ContainsKey(uid))
-                return null;
+			if (!Fail_f())
+			{
+				if (!Freeze_f())
+				{
+					Console.WriteLine("SERVER: Create request for the PADInt " + uid + " with the transaction id " + transactionId);
 
-            PADInt p = new PADInt(uid, servers);
+					if (_padints.ContainsKey(uid))
+						return null;
 
-            _padints.Add(uid, p);
-
-            if (!_transactions.ContainsKey(transactionId))
-            {
-                _transactions.Add(transactionId, new List<int>());
-                _transactions[transactionId].Add(uid);
-            }
-            else
-                _transactions[transactionId].Add(uid);
-
-            return p;
+					return CreateNewPADInt(uid, servers, transactionId);
+				}
+				else
+				{
+					AddPendingRequest(this.GetType().GetMethod("CreateNewPADInt"), _parameters);
+					return null;
+				}
+			}
+			else
+				return null;
         }
+
+		private PADInt CreateNewPADInt(int uid, List<string> servers, int transactionId)
+		{
+			PADInt p = new PADInt(uid, servers);
+
+			_padints.Add(uid, p);
+
+			if (!_transactions.ContainsKey(transactionId))
+			{
+				_transactions.Add(transactionId, new List<int>());
+				_transactions[transactionId].Add(uid);
+			}
+			else
+				_transactions[transactionId].Add(uid);
+
+			return p;
+		}
 
         public PADInt AccessPADInt(int uid, int transactionId)
         {
-			Console.WriteLine("SERVER: Access request for the PADInt " + uid + " from the transaction " + transactionId);
+			List<object> _parameters = new List<object>();
+			_parameters.Add(uid);
+			_parameters.Add(transactionId);
 
-            if (!_padints.ContainsKey(uid))
-                return null;
-
-            if (!_transactions.ContainsKey(transactionId))
-            {
-                _transactions.Add(transactionId, new List<int>());
-                _transactions[transactionId].Add(uid);
-            }
-            else
+			if (!Fail_f())
 			{
-                if (!_transactions[transactionId].Contains(uid))
-                    _transactions[transactionId].Add(uid);
-            }
-            return _padints[uid];
+				if (!Freeze_f())
+				{
+					Console.WriteLine("SERVER: Access request for the PADInt " + uid + " from the transaction " + transactionId);
+
+					if (!_padints.ContainsKey(uid))
+						return null;
+
+					return AccessExistingPADInt(uid, transactionId);
+				}
+				else
+				{
+					AddPendingRequest(this.GetType().GetMethod("AccessExistingPADInt"), _parameters);
+					return null;
+				}
+			}
+			else
+				return null;
         }
+
+		private PADInt AccessExistingPADInt(int uid, int transactionId)
+		{
+			if (!_transactions.ContainsKey(transactionId))
+			{
+				_transactions.Add(transactionId, new List<int>());
+				_transactions[transactionId].Add(uid);
+			}
+			else
+			{
+				if (!_transactions[transactionId].Contains(uid))
+					_transactions[transactionId].Add(uid);
+			}
+			return _padints[uid];
+		}
 
         // -----------------------------------------------------------------------------------------
         // Status methods --------------------------------------------------------------------------
@@ -242,29 +286,16 @@ namespace PADIServer
         {
             try
             {
-                foreach (KeyValuePair<MethodInfo, List<Object>> request in _pendingRequests)
-                {
+                foreach (KeyValuePair<MethodInfo, List<object>> request in _pendingRequests)
                     request.Key.Invoke(this, request.Value.ToArray());
-                }
+				return true;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.StackTrace);
+                Console.WriteLine(e.Message);
                 return false;
             }
-            return true;
         }
-
-		public List<PADInt> GetPADIntReferences()
-		{
-			List<PADInt> padints = new List<PADInt>();
-			foreach (PADInt p in _padints.Values)
-			{
-				padints.Add(p);
-			}
-
-			return padints;
-		}
 
         // -----------------------------------------------------------------------------------------
         // Participant Methods ---------------------------------------------------------------------
@@ -273,28 +304,34 @@ namespace PADIServer
         {
             _transactions[tId].Clear();
             _transactions.Remove(tId);
-			_master.PropagateUpdates(tId, _url);
+			_pendingRequests.Clear();
+            _prepared = false;
             return true;
         }
 
         public void DoAbort(int tId, string coordinator)
         {
-            foreach (int id in _transactions[tId])
-            {
-                _padints[id].Rollback();
-            }
+			if (_prepared)
+			{
+				foreach (int id in _transactions[tId])
+					_padints[id].Rollback();
+			}
             _transactions[tId].Clear();
             _transactions.Remove(tId);
-
+			_pendingRequests.Clear();
+            _prepared = false;
         }
 
         public void Prepare(int tID, string coordinator, int timestamp)
         {
+            Console.WriteLine("Preparing Transaction");
 			bool reply = true;
 			currentTID = tID;
 			currentCoordinator = coordinator;
 
 			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].PersistValue(tID, timestamp));
+            Console.WriteLine("Vote: " + reply);
+            _prepared = true;
 			SendVote(reply, coordinator);
         }
 
@@ -304,42 +341,6 @@ namespace PADIServer
             coord.ReceiveVote(reply);
         }
 
-        // -----------------------------------------------------------------------------------------
-        // Locking Methods -------------------------------------------------------------------------
-
-        public void LockPADInt(int transactionId, int uid, int timestamp)
-        {
-            foreach (KeyValuePair<int, List<int>> t in _transactions)
-            {
-                if (t.Value.Contains(uid))
-                {
-                    if (!_transactions.ContainsKey(transactionId))
-                        throw new TxException("The PADInt" + uid + " is already locked!");
-                    else return;
-                }
-            }
-            
-			if (_padints[uid].Timestamp > timestamp)
-                throw new TxException("The client timestamp is lower than the object's timestamp!");
-            else
-            {
-                if (!_transactions.ContainsKey(transactionId))
-                {
-                    _transactions.Add(transactionId, new List<int>());
-                    _transactions[transactionId].Add(uid);
-                }
-				else
-                    _transactions[transactionId].Add(uid);
-            }
-        }
-
-        public void UnlockPADInt(int transactionId, int uid)
-        {
-            if (_transactions[transactionId].Contains(uid))
-                _transactions[transactionId].Remove(uid);
-            else
-                throw new TxException("The PADInt" + uid + "is not locked");
-        }
 
         //------------------------------------------------------------------------------------------
         // Coordinator Methods ---------------------------------------------------------------------
@@ -367,9 +368,8 @@ namespace PADIServer
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
 
             foreach (String server in _references)
-            {
                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), server));
-            }
+
             //envia prepare
             foreach (ParticipantInterface server in _serversToCommit)
                 server.Prepare(tId, _url, timestamp);
@@ -400,12 +400,14 @@ namespace PADIServer
         public bool TxAbort(int tId, List<string> participants)
         {
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
-            ParticipantInterface p;
-            foreach (string participant in participants)
-            {
-                p = (ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
-                p.DoAbort(tId, _url);
-            }
+			if (_prepared)
+			{
+				foreach (string participant in participants)
+				{
+					ParticipantInterface p = (ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
+					p.DoAbort(tId, _url);
+				}
+			}
             return true;
         }
 
@@ -419,35 +421,9 @@ namespace PADIServer
             return _fail;
         }
 
-        public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
-        {
-            _pendingRequests.Add(methodInfo, parameters);
-        }
-
-		// nao deve ser bem assim mas por agora serve
-		public void ReplicatePADInt(PADInt p)
+		public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
 		{
-			CreatePADInt(p.UID, p.Servers, p.TransactioId);
-		}
-
-		public void PropagateUpdates(int tId, List<PADInt> padints)
-		{
-			List<int> ownReferences = _transactions[tId];
-			foreach (PADInt p in padints)
-			{
-				if (!ownReferences.Contains(p.UID))
-					UpdatePADInt(p);
-			}
-		}
-
-		private void UpdatePADInt(PADInt p)
-		{
-			
-		}
-
-		public void updatePadintTemporaryValue(int uid, int tid, int value)
-		{
-
+			_pendingRequests.Add(methodInfo, parameters);
 		}
 	}
 }
