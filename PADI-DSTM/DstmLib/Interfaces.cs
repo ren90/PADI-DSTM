@@ -40,8 +40,6 @@ namespace DSTMLIB
         bool Recover();
         bool Freeze();
 		bool Status();
-        void LockPADInt(int transactionId, int uid, int timestamp);
-        void UnlockPADInt(int transactionId, int uid);
         bool TxCommit(int tId, List<string> _servers, int timestamp);
         bool TxAbort(int tId, List<string> participants);
         string GetServerUrl();

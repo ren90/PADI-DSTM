@@ -94,8 +94,6 @@ namespace PADIServer
         private string _url;
         // map between transaction ID and a list of PADInts
         private Dictionary<int, List<int>> _transactions;
-        // map between PADInt ID and the locking status
-        private Dictionary<int, bool> _locks;
 		// true if server is currently inside a transaction
 		private bool _isInTransaction;
 		// the coordinator's url for the current transaction
@@ -116,7 +114,6 @@ namespace PADIServer
             _id = id;
             _padints = new Dictionary<int, PADInt>();
             _transactions = new Dictionary<int, List<int>>();
-            _locks = new Dictionary<int, bool>();
             _pendingRequests = new Dictionary<MethodInfo, List<Object>>();
             _alive = new Timer(TIMEOUT);
             _alive.Elapsed += IsAlive;
@@ -275,6 +272,7 @@ namespace PADIServer
         {
             _transactions[tId].Clear();
             _transactions.Remove(tId);
+            _prepared = false;
             return true;
         }
 
@@ -287,6 +285,7 @@ namespace PADIServer
                 }
             _transactions[tId].Clear();
             _transactions.Remove(tId);
+            _prepared = false;
 
         }
 
@@ -309,42 +308,6 @@ namespace PADIServer
             coord.ReceiveVote(reply);
         }
 
-        //// -----------------------------------------------------------------------------------------
-        //// Locking Methods -------------------------------------------------------------------------
-
-        public void LockPADInt(int transactionId, int uid, int timestamp)
-        {
-            foreach (KeyValuePair<int, List<int>> t in _transactions)
-            {
-                if (t.Value.Contains(uid))
-                {
-                    if (!_transactions.ContainsKey(transactionId))
-                        throw new TxException("The PADInt" + uid + " is already locked!");
-                    else return;
-                }
-            }
-           
-            if (_padints[uid].Timestamp > timestamp)
-                throw new TxException("The client timestamp is lower than the object's timestamp!");
-            else
-            {
-                if (!_transactions.ContainsKey(transactionId))
-                {
-                    _transactions.Add(transactionId, new List<int>());
-                    _transactions[transactionId].Add(uid);
-                }
-                else
-                    _transactions[transactionId].Add(uid);
-            }
-        }
-
-        public void UnlockPADInt(int transactionId, int uid)
-        {
-            if (_transactions[transactionId].Contains(uid))
-                _transactions[transactionId].Remove(uid);
-            else
-                throw new TxException("The PADInt" + uid + "is not locked");
-        }
 
         //------------------------------------------------------------------------------------------
         // Coordinator Methods ---------------------------------------------------------------------
@@ -406,8 +369,7 @@ namespace PADIServer
         {
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
             
-            if (_prepared){
-                
+          
                 foreach (string participant in participants)
                 {
                     ParticipantInterface p;
@@ -415,7 +377,6 @@ namespace PADIServer
                     p.DoAbort(tId, _url);
                 }
 
-            }
             return true;
         }
 
