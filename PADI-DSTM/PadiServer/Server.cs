@@ -122,6 +122,7 @@ namespace PADIServer
             _url = url;
 			_isInTransaction = false;
             _prepared = false;
+            _status = true;
         }
 
         // Is Alive Method

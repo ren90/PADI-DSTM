@@ -158,7 +158,7 @@ namespace DSTMLIB
 					servers.Add(server);
 			}
 
-			Console.WriteLine("the chosen servers are: " + locations[0]);//Adicionar o resto
+			//Console.WriteLine("the chosen servers are: " + locations[0]);//Adicionar o resto
 
 			foreach (String server in servers)
 			{
@@ -200,7 +200,7 @@ namespace DSTMLIB
                 return null;
             }
 
-            Console.WriteLine("The PADInts are at these servers: " +  servers.ToString());
+            Console.WriteLine("The PADInts are at these servers: " +  servers.ToArray().ToString());
 
             foreach (String server in servers) 
             {

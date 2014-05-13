@@ -78,7 +78,7 @@ namespace PADIMaster
         public MasterServer()
         {
             _port = 8087;
-            _portseed = 9000;
+            _portseed = 2001;
             _idseed = 0;
             _transactionalServers = new Dictionary<int, string>();
             _padintReferences = new Dictionary<int, int>();
