@@ -24,18 +24,13 @@ namespace DSTMLIB
 
 		public static void Dump()
 		{
-			foreach (PADInt p in _references.Values)
+			foreach (string s in _serverList)
 			{
+				ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), s);
 				Console.WriteLine("#####################");
-				Console.WriteLine("PADINT " + p.UID);
-
-				foreach (string s in p.Servers)
-				{
-					ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), s);
-					Console.WriteLine("#####################");
-					Console.WriteLine("SERVER " + server.GetServerUrl());
-					Console.WriteLine(server.Dump());
-				}
+				Console.WriteLine("SERVER " + server.GetServerUrl());
+				Console.WriteLine(server.Dump());
+				Console.ReadLine();
 			}
 		}
 

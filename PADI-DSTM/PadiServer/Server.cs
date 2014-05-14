@@ -431,9 +431,9 @@ namespace PADIServer
 		{
 			string s = "";
 			foreach (PADInt p in _padints.Values)
-			{
 				s += p.UID + " has value " + p.Value + "\n";
-			}
+
+			Console.WriteLine(s);
 
 			return s;
 		}

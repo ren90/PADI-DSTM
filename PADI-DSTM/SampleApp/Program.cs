@@ -32,20 +32,35 @@ namespace SampleApp
 
 		static void teste0()
 		{
-			DSTMLib.Init();
-			DSTMLib.TxBegin();
+			try
+			{
+				DSTMLib.Init();
+				DSTMLib.TxBegin();
 
-			PADInt p0 = DSTMLib.CreatePADInt(0);
-			p0.Write(0);
-			DSTMLib.Dump();
+				Console.WriteLine("PADInt p0 = DSTMLib.CreatePADInt(0) p0.Write(0); DSTMLib.Dump();");
+				Console.ReadLine();
 
-			PADInt p1 = DSTMLib.CreatePADInt(1);
-			p1.Write(1);
-			DSTMLib.Dump();
+				PADInt p0 = DSTMLib.CreatePADInt(0);
+				p0.Write(0);
+				DSTMLib.Dump();
 
-			DSTMLib.TxCommit();
+				Console.WriteLine("PADInt p1 = DSTMLib.CreatePADInt(1); p1.Write(1); DSTMLib.Dump();");
+				Console.ReadLine();
 
-			Console.ReadLine();
+				PADInt p1 = DSTMLib.CreatePADInt(1);
+				p1.Write(1);
+				DSTMLib.Dump();
+
+				DSTMLib.TxCommit();
+
+				Console.ReadLine();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.ReadLine();
+				return;
+			}
 		}
 
 		static void teste1()
