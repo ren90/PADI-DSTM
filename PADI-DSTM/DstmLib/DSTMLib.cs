@@ -41,6 +41,9 @@ namespace DSTMLIB
             _master = (MasterInterface)Activator.GetObject(typeof(MasterInterface), "tcp://localhost:8087/Server");
             _isInTransaction = false;
 
+			_references = new Dictionary<int, PADInt>();
+			_serverList = new List<string>();
+
 			return true;
         }
 
@@ -55,9 +58,6 @@ namespace DSTMLIB
                 _isInTransaction = true;
                 _transactionId = _master.GetTransactionID();
                 _timestamp = _master.GetTimestamp();
-
-                _references = new Dictionary<int, PADInt>();
-                _serverList = new List<string>();
 
                 return true;
             }
@@ -157,7 +157,7 @@ namespace DSTMLIB
 
 			List<PADInt> objectReferences = new List<PADInt>();
 			List<string> servers = new List<string>(); 
-			Dictionary<int, string> locations = _master.GenerateServers(uid);
+			List<string> locations = _master.GenerateServers(uid);
 			
 			if (locations == null)
 			{
@@ -166,11 +166,9 @@ namespace DSTMLIB
 			}
 			else
 			{
-				foreach (string server in locations.Values)
+				foreach (string server in locations)
 					servers.Add(server);
 			}
-
-			//Console.WriteLine("the chosen servers are: " + locations[0]);//Adicionar o resto
 
 			foreach (String server in servers)
 			{
@@ -208,11 +206,9 @@ namespace DSTMLIB
 
             if (servers == null)
             {
-                Console.WriteLine("DSTMLib-> ERROR: The PadInt with uid" + uid + "does not exist");
+                Console.WriteLine("DSTMLib-> ERROR: The PadInt with uid" + uid + " does not exist");
                 return null;
             }
-
-            Console.WriteLine("The PADInts are at these servers: " +  servers.ToArray().ToString());
 
             foreach (String server in servers) 
             {

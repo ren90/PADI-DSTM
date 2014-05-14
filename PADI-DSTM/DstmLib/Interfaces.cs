@@ -6,7 +6,7 @@ namespace DSTMLIB
 {
     public interface MasterInterface
     {
-        Dictionary<int, string> GenerateServers(int uid);
+        List<string> GenerateServers(int uid);
 		KeyValuePair<int, int> RegisterTransactionalServer(string ip);
 		List<string> GetServers(int uid);
         string GetCoordinator();
@@ -14,6 +14,7 @@ namespace DSTMLIB
         void ImAlive(int serverId, string address);
         int GetTimestamp();
         int GetTransactionID();
+		List<int> GetServersToStore();
 	}
 
     //Transactional server interfaces

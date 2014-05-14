@@ -58,6 +58,7 @@ namespace SampleApp
 			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
+				Console.WriteLine(e.StackTrace);
 				Console.ReadLine();
 				return;
 			}

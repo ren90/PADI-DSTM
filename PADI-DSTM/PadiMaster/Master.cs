@@ -61,7 +61,7 @@ namespace PADIMaster
         // transactional server dictionary <Server id, server address> 
         private Dictionary<int, string> _transactionalServers;
         // PADInt references dictionary <PADInt id, server id>
-        private Dictionary<int, int> _padintReferences;
+        private Dictionary<int, List<int>> _padintReferences;
         // Server timer dictionary <server id, timer >
         private Dictionary<int, Timer> _timers;
 		// timestamp generator for the PADInts
@@ -81,7 +81,7 @@ namespace PADIMaster
             _portseed = 2001;
             _idseed = 0;
             _transactionalServers = new Dictionary<int, string>();
-            _padintReferences = new Dictionary<int, int>();
+			_padintReferences = new Dictionary<int, List<int>>();
             _timers = new Dictionary<int,Timer>();
             finishedTransactions = new List<int>();
             transactionsInCourse = new List<int>();
@@ -138,19 +138,21 @@ namespace PADIMaster
 			Console.WriteLine("server " + tServerId +" says: ALIVE");
         }
 
-        public Dictionary<int, string> GenerateServers(int uid)
+        public List<string> GenerateServers(int uid)
         {
             if (_padintReferences.ContainsKey(uid))
                 return null;
 
-            Dictionary<int, string> servers = new Dictionary<int, string>();
-            int server = HashServers(0);
+			List<string> servers = new List<string>();
+			List<int> serversToStore = GetServersToStore();
 
-            //Adicionar o resto(Criar um foreach)
-            KeyValuePair<int,string> serverPair = new KeyValuePair<int, string>(server, _transactionalServers[server]); 
-            servers.Add(server, _transactionalServers[server]);
-            int serverId = serverPair.Key;
-            _padintReferences.Add(uid, serverId);
+			foreach (int server in serversToStore)
+			{
+				KeyValuePair<int, string> serverPair = new KeyValuePair<int, string>(server, _transactionalServers[server]);
+				Console.WriteLine("SERVERPAIR " + serverPair.Key + " " + serverPair.Value);
+				servers.Add(_transactionalServers[server]); 
+			}
+			_padintReferences.Add(uid, serversToStore);
 
             return servers;
         }
@@ -163,8 +165,8 @@ namespace PADIMaster
 
             if (_padintReferences.ContainsKey(uid))
             {
-				//MELHORAR ISTO adicionar todos
-                addressList.Add(_transactionalServers[_padintReferences[uid]]);
+				foreach (int server in _padintReferences[uid])
+					addressList.Add(_transactionalServers[server]);
                 return addressList;
             }
             else
@@ -203,5 +205,40 @@ namespace PADIMaster
 				finishedTransactions.Add(tId);
             return true;
         }
+
+		public List<int> GetServersToStore()
+		{
+			List<int> minServers = new List<int>();
+
+			if (_padintReferences.Keys.Count >= 3)
+			{
+				Console.WriteLine("####### DIFERENTE DE 0 #######");
+				int capacity = _transactionalServers.Keys.Count;
+
+				List<int> serversCapacities = new List<int>(capacity);
+			
+				for (int i = 0; i < serversCapacities.Capacity; i++)
+					serversCapacities[i] = 0;
+
+				//foreach (KeyValuePair<int, int> kvp in _padintReferences)
+				//	serversCapacities[kvp.Value]++;
+
+				serversCapacities.Sort();
+
+				minServers.Add(serversCapacities[0]);
+				minServers.Add(serversCapacities[1]);
+				minServers.Add(serversCapacities[2]);
+
+				return minServers;
+			}
+			else
+			{
+				Console.WriteLine("####### IGUAL A 0 #######");
+				foreach (int i in _transactionalServers.Keys)
+					minServers.Add(i);
+
+				return minServers;
+			}
+		}
 	}
 }
