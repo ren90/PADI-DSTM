@@ -22,6 +22,23 @@ namespace DSTMLIB
         // methods for manipulating PADI-DSTM
         private static int _transactionId;
 
+		public static void Dump()
+		{
+			foreach (PADInt p in _references.Values)
+			{
+				Console.WriteLine("#####################");
+				Console.WriteLine("PADINT " + p.UID);
+
+				foreach (string s in p.Servers)
+				{
+					ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), s);
+					Console.WriteLine("#####################");
+					Console.WriteLine("SERVER " + server.GetServerUrl());
+					Console.WriteLine(server.Dump());
+				}
+			}
+		}
+
         public static bool Init()
 		{
             _channel = new TcpChannel();

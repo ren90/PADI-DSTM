@@ -10,6 +10,9 @@ namespace SampleApp
 			string c = Console.ReadLine();
 			switch (c)
 			{
+				case "0":
+					teste0();
+					break;
 				case "1":
 					teste1();
 					break;
@@ -25,6 +28,24 @@ namespace SampleApp
 				default:
 					break;
 			}
+		}
+
+		static void teste0()
+		{
+			DSTMLib.Init();
+			DSTMLib.TxBegin();
+
+			PADInt p0 = DSTMLib.CreatePADInt(0);
+			p0.Write(0);
+			DSTMLib.Dump();
+
+			PADInt p1 = DSTMLib.CreatePADInt(1);
+			p1.Write(1);
+			DSTMLib.Dump();
+
+			DSTMLib.TxCommit();
+
+			Console.ReadLine();
 		}
 
 		static void teste1()
@@ -51,6 +72,8 @@ namespace SampleApp
 			res = DSTMLib.Recover("tcp://localhost:2001/Server");
 			res = DSTMLib.Fail("tcp://localhost:2002/Server");
 			res = DSTMLib.TxCommit();
+			Console.WriteLine(res);
+			Console.ReadLine();
 		}
 
 		static void teste2()

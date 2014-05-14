@@ -426,5 +426,16 @@ namespace PADIServer
 		{
 			_pendingRequests.Add(methodInfo, parameters);
 		}
+
+		public string Dump()
+		{
+			string s = "";
+			foreach (PADInt p in _padints.Values)
+			{
+				s += p.UID + " has value " + p.Value + "\n";
+			}
+
+			return s;
+		}
 	}
 }

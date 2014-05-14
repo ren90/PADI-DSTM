@@ -45,5 +45,7 @@ namespace DSTMLIB
 		bool Fail_f();
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
+
+		string Dump();
 	}
 }
