@@ -28,7 +28,8 @@ namespace DSTMLIB
     public interface ParticipantInterface
 	{
         bool DoCommit(int tId, string coordinator);
-        void DoAbort(int tId, string coordinator);
+        void DoAbort(int tId);
+        void DoRollback(int tId);
         void Prepare(int tId, string coordinator, int timestamp);   
     }
 

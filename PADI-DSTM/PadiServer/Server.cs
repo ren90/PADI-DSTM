@@ -245,7 +245,7 @@ namespace PADIServer
 			{
 				// tem que avisar os outros participantes
 				// verificar que nao recebeu ja doCommit do coord
-				DoAbort(currentTID, currentCoordinator);
+				DoAbort(currentTID);
 			}
 
             return _fail;
@@ -310,17 +310,18 @@ namespace PADIServer
             return true;
         }
 
-        public void DoAbort(int tId, string coordinator)
+        public void DoAbort(int tId)
         {
-			if (_prepared)
-			{
-				foreach (int id in _transactions[tId])
-					_padints[id].Rollback();
-			}
             _transactions[tId].Clear();
             _transactions.Remove(tId);
 			_pendingRequests.Clear();
             _prepared = false;
+        }
+
+        public void DoRollback(int tId)
+        {
+            foreach (int id in _transactions[tId])
+                _padints[id].Rollback();
         }
 
         public void Prepare(int tID, string coordinator, int timestamp)
@@ -387,7 +388,11 @@ namespace PADIServer
             if (onTime && canCommit)
                 _serversToCommit.ForEach((ParticipantInterface p) => p.DoCommit(tId, _url));
             else
-                _serversToCommit.ForEach((ParticipantInterface p) => p.DoAbort(tId, _url));
+                foreach (ParticipantInterface p in _serversToCommit)
+                {
+                    p.DoRollback(tId);
+                    p.DoAbort(tId);
+                }
 
             timeout.Enabled = false;
             return canCommit && onTime;
@@ -406,7 +411,7 @@ namespace PADIServer
 				foreach (string participant in participants)
 				{
 					ParticipantInterface p = (ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), participant);
-					p.DoAbort(tId, _url);
+					p.DoAbort(tId);
 				}
 			}
             return true;
