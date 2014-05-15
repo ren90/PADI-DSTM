@@ -149,8 +149,6 @@ namespace PADIMaster
             Console.WriteLine("PONG" + serversToStore.Count);
 			foreach (int server in serversToStore)
 			{
-				//KeyValuePair<int, string> serverPair = new KeyValuePair<int, string>(server, _transactionalServers[server]);
-				Console.WriteLine("server " + server);
 				servers.Add(_transactionalServers[server]); 
 			}
 			_padintReferences.Add(uid, serversToStore);
@@ -213,8 +211,6 @@ namespace PADIMaster
 
 			if (_transactionalServers.Keys.Count >= 3)
 			{
-				Console.WriteLine("####### DIFERENTE DE 0 #######");
-				//int capacity = _transactionalServers.Keys.Count;
                 Dictionary<int,int> serversBalance = new Dictionary<int, int>();
 
                 foreach (int serverKey in _transactionalServers.Keys) { 
@@ -238,11 +234,10 @@ namespace PADIMaster
                 }
 
 				return minServers;
+
 			}
 			else
-			{
-                throw new TxException("Not enough servers for replication");
-			}
+				throw new TxException("Not enough servers for replication (3 at least)!");
 		}
 	}
 }

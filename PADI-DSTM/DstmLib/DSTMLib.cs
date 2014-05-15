@@ -76,8 +76,11 @@ namespace DSTMLIB
 
             foreach (PADInt localCopy in _references.Values)
 			{
-                foreach (PADInt original in localCopy.OriginalValues)
-                    original.temporaryValue(localCopy.TransactioId, localCopy.Value);
+				foreach (PADInt original in localCopy.OriginalValues)
+				{
+					if (original != null)
+						original.temporaryValue(localCopy.TransactioId, localCopy.Value);
+				}
             }
 
 			CoordinatorInterface coordinator = (CoordinatorInterface)Activator.GetObject(typeof(CoordinatorInterface), _transactionCoordinatorUrl);
