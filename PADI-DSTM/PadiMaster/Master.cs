@@ -220,8 +220,12 @@ namespace PADIMaster
 				for (int i = 0; i < serversCapacities.Capacity; i++)
 					serversCapacities[i] = 0;
 
-				//foreach (KeyValuePair<int, int> kvp in _padintReferences)
-				//	serversCapacities[kvp.Value]++;
+				foreach (KeyValuePair<int, List<int>> kvp in _padintReferences)
+				{
+					List<int> servers = kvp.Value;
+					for (int i = 0; i < servers.Count; i++)
+						serversCapacities[servers[i]]++;
+				}
 
 				serversCapacities.Sort();
 
