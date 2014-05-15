@@ -144,12 +144,11 @@ namespace PADIMaster
                 return null;
 
 			List<string> servers = new List<string>();
+            Console.WriteLine("PING");
 			List<int> serversToStore = GetServersToStore();
-
+            Console.WriteLine("PONG" + serversToStore.Count);
 			foreach (int server in serversToStore)
 			{
-				KeyValuePair<int, string> serverPair = new KeyValuePair<int, string>(server, _transactionalServers[server]);
-				Console.WriteLine("SERVERPAIR " + serverPair.Key + " " + serverPair.Value);
 				servers.Add(_transactionalServers[server]); 
 			}
 			_padintReferences.Add(uid, serversToStore);
@@ -210,39 +209,35 @@ namespace PADIMaster
 		{
 			List<int> minServers = new List<int>();
 
-			if (_padintReferences.Keys.Count >= 3)
+			if (_transactionalServers.Keys.Count >= 3)
 			{
-				Console.WriteLine("####### DIFERENTE DE 0 #######");
-				int capacity = _transactionalServers.Keys.Count;
+                Dictionary<int,int> serversBalance = new Dictionary<int, int>();
 
-				List<int> serversCapacities = new List<int>(capacity);
-			
-				for (int i = 0; i < serversCapacities.Capacity; i++)
-					serversCapacities[i] = 0;
+                foreach (int serverKey in _transactionalServers.Keys) { 
+                    int count = 0;
+                    foreach (KeyValuePair<int, List<int>> p in _padintReferences) {
+                        if (p.Value.Contains(serverKey))
+                            count++;
+                    }
+                    serversBalance.Add(serverKey, count);
+                }
 
-				foreach (KeyValuePair<int, List<int>> kvp in _padintReferences)
-				{
-					List<int> servers = kvp.Value;
-					for (int i = 0; i < servers.Count; i++)
-						serversCapacities[servers[i]]++;
-				}
+                List<int> sortedCount = new List<int>();
+                foreach(int count in serversBalance.Values)
+                    sortedCount.Add(count);
+               
+                sortedCount.Sort();
 
-				serversCapacities.Sort();
-
-				minServers.Add(serversCapacities[0]);
-				minServers.Add(serversCapacities[1]);
-				minServers.Add(serversCapacities[2]);
+                foreach (int key in serversBalance.Keys) {
+                    if (serversBalance[key] == sortedCount[0] || serversBalance[key] == sortedCount[1] || serversBalance[key] == sortedCount[2])
+                        minServers.Add(key);   
+                }
 
 				return minServers;
+
 			}
 			else
-			{
-				Console.WriteLine("####### IGUAL A 0 #######");
-				foreach (int i in _transactionalServers.Keys)
-					minServers.Add(i);
-
-				return minServers;
-			}
+				throw new TxException("Not enough servers for replication (3 at least)!");
 		}
 	}
 }
