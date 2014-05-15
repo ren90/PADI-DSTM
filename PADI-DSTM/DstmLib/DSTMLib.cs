@@ -109,15 +109,17 @@ namespace DSTMLIB
 
         public static bool Status()
         {
-			foreach (string server in _serverList)
+			int nServers = _master.GetAllServers().Count;
+			foreach (KeyValuePair<int, string> server in _master.GetAllServers())
 			{
-				ServerInterface iserver = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server);
+				ServerInterface iserver = (ServerInterface)Activator.GetObject(typeof(ServerInterface), server.Value);
 				if (iserver.Status())
-					Console.WriteLine("Server " + server + " is up");
+					Console.WriteLine("Server " + server.Value + " is up");
 				else
-					Console.WriteLine("Server " + server + " is down / not responding");
-				return true;
+					Console.WriteLine("Server " + server.Value + " is down / not responding");
 			}
+			if (nServers > 0)
+				return true;
 			Console.WriteLine("All servers are down / not responding");
 			return false;
         }

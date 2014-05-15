@@ -239,5 +239,10 @@ namespace PADIMaster
 			else
 				throw new TxException("Not enough servers for replication (3 at least)!");
 		}
+
+		public Dictionary<int, string> GetAllServers()
+		{
+			return _transactionalServers;
+		}
 	}
 }

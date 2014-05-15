@@ -15,6 +15,7 @@ namespace DSTMLIB
         int GetTimestamp();
         int GetTransactionID();
 		List<int> GetServersToStore();
+		Dictionary<int, string> GetAllServers();
 	}
 
     //Transactional server interfaces
