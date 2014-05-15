@@ -54,6 +54,16 @@ namespace SampleApp
 				DSTMLib.TxCommit();
 
 				Console.ReadLine();
+               
+                DSTMLib.TxBegin();
+                p0 = DSTMLib.AccessPADInt(0);
+                p1 = DSTMLib.AccessPADInt(1);
+                p0.Write(100000000);
+                p1.Write(200000000);
+                Console.WriteLine("Valores: " + p0.Read() + " " + p1.Read());
+                Console.ReadLine();
+                DSTMLib.TxCommit();
+                
 			}
 			catch (Exception e)
 			{
@@ -101,7 +111,7 @@ namespace SampleApp
 			DSTMLib.Init();
 
 			// Create 2 PADInts
-			if ((args.Length > 0) && (args[0].Equals("C")))
+			if ((args.Length > 0) && (args.Equals("C")))
 			{
 				try
 				{
@@ -139,7 +149,7 @@ namespace SampleApp
 				Console.WriteLine("Status after AccessPADInt");
 				Console.WriteLine("####################################################################");
 				DSTMLib.Status();
-				if ((args.Length > 0) && ((args[0].Equals("C")) || (args[0].Equals("A"))))
+				if ((args.Length > 0) && ((args.Equals("C")) || (args.Equals("A"))))
 				{
 					pi_a.Write(11);
 					pi_b.Write(12);
@@ -210,7 +220,7 @@ namespace SampleApp
 			DSTMLib.Init();
 			try
 			{
-				if ((args.Length > 0) && (args[0].Equals("C")))
+				if ((args.Length > 0) && (args.Equals("C")))
 				{
 					res = DSTMLib.TxBegin();
 					PADInt pi_a = DSTMLib.CreatePADInt(2);
@@ -317,7 +327,7 @@ namespace SampleApp
 			PADInt pi_a, pi_b;
 			DSTMLib.Init();
 
-			if ((args.Length > 0) && (args[0].Equals("C")))
+			if ((args.Length > 0) && (args.Equals("C")))
 			{
 				try
 				{
@@ -350,7 +360,7 @@ namespace SampleApp
 			try
 			{
 				res = DSTMLib.TxBegin();
-				if ((args.Length > 0) && ((args[0].Equals("A")) || (args[0].Equals("C"))))
+				if ((args.Length > 0) && ((args.Equals("A")) || (args.Equals("C"))))
 				{
 					pi_b = DSTMLib.AccessPADInt(2000000000);
 					pi_b.Write(211);

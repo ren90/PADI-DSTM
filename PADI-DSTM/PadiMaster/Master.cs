@@ -233,7 +233,12 @@ namespace PADIMaster
                         minServers.Add(key);   
                 }
 
-				return minServers;
+                List<int> returnServers = new List<int>();
+                returnServers.Add(minServers[0]);
+                returnServers.Add(minServers[1]);
+                returnServers.Add(minServers[2]);
+
+				return returnServers;
 
 			}
 			else
