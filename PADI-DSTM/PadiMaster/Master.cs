@@ -116,11 +116,6 @@ namespace PADIMaster
             return new KeyValuePair<int, int>(id, port);
         }
 
-        public int HashServers(int seed)
-        {
-            return (_padintReferences.Keys.Count + seed) % _transactionalServers.Keys.Count;
-        }
-
         public void OnTimeout(object sender, ElapsedEventArgs e, int serverId)
         {
             Console.WriteLine("The server " + serverId + " is down!");
@@ -144,9 +139,7 @@ namespace PADIMaster
                 return null;
 
 			List<string> servers = new List<string>();
-            Console.WriteLine("PING");
 			List<int> serversToStore = GetServersToStore();
-            Console.WriteLine("PONG" + serversToStore.Count);
 			foreach (int server in serversToStore)
 			{
 				servers.Add(_transactionalServers[server]); 
@@ -215,7 +208,8 @@ namespace PADIMaster
 
                 foreach (int serverKey in _transactionalServers.Keys) { 
                     int count = 0;
-                    foreach (KeyValuePair<int, List<int>> p in _padintReferences) {
+                    foreach (KeyValuePair<int, List<int>> p in _padintReferences)
+					{
                         if (p.Value.Contains(serverKey))
                             count++;
                     }
@@ -223,13 +217,16 @@ namespace PADIMaster
                 }
 
                 List<int> sortedCount = new List<int>();
-                foreach(int count in serversBalance.Values)
+                foreach (int count in serversBalance.Values)
                     sortedCount.Add(count);
                
                 sortedCount.Sort();
 
-                foreach (int key in serversBalance.Keys) {
-                    if (serversBalance[key] == sortedCount[0] || serversBalance[key] == sortedCount[1] || serversBalance[key] == sortedCount[2])
+                foreach (int key in serversBalance.Keys)
+				{
+                    if (serversBalance[key] == sortedCount[0] ||
+						serversBalance[key] == sortedCount[1] ||
+						serversBalance[key] == sortedCount[2])
                         minServers.Add(key);   
                 }
 
@@ -239,7 +236,6 @@ namespace PADIMaster
                 returnServers.Add(minServers[2]);
 
 				return returnServers;
-
 			}
 			else
 				throw new TxException("Not enough servers for replication (3 at least)!");

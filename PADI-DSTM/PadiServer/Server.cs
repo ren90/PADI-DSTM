@@ -95,7 +95,6 @@ namespace PADIServer
         // map between transaction ID and a list of PADInts
         private Dictionary<int, List<int>> _transactions;
 		// true if server is currently inside a transaction
-		private bool _isInTransaction;
 		// the coordinator's url for the current transaction
 		private string currentCoordinator { get; set; }
 		// the coordinator's url for the current transaction
@@ -105,7 +104,6 @@ namespace PADIServer
         // Coordinator attributes 
         // map between transaction ID and the list of servers involved
         private bool onTime;
-        private bool isCoordinating;
         private List<bool> votes = new List<bool>();
         private bool _prepared;
 
@@ -120,7 +118,6 @@ namespace PADIServer
             _alive.Enabled = true;
             _master = master;
             _url = url;
-			_isInTransaction = false;
             _prepared = false;
             _status = true;
         }
@@ -241,13 +238,6 @@ namespace PADIServer
             _fail = true;
             _status = false;
 
-			if (_isInTransaction)
-			{
-				// tem que avisar os outros participantes
-				// verificar que nao recebeu ja doCommit do coord
-				DoAbort(currentTID);
-			}
-
             return _fail;
         }
 
@@ -269,32 +259,28 @@ namespace PADIServer
         /// <returns></returns>
         public bool Recover()
         {
-            bool ok = false;
-
-            if (_fail || _freeze)
+			if (_fail || _freeze)
             {
                 if (_freeze)
-                    ok = DispatchPendindRequests();
+                    DispatchPendindRequests();
 
                 _fail = false;
                 _freeze = false;
                 _status = true;
             }
-            return ok;
+            return true;
         }
 
-        private bool DispatchPendindRequests()
+        private void DispatchPendindRequests()
         {
             try
             {
                 foreach (KeyValuePair<MethodInfo, List<object>> request in _pendingRequests)
                     request.Key.Invoke(this, request.Value.ToArray());
-				return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return false;
             }
         }
 
@@ -326,15 +312,24 @@ namespace PADIServer
 
         public void Prepare(int tID, string coordinator, int timestamp)
         {
-            Console.WriteLine("Preparing Transaction");
-			bool reply = true;
-			currentTID = tID;
-			currentCoordinator = coordinator;
+			bool reply = false;
+			if ((!Fail_f()) && (!Freeze_f()))
+			{
+				reply = true;
 
-			_transactions[tID].ForEach((int id) => reply = reply && _padints[id].PersistValue(tID, timestamp));
-            Console.WriteLine("Vote: " + reply);
-            _prepared = true;
-			SendVote(reply, coordinator);
+				Console.WriteLine("Preparing Transaction");
+				currentTID = tID;
+				currentCoordinator = coordinator;
+				_transactions[tID].ForEach((int id) => reply = reply && _padints[id].PersistValue(tID, timestamp));
+				Console.WriteLine("Vote: " + reply);
+				_prepared = true;
+				SendVote(reply, coordinator);
+			}
+			else
+			{
+				SendVote(reply, coordinator);
+				Console.WriteLine("Vote: " + reply);
+			}
         }
 
         private void SendVote(bool reply, string coordinator)
@@ -352,11 +347,6 @@ namespace PADIServer
             votes.Add(vote);
         }
 
-        public string GetServerUrl()
-        {
-            return _url;
-        }
-
         public bool TxCommit(int tId, List<string> _references, int timestamp)
         {
             bool canCommit = true;
@@ -366,13 +356,12 @@ namespace PADIServer
 
             //acquire participant objects
             onTime = true;
-            isCoordinating = true;
             List<ParticipantInterface> _serversToCommit = new List<ParticipantInterface>();
 
             foreach (String server in _references)
                 _serversToCommit.Add((ParticipantInterface)Activator.GetObject(typeof(ParticipantInterface), server));
 
-            //envia prepare
+            //send prepare
             foreach (ParticipantInterface server in _serversToCommit)
                 server.Prepare(tId, _url, timestamp);
 
@@ -430,17 +419,6 @@ namespace PADIServer
 		public void AddPendingRequest(MethodInfo methodInfo, List<Object> parameters)
 		{
 			_pendingRequests.Add(methodInfo, parameters);
-		}
-
-		public string Dump()
-		{
-			string s = "";
-			foreach (PADInt p in _padints.Values)
-				s += p.UID + " has value " + p.Value + "\n";
-
-			Console.WriteLine(s);
-
-			return s;
 		}
 	}
 }

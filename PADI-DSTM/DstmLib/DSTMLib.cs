@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 
@@ -22,19 +21,7 @@ namespace DSTMLIB
         // methods for manipulating PADI-DSTM
         private static int _transactionId;
 
-		public static void Dump()
-		{
-			foreach (string s in _serverList)
-			{
-				ServerInterface server = (ServerInterface)Activator.GetObject(typeof(ServerInterface), s);
-				Console.WriteLine("#####################");
-				Console.WriteLine("SERVER " + server.GetServerUrl());
-				Console.WriteLine(server.Dump());
-				Console.ReadLine();
-			}
-		}
-
-        public static bool Init()
+		public static bool Init()
 		{
             _channel = new TcpChannel();
             ChannelServices.RegisterChannel(_channel, false);

@@ -7,12 +7,13 @@ namespace SampleApp
 	{
 		static void Main(string[] args)
 		{
+			Console.WriteLine("1 - SampleApp (antes do checkpoint)");
+			Console.WriteLine("2 - SampleApp (do checkpoint)");
+			Console.WriteLine("3 - Cicle");
+			Console.WriteLine("4 - CrossedLocks");
 			string c = Console.ReadLine();
 			switch (c)
 			{
-				case "0":
-					teste0();
-					break;
 				case "1":
 					teste1();
 					break;
@@ -27,50 +28,6 @@ namespace SampleApp
 					break;
 				default:
 					break;
-			}
-		}
-
-		static void teste0()
-		{
-			try
-			{
-				DSTMLib.Init();
-				DSTMLib.TxBegin();
-
-				Console.WriteLine("PADInt p0 = DSTMLib.CreatePADInt(0) p0.Write(0); DSTMLib.Dump();");
-				Console.ReadLine();
-
-				PADInt p0 = DSTMLib.CreatePADInt(0);
-				p0.Write(0);
-				DSTMLib.Dump();
-
-				Console.WriteLine("PADInt p1 = DSTMLib.CreatePADInt(1); p1.Write(1); DSTMLib.Dump();");
-				Console.ReadLine();
-
-				PADInt p1 = DSTMLib.CreatePADInt(1);
-				p1.Write(1);
-				DSTMLib.Dump();
-
-				DSTMLib.TxCommit();
-
-				Console.ReadLine();
-               
-                DSTMLib.TxBegin();
-                p0 = DSTMLib.AccessPADInt(0);
-                p1 = DSTMLib.AccessPADInt(1);
-                p0.Write(100000000);
-                p1.Write(200000000);
-                Console.WriteLine("Valores: " + p0.Read() + " " + p1.Read());
-                Console.ReadLine();
-                DSTMLib.TxCommit();
-                
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				Console.WriteLine(e.StackTrace);
-				Console.ReadLine();
-				return;
 			}
 		}
 

@@ -44,11 +44,8 @@ namespace DSTMLIB
 		bool Status();
         bool TxCommit(int tId, List<string> _servers, int timestamp);
         bool TxAbort(int tId, List<string> participants);
-        string GetServerUrl();
 		bool Fail_f();
 		bool Freeze_f();
 		void AddPendingRequest(MethodInfo methodInfo, List<Object> uid);
-
-		string Dump();
 	}
 }

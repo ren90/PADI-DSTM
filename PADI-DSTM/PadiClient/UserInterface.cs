@@ -11,9 +11,7 @@ namespace PADIClient
         {
             InitializeComponent();
             _client = new Client(new WriteDelegate(LogWrite), new WriteDelegate(ListWrite));
-        }
-
-        private void UserInterface_Load(object sender, EventArgs e) { }
+		}
 
         private void beginTx_button_Click(object sender, EventArgs e)
         {
@@ -184,12 +182,7 @@ namespace PADIClient
         private void valuePADInt_textBox_TextChanged(object sender, EventArgs e)
         {
             enablePADIntManipulation();
-        }
-
-        private void transaction_Enter(object sender, EventArgs e)
-        {
-
-        }
+		}
 
         private void commitTx_button_Click(object sender, EventArgs e)
         {
